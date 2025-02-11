@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MegaphoneIcon, Users2Icon, ShieldCheckIcon, WaveformIcon } from "lucide-react";
+import { MegaphoneIcon, Users2Icon, ShieldCheckIcon, SoundWaveIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -12,10 +11,10 @@ const Index = () => {
         <div className="text-center max-w-3xl mx-auto">
           <div className="mb-8 relative group">
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
-              <WaveformIcon className="w-8 h-8 text-blue-400 animate-pulse" />
+              <SoundWaveIcon className="w-8 h-8 text-blue-400 animate-pulse" />
             </div>
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
-              <WaveformIcon className="w-8 h-8 text-blue-400 animate-pulse" />
+              <SoundWaveIcon className="w-8 h-8 text-blue-400 animate-pulse" />
             </div>
             <MegaphoneIcon className="w-20 h-20 text-blue-600 mx-auto transform -rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110 relative z-10" />
             <div className="absolute inset-0 bg-blue-100 rounded-full filter blur-xl opacity-30 animate-pulse"></div>
