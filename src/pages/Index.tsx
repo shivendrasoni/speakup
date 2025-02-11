@@ -10,26 +10,26 @@ const Index = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-16">
         <div className="text-center max-w-3xl mx-auto">
-          <div className="mb-8">
-            <MegaphoneIcon className="w-20 h-20 text-blue-600 mx-auto transform -rotate-12" />
+          <div className="mb-8 animate-bounce hover:animate-none">
+            <MegaphoneIcon className="w-20 h-20 text-blue-600 mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-in">
             Speak Up India
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8">
+          <p className="text-xl md:text-2xl text-gray-600 mb-8 animate-fade-in">
             Your voice matters. India's first unified public complaint platform for all sectors.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center animate-fade-in">
             <Button
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6"
+              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
             >
               <Link to="/signup">Register Now</Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="text-lg px-8 py-6"
+              className="text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
             >
               <Link to="/login">Sign In</Link>
             </Button>
@@ -40,10 +40,10 @@ const Index = () => {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-3 gap-8">
-          <Card className="bg-white/80 backdrop-blur">
+          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
             <CardContent className="pt-6">
               <div className="text-center">
-                <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
                 <h3 className="text-xl font-semibold mb-2">Voice Your Concerns</h3>
                 <p className="text-gray-600">
                   File complaints across any sector - from public services to private organizations
@@ -52,10 +52,10 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur">
+          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
             <CardContent className="pt-6">
               <div className="text-center">
-                <ShieldCheckIcon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <ShieldCheckIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
                 <h3 className="text-xl font-semibold mb-2">Transparent Tracking</h3>
                 <p className="text-gray-600">
                   Track your complaint status in real-time with our transparent system
@@ -64,10 +64,10 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur">
+          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
             <CardContent className="pt-6">
               <div className="text-center">
-                <Users2Icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <Users2Icon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
                 <h3 className="text-xl font-semibold mb-2">Community Support</h3>
                 <p className="text-gray-600">
                   Join a community of citizens working together for a better India
