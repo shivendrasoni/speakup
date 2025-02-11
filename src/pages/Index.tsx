@@ -10,6 +10,9 @@ const Index = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-16">
         <div className="text-center max-w-3xl mx-auto">
+          <div className="mb-8">
+            <MegaphoneIcon className="w-20 h-20 text-blue-600 mx-auto transform -rotate-12" />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Speak Up India
           </h1>
