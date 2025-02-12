@@ -102,7 +102,7 @@ export type Database = {
           submission_type: Database["public"]["Enums"]["submission_type"]
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
           view_count: number
           views: number | null
         }
@@ -119,7 +119,7 @@ export type Database = {
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           view_count?: number
           views?: number | null
         }
@@ -136,7 +136,7 @@ export type Database = {
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           view_count?: number
           views?: number | null
         }

@@ -138,6 +138,7 @@ const NewComplaint = () => {
           language,
           submission_type: submissionType,
           is_public: true,
+          user_id: null // Set to null for anonymous submissions
         });
 
       if (error) throw error;
