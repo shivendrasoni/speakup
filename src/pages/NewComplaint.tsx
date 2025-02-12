@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,240 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Mic, MicOff, ChartBar, Languages, Building2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff, ChartBar, Languages } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Database } from "@/integrations/supabase/types";
+import { TRANSLATIONS, LANGUAGE_CODES } from "./translations";
 
-type Sector = Database["public"]["Tables"]["sectors"]["Row"];
+type LanguageCode = keyof typeof LANGUAGE_CODES;
 type SubmissionType = "complaint" | "feedback" | "compliment";
-type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
-
-const LANGUAGE_CODES = {
-  english: 'en',
-  hindi: 'hi',
-  bengali: 'bn',
-  telugu: 'te',
-  marathi: 'mr',
-  tamil: 'ta',
-  gujarati: 'gu',
-  kannada: 'kn',
-  odia: 'or',
-  punjabi: 'pa',
-  malayalam: 'ml'
-} as const;
-
-const TRANSLATIONS = {
-  english: {
-    title: "Submit Your Voice",
-    languageSelect: "Select Language",
-    complaint: "Report a Complaint",
-    feedback: "Share Feedback",
-    compliment: "Give Compliment",
-    sector: "Department/Sector",
-    description: "Description",
-    submit: "Submit",
-    recording: "Recording...",
-    startRecording: "Start Voice Input",
-    stopRecording: "Stop Recording",
-    viewDashboard: "View Public Dashboard",
-    changeLanguage: "Change Language",
-    placeholders: {
-      title: "Brief title of your submission",
-      description: "Detailed description"
-    }
-  },
-  hindi: {
-    title: "अपनी आवाज़ दर्ज करें",
-    languageSelect: "भाषा चुनें",
-    complaint: "शिकायत दर्ज करें",
-    feedback: "प्रतिक्रिया साझा करें",
-    compliment: "प्रशंसा करें",
-    sector: "विभाग/क्षेत्र",
-    description: "विवरण",
-    submit: "जमा करें",
-    recording: "रिकॉर्डिंग जारी है...",
-    startRecording: "आवाज़ से टाइप करें",
-    stopRecording: "रिकॉर्डिंग बंद करें",
-    viewDashboard: "सार्वजनिक डैशबोर्ड देखें",
-    changeLanguage: "भाषा बदलें",
-    placeholders: {
-      title: "अपने विषय का संक्षिप्त शीर्षक",
-      description: "विस्तृत विवरण"
-    }
-  },
-  bengali: {
-    title: "আপনার ভয়েস জমা দিন",
-    languageSelect: "ভাষা নির্বাচন করুন",
-    complaint: "অভিযোগ দাখিল করুন",
-    feedback: "মতামত শেয়ার করুন",
-    compliment: "প্রশংসা করুন",
-    sector: "বিভাগ/সেক্টর",
-    description: "বিবরণ",
-    submit: "জমা দিন",
-    recording: "রেকর্ডিং চলছে...",
-    startRecording: "ভয়েস ইনপুট শুরু করুন",
-    stopRecording: "রেকর্ডিং বন্ধ করুন",
-    viewDashboard: "পাবলিক ড্যাশবোর্ড দেখুন",
-    changeLanguage: "ভাষা পরিবর্তন করুন",
-    placeholders: {
-      title: "আপনার জমার সংক্ষিপ্ত শিরোনাম",
-      description: "বিস্তারিত বিবরণ"
-    }
-  },
-  telugu: {
-    title: "మీ స్వరాన్ని సమర్పించండి",
-    languageSelect: "భాష ఎంచుకోండి",
-    complaint: "ఫిర్యాదు నమోదు చేయండి",
-    feedback: "అభిప్రాయాన్ని పంచుకోండి",
-    compliment: "ప్రశంస ఇవ్వండి",
-    sector: "విభాగం/రంగం",
-    description: "వివరణ",
-    submit: "సమర్పించండి",
-    recording: "రికార్డింగ్...",
-    startRecording: "వాయిస్ ఇన్పుట్ ప్రారంభించండి",
-    stopRecording: "రికార్డింగ్ ఆపండి",
-    viewDashboard: "పబ్లిక్ డాష్బోర్డ్ చూడండి",
-    changeLanguage: "భాష మార్చండి",
-    placeholders: {
-      title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షిక",
-      description: "వివరణాత్మక వివరణ"
-    }
-  },
-  tamil: {
-    title: "உங்கள் குரலைச் சமர்ப்பிக்கவும்",
-    languageSelect: "மொழியைத் தேர்ந்தெடுக்கவும்",
-    complaint: "புகார் அளிக்கவும்",
-    feedback: "கருத்தைப் பகிரவும்",
-    compliment: "பாராட்டு தெரிவிக்கவும்",
-    sector: "துறை/பிரிவு",
-    description: "விவரம்",
-    submit: "சமர்ப்பிக்கவும்",
-    recording: "பதிவு செய்கிறது...",
-    startRecording: "குரல் உள்ளீடு தொடங்கவும்",
-    stopRecording: "பதிவை நிறுத்தவும்",
-    viewDashboard: "பொது டாஷ்போர்டைக் காண்க",
-    changeLanguage: "மொழியை மாற்றவும்",
-    placeholders: {
-      title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
-      description: "விரிவான விளக்கம்"
-    }
-  },
-  gujarati: {
-    title: "તમારો અવાજ સબમિટ કરો",
-    languageSelect: "ભાષા પસંદ કરો",
-    complaint: "ફરિયાદ નોંધાવો",
-    feedback: "પ્રતિસાદ શેર કરો",
-    compliment: "વખાણ કરો",
-    sector: "વિભાગ/ક્ષેત્ર",
-    description: "વિગત",
-    submit: "સબમિટ કરો",
-    recording: "રેકોર્ડિંગ...",
-    startRecording: "વૉઇસ ઇનપુટ શરૂ કરો",
-    stopRecording: "રેકોર્ડિંગ બંધ કરો",
-    viewDashboard: "પબ્લિક ડેશબોર્ડ જુઓ",
-    changeLanguage: "ભાષા બદલો",
-    placeholders: {
-      title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
-      description: "વિગતવાર વર્ણન"
-    }
-  },
-  kannada: {
-    title: "ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಸಲ್ಲಿಸಿ",
-    languageSelect: "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
-    complaint: "ದೂರು ದಾಖಲಿಸಿ",
-    feedback: "ಪ್ರತಿಕ್ರಿಯೆ ಹಂಚಿಕೊಳ್ಳಿ",
-    compliment: "ಹೊಗಳಿಕೆ ನೀಡಿ",
-    sector: "ವಿಭಾಗ/ಕ್ಷೇತ್ರ",
-    description: "ವಿವರಣೆ",
-    submit: "ಸಲ್ಲಿಸು",
-    recording: "ರೆಕಾರ್ಡಿಂಗ್...",
-    startRecording: "ಧ್ವನಿ ಇನ್ಪುಟ್ ಪ್ರಾರಂಭಿಸಿ",
-    stopRecording: "ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ",
-    viewDashboard: "ಸಾರ್ವಜನಿಕ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
-    changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
-    placeholders: {
-      title: "ನಿಮ್ಮ ಸಲ್ಲಿಕೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
-      description: "ವಿವರವಾದ ವಿವರಣೆ"
-    }
-  },
-  malayalam: {
-    title: "നിങ്ങളുടെ ശബ്ദം സമർപ്പിക്കുക",
-    languageSelect: "ഭാഷ തിരഞ്ഞെടുക്കുക",
-    complaint: "പരാതി റിപ്പോർട്ട് ചെയ്യുക",
-    feedback: "ഫീഡ്‌ബാക്ക് പങ്കിടുക",
-    compliment: "പ്രശംസ നൽകുക",
-    sector: "വകുപ്പ്/മേഖല",
-    description: "വിവരണം",
-    submit: "സമർപ്പിക്കുക",
-    recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
-    startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
-    stopRecording: "റെക്കോർഡിംഗ് നിർത്തുക",
-    viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് കാണുക",
-    changeLanguage: "ഭാഷ മാറ്റുക",
-    placeholders: {
-      title: "നിങ്ങളുടെ സമർപ്പണത്തിന്റെ ചുരുക്കമായ തലക്കെട്ട്",
-      description: "വിശദമായ വിവരണം"
-    }
-  },
-  marathi: {
-    title: "तुमचा आवाज सबमिट करा",
-    languageSelect: "भाषा निवडा",
-    complaint: "तक्रार नोंदवा",
-    feedback: "अभिप्राय शेअर करा",
-    compliment: "कौतुक करा",
-    sector: "विभाग/क्षेत्र",
-    description: "वर्णन",
-    submit: "सबमिट करा",
-    recording: "रेकॉर्डिंग...",
-    startRecording: "व्हॉइस इनपुट सुरू करा",
-    stopRecording: "रेकॉर्डिंग थांबवा",
-    viewDashboard: "पब्लिक डॅशबोर्ड पहा",
-    changeLanguage: "भाषा बदला",
-    placeholders: {
-      title: "तुमच्या सबमिशनचे संक्षिप्त शीर्षक",
-      description: "सविस्तर वर्णन"
-    }
-  },
-  punjabi: {
-    title: "ਆਪਣੀ ਆਵਾਜ਼ ਜਮ੍ਹਾਂ ਕਰੋ",
-    languageSelect: "ਭਾਸ਼ਾ ਚੁਣੋ",
-    complaint: "ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ",
-    feedback: "ਫੀਡਬੈਕ ਸਾਂਝਾ ਕਰੋ",
-    compliment: "ਸ਼ਾਬਾਸ਼ੀ ਦਿਓ",
-    sector: "ਵਿਭਾਗ/ਖੇਤਰ",
-    description: "ਵੇਰਵਾ",
-    submit: "ਜਮ੍ਹਾਂ ਕਰੋ",
-    recording: "ਰਿਕਾਰਡਿੰਗ...",
-    startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
-    stopRecording: "ਰਿਕਾਰਡਿੰਗ ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋਰਡ ਦੇਖੋ",
-    changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
-    placeholders: {
-      title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
-      description: "ਵਿਸਥਾਰਪੂਰਵਕ ਵੇਰਵਾ"
-    }
-  },
-  odia: {
-    title: "ଆପଣଙ୍କର ସ୍ୱର ଦାଖଲ କରନ୍ତୁ",
-    languageSelect: "ଭାଷା ବାଛନ୍ତୁ",
-    complaint: "ଅଭିଯୋଗ ଦାଖଲ କରନ୍ତୁ",
-    feedback: "ମତାମତ ସେୟାର କରନ୍ତୁ",
-    compliment: "ପ୍ରଶଂସା କରନ୍ତୁ",
-    sector: "ବିଭାଗ/କ୍ଷେତ୍ର",
-    description: "ବିବରଣୀ",
-    submit: "ଦାଖଲ କରନ୍ତୁ",
-    recording: "ରେକର୍ଡିଂ...",
-    startRecording: "ଭଏସ୍ ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
-    stopRecording: "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ",
-    viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
-    changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
-    placeholders: {
-      title: "ଆପଣଙ୍କ ଦାଖଲର ସଂକ୍ଷିପ୍ତ ଶୀର୍ଷକ",
-      description: "ବିସ୍ତୃତ ବିବରଣୀ"
-    }
-  }
-} as const;
+type Sector = Database["public"]["Tables"]["sectors"]["Row"];
+type NGOProfile = Database["public"]["Tables"]["ngo_profiles"]["Row"];
+type WebinarSession = Database["public"]["Tables"]["webinar_sessions"]["Row"];
 
 const NewComplaint = () => {
   const [title, setTitle] = useState("");
@@ -399,8 +177,265 @@ const NewComplaint = () => {
     }
   };
 
+  const { data: ngoProfiles } = useQuery({
+    queryKey: ["ngo-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ngo_profiles")
+        .select("*");
+      if (error) throw error;
+      return data as NGOProfile[];
+    },
+  });
+
+  const { data: upcomingWebinars } = useQuery({
+    queryKey: ["upcoming-webinars"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("webinar_sessions")
+        .select(`
+          *,
+          ngo_profiles (
+            name,
+            logo_url
+          )
+        `)
+        .gte("scheduled_at", new Date().toISOString())
+        .order("scheduled_at");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-12">
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
+        <div className="w-64 min-h-screen bg-white border-r border-gray-200 p-4">
+          <div className="space-y-4">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setShowLanguageDialog(true)}
+            >
+              <Languages className="mr-2 h-4 w-4" />
+              {t.changeLanguage}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => navigate("/complaints")}
+            >
+              <ChartBar className="mr-2 h-4 w-4" />
+              {t.viewDashboard}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+            >
+              <Building2 className="mr-2 h-4 w-4" />
+              NGO Partners
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 p-6">
+          <Tabs defaultValue="submit">
+            <TabsList className="mb-6">
+              <TabsTrigger value="submit">Submit Your Voice</TabsTrigger>
+              <TabsTrigger value="ngos">NGO Partners</TabsTrigger>
+              <TabsTrigger value="webinars">Webinars</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="submit">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-6">
+                    <RadioGroup
+                      defaultValue="complaint"
+                      onValueChange={(value) => setSubmissionType(value as SubmissionType)}
+                      className="flex flex-col md:flex-row gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="complaint" id="complaint" />
+                        <Label htmlFor="complaint">{t.complaint}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="feedback" id="feedback" />
+                        <Label htmlFor="feedback">{t.feedback}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="compliment" id="compliment" />
+                        <Label htmlFor="compliment">{t.compliment}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder={t.placeholders.title}
+                        disabled={loading}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="sector">{t.sector}</Label>
+                      <Select
+                        value={sectorId}
+                        onValueChange={setSectorId}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a sector" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sectors.map((sector) => (
+                            <SelectItem key={sector.id} value={sector.id}>
+                              {sector.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor="description">{t.description}</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={isRecording ? stopRecording : startRecording}
+                          className="flex items-center gap-2"
+                        >
+                          {isRecording ? (
+                            <>
+                              <MicOff className="w-4 h-4" />
+                              {t.stopRecording}
+                            </>
+                          ) : (
+                            <>
+                              <Mic className="w-4 h-4" />
+                              {t.startRecording}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <Textarea
+                        id="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder={t.placeholders.description}
+                        className="min-h-[150px]"
+                        disabled={loading}
+                        required
+                      />
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Submitting..." : t.submit}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="ngos">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ngoProfiles?.map((ngo) => (
+                  <Card key={ngo.id}>
+                    <CardHeader>
+                      <div className="flex items-center gap-4">
+                        {ngo.logo_url && (
+                          <img
+                            src={ngo.logo_url}
+                            alt={`${ngo.name} logo`}
+                            className="w-16 h-16 object-contain"
+                          />
+                        )}
+                        <CardTitle>{ngo.name}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{ngo.description}</p>
+                      {ngo.key_areas && (
+                        <div className="mb-4">
+                          <h4 className="font-medium mb-2">Key Areas:</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {ngo.key_areas.map((area) => (
+                              <span
+                                key={area}
+                                className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+                              >
+                                {area}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {ngo.website_url && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => window.open(ngo.website_url, '_blank')}
+                        >
+                          Visit Website
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="webinars">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upcoming Webinars</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {upcomingWebinars?.map((webinar) => (
+                        <Card key={webinar.id}>
+                          <CardHeader>
+                            <CardTitle>{webinar.title}</CardTitle>
+                            <CardDescription>
+                              By {webinar.speaker_name}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-gray-600 mb-4">
+                              {webinar.description}
+                            </p>
+                            <div className="flex justify-between items-center">
+                              <div className="text-sm text-gray-500">
+                                {new Date(webinar.scheduled_at).toLocaleDateString()}
+                                <br />
+                                Duration: {webinar.duration_minutes} minutes
+                              </div>
+                              <Button>Register Now</Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
       <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -425,124 +460,6 @@ const NewComplaint = () => {
           </RadioGroup>
         </DialogContent>
       </Dialog>
-
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">{t.title}</CardTitle>
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => setShowLanguageDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Languages className="w-4 h-4" />
-              {t.changeLanguage}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/complaints")}
-              className="flex items-center gap-2"
-            >
-              <ChartBar className="w-4 h-4" />
-              {t.viewDashboard}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <RadioGroup
-              defaultValue="complaint"
-              onValueChange={(value) => setSubmissionType(value as SubmissionType)}
-              className="flex flex-col md:flex-row gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="complaint" id="complaint" />
-                <Label htmlFor="complaint">{t.complaint}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="feedback" id="feedback" />
-                <Label htmlFor="feedback">{t.feedback}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compliment" id="compliment" />
-                <Label htmlFor="compliment">{t.compliment}</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t.placeholders.title}
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sector">{t.sector}</Label>
-              <Select
-                value={sectorId}
-                onValueChange={setSectorId}
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a sector" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="description">{t.description}</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className="flex items-center gap-2"
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff className="w-4 h-4" />
-                      {t.stopRecording}
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4" />
-                      {t.startRecording}
-                    </>
-                  )}
-                </Button>
-              </div>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={t.placeholders.description}
-                className="min-h-[150px]"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Submitting..." : t.submit}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   );
 };
