@@ -95,9 +95,11 @@ export type Database = {
           description: string
           id: string
           is_public: boolean
+          language: string
           sector_id: string
           shares: number | null
           status: Database["public"]["Enums"]["complaint_status"] | null
+          submission_type: Database["public"]["Enums"]["submission_type"]
           title: string
           updated_at: string
           user_id: string
@@ -110,9 +112,11 @@ export type Database = {
           description: string
           id?: string
           is_public?: boolean
+          language?: string
           sector_id: string
           shares?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
+          submission_type?: Database["public"]["Enums"]["submission_type"]
           title: string
           updated_at?: string
           user_id: string
@@ -125,9 +129,11 @@ export type Database = {
           description?: string
           id?: string
           is_public?: boolean
+          language?: string
           sector_id?: string
           shares?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
+          submission_type?: Database["public"]["Enums"]["submission_type"]
           title?: string
           updated_at?: string
           user_id?: string
@@ -328,6 +334,7 @@ export type Database = {
         | "resource"
         | "peer_support"
         | "qa_session"
+      submission_type: "complaint" | "feedback" | "compliment"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
