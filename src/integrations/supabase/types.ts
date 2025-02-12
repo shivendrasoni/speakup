@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      community_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_type: Database["public"]["Enums"]["post_type"]
+          sector_id: string | null
+          title: string
+          updated_at: string
+          upvotes: number | null
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_type: Database["public"]["Enums"]["post_type"]
+          sector_id?: string | null
+          title: string
+          updated_at?: string
+          upvotes?: number | null
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_type?: Database["public"]["Enums"]["post_type"]
+          sector_id?: string | null
+          title?: string
+          updated_at?: string
+          upvotes?: number | null
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaint_updates: {
         Row: {
           complaint_id: string
@@ -91,6 +138,67 @@ export type Database = {
           },
         ]
       }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_upvotes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_upvotes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -133,6 +241,65 @@ export type Database = {
         }
         Relationships: []
       }
+      webinar_registrations: {
+        Row: {
+          created_at: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webinar_registrations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "webinar_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webinar_sessions: {
+        Row: {
+          created_at: string
+          description: string
+          duration_minutes: number
+          id: string
+          max_participants: number | null
+          scheduled_at: string
+          speaker_name: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          duration_minutes: number
+          id?: string
+          max_participants?: number | null
+          scheduled_at: string
+          speaker_name: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          max_participants?: number | null
+          scheduled_at?: string
+          speaker_name?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -142,6 +309,12 @@ export type Database = {
     }
     Enums: {
       complaint_status: "pending" | "in_progress" | "resolved" | "rejected"
+      post_type:
+        | "discussion"
+        | "success_story"
+        | "resource"
+        | "peer_support"
+        | "qa_session"
       user_role: "user" | "admin"
     }
     CompositeTypes: {

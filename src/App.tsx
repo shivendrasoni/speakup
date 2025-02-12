@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import NewComplaint from "./pages/NewComplaint";
 import Complaints from "./pages/Complaints";
 import ComplaintDetail from "./pages/ComplaintDetail";
+import Community from "./pages/Community";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <ComplaintDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute>
+                <Community />
               </ProtectedRoute>
             }
           />
