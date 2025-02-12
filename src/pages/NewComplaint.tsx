@@ -19,7 +19,9 @@ import {
   Building2, 
   HelpCircle,
   Book,
-  Globe
+  Globe,
+  ArrowLeft,
+  ChartBar
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -27,20 +29,35 @@ import type { Database } from "@/integrations/supabase/types";
 import { TRANSLATIONS, LANGUAGE_CODES } from "./translations";
 
 type LanguageCode = keyof typeof LANGUAGE_CODES;
+type SubmissionType = 'complaint' | 'compliment' | 'feedback';
 
 const NewComplaint = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showComplaintForm, setShowComplaintForm] = useState(false);
+  const [showComplaintForm, setShowComplaintForm] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>("english");
   const [showLanguageDialog, setShowLanguageDialog] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [complaintText, setComplaintText] = useState("");
+  const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
+  const [selectedSector, setSelectedSector] = useState("");
 
   const t = TRANSLATIONS[currentLanguage];
+
+  const { data: sectors } = useQuery({
+    queryKey: ["sectors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sectors")
+        .select("*")
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const startRecording = async () => {
     try {
@@ -108,57 +125,61 @@ const NewComplaint = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your submission logic here
-    toast({
-      title: "Success",
-      description: "Your complaint has been submitted",
-    });
-  };
+    
+    if (!selectedSector) {
+      toast({
+        title: "Error",
+        description: "Please select a sector",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleSectionClick = (section: string) => {
-    switch (section) {
-      case "forum":
-        navigate("/community");
-        break;
-      case "tips":
-        navigate("/help");
-        break;
-      case "ngos":
-        navigate("/ngos");
-        break;
-      case "events":
-        navigate("/events");
-        break;
-      case "webinars":
-        navigate("/webinars");
-        break;
-      case "news":
-        navigate("/news");
-        break;
-      default:
-        break;
+    try {
+      const { error } = await supabase.from("complaints").insert({
+        title: complaintText,
+        description: complaintText,
+        sector_id: selectedSector,
+        submission_type: submissionType,
+        language: currentLanguage,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your submission has been recorded",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit your concern",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Speak Up</h1>
             <div className="flex items-center gap-4">
-              <div className="relative w-64">
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <Button onClick={() => setShowComplaintForm(true)}>Voice Your Concern</Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate("/dashboard")}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                Speak Up
+                <ChartBar className="h-6 w-6 text-blue-600" />
+              </h1>
+            </div>
+            <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="icon"
@@ -166,203 +187,103 @@ const NewComplaint = () => {
               >
                 <Globe className="h-5 w-5" />
               </Button>
+              <Button onClick={() => navigate("/dashboard")}>
+                View Dashboard
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      {showComplaintForm ? (
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="title">{t.complaint}</Label>
-                  <Input
-                    id="title"
-                    value={complaintText}
-                    onChange={(e) => setComplaintText(e.target.value)}
-                    placeholder={t.placeholders.title}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">{t.description}</Label>
-                  <Textarea
-                    id="description"
-                    placeholder={t.placeholders.description}
-                    className="h-32"
-                  />
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Button type="submit">{t.submit}</Button>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.title}</CardTitle>
+            <CardDescription>Choose your submission type and provide details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label>Submission Type</Label>
+                <div className="grid grid-cols-3 gap-4">
                   <Button
                     type="button"
-                    variant="secondary"
-                    onClick={isRecording ? stopRecording : startRecording}
+                    variant={submissionType === "complaint" ? "default" : "outline"}
+                    onClick={() => setSubmissionType("complaint")}
+                    className="w-full"
                   >
-                    {isRecording ? (
-                      <>
-                        <MicOff className="w-4 h-4 mr-2" />
-                        {t.stopRecording}
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4 mr-2" />
-                        {t.startRecording}
-                      </>
-                    )}
+                    {t.complaint}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={submissionType === "compliment" ? "default" : "outline"}
+                    onClick={() => setSubmissionType("compliment")}
+                    className="w-full"
+                  >
+                    {t.compliment}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={submissionType === "feedback" ? "default" : "outline"}
+                    onClick={() => setSubmissionType("feedback")}
+                    className="w-full"
+                  >
+                    {t.feedback}
                   </Button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Featured Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">Community Forum</CardTitle>
-                    <CardDescription>Join discussions and share experiences</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <HelpCircle className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">User Tips</CardTitle>
-                    <CardDescription>Helpful guides and best practices</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div>
+                <Label htmlFor="sector">{t.sector}</Label>
+                <Select value={selectedSector} onValueChange={setSelectedSector}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a sector" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sectors?.map((sector) => (
+                      <SelectItem key={sector.id} value={sector.id}>
+                        {sector.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-purple-100 p-3 rounded-lg">
-                    <Users className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">NGO Partners</CardTitle>
-                    <CardDescription>Connect with organizations</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              <div>
+                <Label htmlFor="description">{t.description}</Label>
+                <Textarea
+                  id="description"
+                  value={complaintText}
+                  onChange={(e) => setComplaintText(e.target.value)}
+                  placeholder={t.placeholders.description}
+                  className="h-32"
+                />
+              </div>
 
-          {/* Secondary Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-orange-100 p-3 rounded-lg">
-                    <Calendar className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">Events</CardTitle>
-                    <CardDescription>Upcoming workshops and trainings</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-pink-100 p-3 rounded-lg">
-                    <Book className="h-6 w-6 text-pink-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">Webinars</CardTitle>
-                    <CardDescription>Learn from experts</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-teal-100 p-3 rounded-lg">
-                    <Newspaper className="h-6 w-6 text-teal-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg mb-1">News & Updates</CardTitle>
-                    <CardDescription>Latest community news</CardDescription>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Featured Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Discussions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Discussions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg">
-                      <div className="bg-gray-100 p-2 rounded-full">
-                        <MessageSquare className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">How to effectively raise concerns</h3>
-                        <p className="text-sm text-gray-500">Started by @user{i} • 2h ago</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Upcoming Events</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg">
-                      <div className="bg-gray-100 p-2 rounded-full">
-                        <Calendar className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Community Workshop #{i}</h3>
-                        <p className="text-sm text-gray-500">Next Tuesday • 2:00 PM</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
+              <div className="flex items-center gap-4">
+                <Button type="submit">{t.submit}</Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={isRecording ? stopRecording : startRecording}
+                >
+                  {isRecording ? (
+                    <>
+                      <MicOff className="w-4 h-4 mr-2" />
+                      {t.stopRecording}
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-4 h-4 mr-2" />
+                      {t.startRecording}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Language Selection Dialog */}
       <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
