@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff, ChartBar } from "lucide-react";
+import { Mic, MicOff, ChartBar, Languages } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
@@ -31,6 +31,7 @@ const TRANSLATIONS = {
     startRecording: "Start Voice Input",
     stopRecording: "Stop Recording",
     viewDashboard: "View Public Dashboard",
+    changeLanguage: "Change Language",
     placeholders: {
       title: "Brief title of your submission",
       description: "Detailed description"
@@ -49,6 +50,7 @@ const TRANSLATIONS = {
     startRecording: "आवाज़ से टाइप करें",
     stopRecording: "रिकॉर्डिंग बंद करें",
     viewDashboard: "सार्वजनिक डैशबोर्ड देखें",
+    changeLanguage: "भाषा बदलें",
     placeholders: {
       title: "अपने विषय का संक्षिप्त शीर्षक",
       description: "विस्तृत विवरण"
@@ -66,6 +68,8 @@ const NewComplaint = () => {
   const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
   const [isRecording, setIsRecording] = useState(false);
   const [showLanguageDialog, setShowLanguageDialog] = useState(true);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const t = TRANSLATIONS[language];
@@ -94,7 +98,18 @@ const NewComplaint = () => {
 
   const startRecording = async () => {
     try {
-      // Call the voice-to-text edge function here
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start();
       setIsRecording(true);
       toast({
         title: "Started Recording",
@@ -110,8 +125,46 @@ const NewComplaint = () => {
   };
 
   const stopRecording = async () => {
-    setIsRecording(false);
-    // Stop recording logic here
+    if (!mediaRecorderRef.current) return;
+
+    return new Promise<void>((resolve) => {
+      if (!mediaRecorderRef.current) return resolve();
+
+      mediaRecorderRef.current.onstop = async () => {
+        try {
+          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          const reader = new FileReader();
+
+          reader.onloadend = async () => {
+            const base64Audio = (reader.result as string).split(',')[1];
+            
+            const { data, error } = await supabase.functions.invoke('voice-to-text', {
+              body: { audio: base64Audio, language }
+            });
+
+            if (error) throw error;
+            if (data.text) {
+              setDescription(prev => prev + (prev ? '\n' : '') + data.text);
+            }
+
+            resolve();
+          };
+
+          reader.readAsDataURL(audioBlob);
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to process audio",
+            variant: "destructive",
+          });
+          resolve();
+        }
+      };
+
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,7 +242,15 @@ const NewComplaint = () => {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl text-center">{t.title}</CardTitle>
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setShowLanguageDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Languages className="w-4 h-4" />
+              {t.changeLanguage}
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate("/complaints")}
