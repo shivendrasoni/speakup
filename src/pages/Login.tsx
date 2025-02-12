@@ -70,12 +70,60 @@ const Login = () => {
 
     try {
       setLoading(true);
+      
+      // First, check if the user exists and get their status
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
+        search: email
+      });
+
+      if (userError) throw userError;
+
+      const user = users?.find(u => u.email === email);
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "No account found with this email. Please sign up first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!user.email_confirmed_at) {
+        // If email isn't confirmed, offer to resend confirmation email
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email,
+        });
+
+        if (resendError) throw resendError;
+
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email first. We've sent a new verification email.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // If email is confirmed, proceed with login
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message === 'Invalid login credentials') {
+          toast({
+            title: "Error",
+            description: "Incorrect password. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success!",
@@ -88,6 +136,7 @@ const Login = () => {
         description: error.message || "An error occurred during login",
         variant: "destructive",
       });
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
