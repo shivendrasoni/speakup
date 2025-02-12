@@ -5,6 +5,7 @@ import { MegaphoneIcon, Users2Icon, ShieldCheckIcon, AudioWaveform } from "lucid
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const { data: session } = useQuery({
@@ -14,6 +15,19 @@ const Index = () => {
       return session;
     },
   });
+
+  const { toast } = useToast();
+
+  const handleCardClick = (requiresAuth: boolean, path: string) => {
+    if (requiresAuth && !session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access this feature",
+        variant: "destructive",
+      });
+      return;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -68,41 +82,98 @@ const Index = () => {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-3 gap-8">
-          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
-                <h3 className="text-xl font-semibold mb-2">Voice Your Concerns</h3>
-                <p className="text-gray-600">
-                  File complaints across any sector - from public services to private organizations
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Voice Your Concerns Card */}
+          {session ? (
+            <Link to="/complaints/new" onClick={() => handleCardClick(true, '/complaints/new')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Voice Your Concerns</h3>
+                    <p className="text-gray-600">
+                      File complaints across any sector - from public services to private organizations
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <div onClick={() => handleCardClick(true, '/complaints/new')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Voice Your Concerns</h3>
+                    <p className="text-gray-600">
+                      File complaints across any sector - from public services to private organizations
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <ShieldCheckIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
-                <h3 className="text-xl font-semibold mb-2">Transparent Tracking</h3>
-                <p className="text-gray-600">
-                  Track your complaint status in real-time with our transparent system
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Transparent Tracking Card */}
+          {session ? (
+            <Link to="/complaints" onClick={() => handleCardClick(true, '/complaints')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <ShieldCheckIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Transparent Tracking</h3>
+                    <p className="text-gray-600">
+                      Track your complaint status in real-time with our transparent system
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <div onClick={() => handleCardClick(true, '/complaints')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <ShieldCheckIcon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Transparent Tracking</h3>
+                    <p className="text-gray-600">
+                      Track your complaint status in real-time with our transparent system
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Users2Icon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
-                <h3 className="text-xl font-semibold mb-2">Community Support</h3>
-                <p className="text-gray-600">
-                  Join a community of citizens working together for a better India
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Community Support Card */}
+          {session ? (
+            <Link to="/community" onClick={() => handleCardClick(true, '/community')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <Users2Icon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Community Support</h3>
+                    <p className="text-gray-600">
+                      Join a community of citizens working together for a better India
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <div onClick={() => handleCardClick(true, '/community')}>
+              <Card className="bg-white/80 backdrop-blur transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <Users2Icon className="w-12 h-12 text-blue-600 mx-auto mb-4 transform transition-transform hover:rotate-12" />
+                    <h3 className="text-xl font-semibold mb-2">Community Support</h3>
+                    <p className="text-gray-600">
+                      Join a community of citizens working together for a better India
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
 
