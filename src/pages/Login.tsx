@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -112,7 +111,7 @@ const Login = () => {
         title: "Success!",
         description: "Logged in successfully",
       });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
