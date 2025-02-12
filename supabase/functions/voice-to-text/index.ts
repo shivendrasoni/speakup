@@ -7,6 +7,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const LANGUAGE_CODES = {
+  english: 'en',
+  hindi: 'hi',
+  bengali: 'bn',
+  telugu: 'te',
+  marathi: 'mr',
+  tamil: 'ta',
+  gujarati: 'gu',
+  kannada: 'kn',
+  odia: 'or',
+  punjabi: 'pa',
+  malayalam: 'ml'
+} as const;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -26,7 +40,7 @@ serve(async (req) => {
     const formData = new FormData()
     formData.append('file', new Blob([audioBlob], { type: 'audio/webm' }))
     formData.append('model', 'whisper-1')
-    formData.append('language', language === 'hindi' ? 'hi' : 'en')
+    formData.append('language', LANGUAGE_CODES[language as keyof typeof LANGUAGE_CODES] || 'en')
 
     // Send to OpenAI
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
