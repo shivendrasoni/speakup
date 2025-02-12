@@ -21,6 +21,9 @@ const Signup = () => {
       setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/login`,
+        },
       });
 
       if (error) throw error;
@@ -81,21 +84,31 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             name: name,
           },
+          emailRedirectTo: `${window.location.origin}/login`,
         },
       });
 
       if (error) throw error;
 
+      if (data?.user?.identities?.length === 0) {
+        toast({
+          title: "Error",
+          description: "An account with this email already exists.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Success!",
-        description: "Account created successfully. Please check your email to confirm your account.",
+        description: "Please check your email to confirm your account.",
       });
       navigate("/login");
     } catch (error: any) {
@@ -104,6 +117,7 @@ const Signup = () => {
         description: error.message || "An error occurred during signup",
         variant: "destructive",
       });
+      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }
