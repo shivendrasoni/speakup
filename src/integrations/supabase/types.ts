@@ -157,6 +157,36 @@ export type Database = {
           },
         ]
       }
+      ngo_profiles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key_areas: string[] | null
+          logo_url: string | null
+          name: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_areas?: string[] | null
+          logo_url?: string | null
+          name: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_areas?: string[] | null
+          logo_url?: string | null
+          name?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -293,6 +323,7 @@ export type Database = {
           duration_minutes: number
           id: string
           max_participants: number | null
+          ngo_id: string | null
           scheduled_at: string
           speaker_name: string
           title: string
@@ -303,6 +334,7 @@ export type Database = {
           duration_minutes: number
           id?: string
           max_participants?: number | null
+          ngo_id?: string | null
           scheduled_at: string
           speaker_name: string
           title: string
@@ -313,11 +345,20 @@ export type Database = {
           duration_minutes?: number
           id?: string
           max_participants?: number | null
+          ngo_id?: string | null
           scheduled_at?: string
           speaker_name?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "webinar_sessions_ngo_id_fkey"
+            columns: ["ngo_id"]
+            isOneToOne: false
+            referencedRelation: "ngo_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
