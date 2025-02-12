@@ -70,57 +70,40 @@ const Login = () => {
 
     try {
       setLoading(true);
-      
-      // First, check if the user exists and get their status
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
-        search: email
-      });
 
-      if (userError) throw userError;
-
-      const user = users?.find(u => u.email === email);
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "No account found with this email. Please sign up first.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!user.email_confirmed_at) {
-        // If email isn't confirmed, offer to resend confirmation email
-        const { error: resendError } = await supabase.auth.resend({
-          type: 'signup',
-          email,
-        });
-
-        if (resendError) throw resendError;
-
-        toast({
-          title: "Email Not Verified",
-          description: "Please verify your email first. We've sent a new verification email.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // If email is confirmed, proceed with login
-      const { error } = await supabase.auth.signInWithPassword({
+      // Attempt to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        if (error.message === 'Invalid login credentials') {
-          toast({
-            title: "Error",
-            description: "Incorrect password. Please try again.",
-            variant: "destructive",
+      // If we get an invalid credentials error, it could be due to:
+      // 1. Email not confirmed
+      // 2. Wrong password
+      // 3. User doesn't exist
+      if (signInError) {
+        if (signInError.message.includes('Invalid login credentials')) {
+          // Try to resend verification email in case the email isn't verified
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email,
           });
+
+          if (!resendError) {
+            toast({
+              title: "Email Verification Required",
+              description: "If your email is not verified, we've sent a new verification email. Please check your inbox and spam folder.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Invalid email or password. Please try again.",
+              variant: "destructive",
+            });
+          }
         } else {
-          throw error;
+          throw signInError;
         }
         return;
       }
