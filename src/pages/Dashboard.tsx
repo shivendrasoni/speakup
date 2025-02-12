@@ -21,20 +21,28 @@ export const Dashboard = () => {
   const { data: sectorStats = [], isLoading } = useQuery({
     queryKey: ["complaint-stats", activeTab],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all complaints for the specified visibility
+      const { data: complaints, error: complaintsError } = await supabase
         .from('complaints')
         .select(`
-          sectors (name),
-          count
-        `, { count: 'exact' })
-        .eq('is_public', activeTab === 'public')
-        .group('sectors.name');
+          sector_id,
+          sectors (name)
+        `)
+        .eq('is_public', activeTab === 'public');
 
-      if (error) throw error;
-      
-      return data.map(item => ({
-        sector_name: item.sectors?.name || 'Unknown',
-        count: parseInt(item.count as unknown as string)
+      if (complaintsError) throw complaintsError;
+
+      // Then manually count complaints by sector
+      const sectorCounts = complaints.reduce((acc: { [key: string]: number }, complaint) => {
+        const sectorName = complaint.sectors?.name || 'Unknown';
+        acc[sectorName] = (acc[sectorName] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Convert to the format needed for the chart
+      return Object.entries(sectorCounts).map(([sector_name, count]) => ({
+        sector_name,
+        count
       })) as ComplaintStats[];
     }
   });
