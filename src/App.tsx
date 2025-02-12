@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import NewComplaint from "./pages/NewComplaint";
+import Complaints from "./pages/Complaints";
+import ComplaintDetail from "./pages/ComplaintDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -24,10 +26,26 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route
+            path="/complaints"
+            element={
+              <ProtectedRoute>
+                <Complaints />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/complaints/new"
             element={
               <ProtectedRoute>
                 <NewComplaint />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints/:id"
+            element={
+              <ProtectedRoute>
+                <ComplaintDetail />
               </ProtectedRoute>
             }
           />
