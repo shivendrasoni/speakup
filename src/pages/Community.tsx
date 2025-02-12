@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,7 +61,7 @@ type WebinarSession = {
 };
 
 const Community = () => {
-  const [selectedTab, setSelectedTab] = useState<PostType>("discussion");
+  const [selectedTab, setSelectedTab] = useState<PostType | "chatbot">("discussion");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSector, setSelectedSector] = useState<string>("");
 
@@ -74,7 +73,7 @@ const Community = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (selectedTab) {
+      if (selectedTab && selectedTab !== "chatbot") {
         query = query.eq("post_type", selectedTab);
       }
 
@@ -150,7 +149,7 @@ const Community = () => {
           </div>
 
           {/* Main Content */}
-          <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as PostType)}>
+          <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as PostType | "chatbot")}>
             <TabsList className="grid grid-cols-2 md:grid-cols-6 lg:w-[600px]">
               <TabsTrigger value="discussion">
                 <MessageSquare className="h-4 w-4 mr-2" />
@@ -181,7 +180,7 @@ const Community = () => {
             <div className="grid md:grid-cols-3 gap-6 mt-6">
               {/* Main Content Area */}
               <div className="md:col-span-2">
-                <TabsContent value="discussions" className="m-0">
+                <TabsContent value="discussion" className="m-0">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Discussions</h2>
                     <Button>Start Discussion</Button>
@@ -221,7 +220,34 @@ const Community = () => {
                     <h2 className="text-2xl font-bold">Success Stories</h2>
                     <Button>Share Your Story</Button>
                   </div>
-                  {/* Similar structure to discussions */}
+                  <div className="space-y-4">
+                    {posts?.filter(post => post.post_type === "success_story").map((post) => (
+                      <Card key={post.id}>
+                        <CardHeader>
+                          <CardTitle>{post.title}</CardTitle>
+                          <CardDescription>
+                            Posted {format(new Date(post.created_at), "PPp")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600">{post.content}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="sm">
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              {post.upvotes}
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Comment
+                            </Button>
+                          </div>
+                          <span className="text-sm text-gray-500">{post.views} views</span>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="resource" className="m-0">
@@ -229,7 +255,34 @@ const Community = () => {
                     <h2 className="text-2xl font-bold">Resource Hub</h2>
                     <Button>Add Resource</Button>
                   </div>
-                  {/* Resource content */}
+                  <div className="space-y-4">
+                    {posts?.filter(post => post.post_type === "resource").map((post) => (
+                      <Card key={post.id}>
+                        <CardHeader>
+                          <CardTitle>{post.title}</CardTitle>
+                          <CardDescription>
+                            Posted {format(new Date(post.created_at), "PPp")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600">{post.content}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="sm">
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              {post.upvotes}
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Comment
+                            </Button>
+                          </div>
+                          <span className="text-sm text-gray-500">{post.views} views</span>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="peer_support" className="m-0">
@@ -237,14 +290,68 @@ const Community = () => {
                     <h2 className="text-2xl font-bold">Peer Support</h2>
                     <Button>Ask for Help</Button>
                   </div>
-                  {/* Peer support content */}
+                  <div className="space-y-4">
+                    {posts?.filter(post => post.post_type === "peer_support").map((post) => (
+                      <Card key={post.id}>
+                        <CardHeader>
+                          <CardTitle>{post.title}</CardTitle>
+                          <CardDescription>
+                            Posted {format(new Date(post.created_at), "PPp")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600">{post.content}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="sm">
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              {post.upvotes}
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Comment
+                            </Button>
+                          </div>
+                          <span className="text-sm text-gray-500">{post.views} views</span>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="qa_session" className="m-0">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Live Q&A Sessions</h2>
                   </div>
-                  {/* Q&A sessions content */}
+                  <div className="space-y-4">
+                    {posts?.filter(post => post.post_type === "qa_session").map((post) => (
+                      <Card key={post.id}>
+                        <CardHeader>
+                          <CardTitle>{post.title}</CardTitle>
+                          <CardDescription>
+                            Posted {format(new Date(post.created_at), "PPp")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600">{post.content}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="sm">
+                              <ThumbsUp className="h-4 w-4 mr-2" />
+                              {post.upvotes}
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Comment
+                            </Button>
+                          </div>
+                          <span className="text-sm text-gray-500">{post.views} views</span>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="chatbot" className="m-0">
@@ -256,7 +363,6 @@ const Community = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {/* Chatbot interface will be implemented separately */}
                       <div className="text-center py-8">
                         <Bot className="h-16 w-16 mx-auto text-blue-500 mb-4" />
                         <p>Coming soon! Our AI assistant will help you find answers quickly.</p>
@@ -306,7 +412,6 @@ const Community = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {/* Placeholder for top contributors */}
                     <div className="space-y-2">
                       {[1, 2, 3].map((i) => (
                         <div key={i} className="flex items-center justify-between">
