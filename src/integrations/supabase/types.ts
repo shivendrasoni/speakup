@@ -9,22 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      complaint_updates: {
+        Row: {
+          complaint_id: string
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          complaint_id: string
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          complaint_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_updates_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          ai_category: string | null
+          created_at: string
+          description: string
+          id: string
+          sector_id: string
+          shares: number | null
+          status: Database["public"]["Enums"]["complaint_status"] | null
+          title: string
+          updated_at: string
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          ai_category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          sector_id: string
+          shares?: number | null
+          status?: Database["public"]["Enums"]["complaint_status"] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          ai_category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          sector_id?: string
+          shares?: number | null
+          status?: Database["public"]["Enums"]["complaint_status"] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           email: string
           id: string
           name: string
+          role: Database["public"]["Enums"]["user_role"] | null
         }
         Insert: {
           created_at?: string
           email: string
           id: string
           name: string
+          role?: Database["public"]["Enums"]["user_role"] | null
         }
         Update: {
           created_at?: string
           email?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Relationships: []
+      }
+      sectors: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
           id?: string
           name?: string
         }
@@ -38,7 +141,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      complaint_status: "pending" | "in_progress" | "resolved" | "rejected"
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
