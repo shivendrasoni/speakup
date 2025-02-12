@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +64,7 @@ type WebinarSession = {
 const Community = () => {
   const [selectedTab, setSelectedTab] = useState<PostType | "chatbot">("discussion");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSector, setSelectedSector] = useState<string>("");
+  const [selectedSector, setSelectedSector] = useState<string>("all"); // Changed initial value
 
   const { data: posts } = useQuery({
     queryKey: ["community-posts", selectedTab, searchQuery, selectedSector],
@@ -77,7 +78,7 @@ const Community = () => {
         query = query.eq("post_type", selectedTab);
       }
 
-      if (selectedSector) {
+      if (selectedSector && selectedSector !== "all") { // Modified condition
         query = query.eq("sector_id", selectedSector);
       }
 
@@ -138,7 +139,7 @@ const Community = () => {
                 <SelectValue placeholder="Select Sector" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Sectors</SelectItem>
+                <SelectItem value="all">All Sectors</SelectItem>
                 {sectors?.map((sector) => (
                   <SelectItem key={sector.id} value={sector.id}>
                     {sector.name}
