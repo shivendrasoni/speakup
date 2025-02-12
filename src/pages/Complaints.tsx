@@ -18,7 +18,18 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ComplaintStatus = Database["public"]["Enums"]["complaint_status"];
 
-type Complaint = Database["public"]["Tables"]["complaints"]["Row"] & {
+type Complaint = {
+  ai_category: string | null;
+  created_at: string;
+  description: string;
+  id: string;
+  sector_id: string;
+  shares: number | null;
+  status: ComplaintStatus | null;
+  title: string;
+  updated_at: string;
+  user_id: string;
+  views: number | null;
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
   profiles: Database["public"]["Tables"]["profiles"]["Row"];
 };
@@ -58,7 +69,7 @@ const Complaints = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return (data as Complaint[]) || [];
+      return (data as unknown as Complaint[]) || [];
     },
   });
 
@@ -109,7 +120,7 @@ const Complaints = () => {
             </div>
             <div className="w-full sm:w-48">
               <Label htmlFor="status">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(value: "all" | ComplaintStatus) => setStatusFilter(value)}>
                 <SelectTrigger id="status">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>

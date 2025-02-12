@@ -17,7 +17,18 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ComplaintStatus = Database["public"]["Enums"]["complaint_status"];
 
-type Complaint = Database["public"]["Tables"]["complaints"]["Row"] & {
+type Complaint = {
+  ai_category: string | null;
+  created_at: string;
+  description: string;
+  id: string;
+  sector_id: string;
+  shares: number | null;
+  status: ComplaintStatus | null;
+  title: string;
+  updated_at: string;
+  user_id: string;
+  views: number | null;
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
   profiles: Database["public"]["Tables"]["profiles"]["Row"];
   complaint_updates: (Database["public"]["Tables"]["complaint_updates"]["Row"] & {
@@ -31,7 +42,7 @@ const ComplaintDetail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newUpdate, setNewUpdate] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | "">("");
+  const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | null>(null);
 
   const { data: complaint, isLoading } = useQuery({
     queryKey: ["complaint", id],
@@ -51,7 +62,7 @@ const ComplaintDetail = () => {
         .single();
 
       if (error) throw error;
-      return data as Complaint;
+      return data as unknown as Complaint;
     },
   });
 
@@ -192,8 +203,8 @@ const ComplaintDetail = () => {
                 </span>
                 {(isAdmin || isOwner) && (
                   <Select
-                    value={selectedStatus || complaint.status || ""}
-                    onValueChange={(value) => {
+                    value={selectedStatus || complaint?.status || null}
+                    onValueChange={(value: ComplaintStatus) => {
                       setSelectedStatus(value);
                       updateStatusMutation.mutate(value);
                     }}
