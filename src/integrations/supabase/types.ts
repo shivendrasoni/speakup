@@ -142,6 +142,13 @@ export type Database = {
             referencedRelation: "sectors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "complaints_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_comments: {
