@@ -14,6 +14,7 @@ import ComplaintDetail from "./pages/ComplaintDetail";
 import Community from "./pages/Community";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/help" element={<Help />} />
           <Route
             path="/dashboard"
             element={
@@ -35,22 +37,8 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/complaints"
-            element={
-              <ProtectedRoute>
-                <Complaints />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/complaints/new"
-            element={
-              <ProtectedRoute>
-                <NewComplaint />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/complaints" element={<Complaints />} />
+          <Route path="/complaints/new" element={<NewComplaint />} />
           <Route
             path="/complaints/:id"
             element={
