@@ -37,11 +37,13 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+type PostType = 'discussion' | 'success_story' | 'resource' | 'peer_support' | 'qa_session';
+
 type Post = {
   id: string;
   title: string;
   content: string;
-  post_type: 'discussion' | 'success_story' | 'resource' | 'peer_support' | 'qa_session';
+  post_type: PostType;
   user_id: string;
   sector_id: string;
   upvotes: number;
@@ -60,7 +62,7 @@ type WebinarSession = {
 };
 
 const Community = () => {
-  const [selectedTab, setSelectedTab] = useState("discussions");
+  const [selectedTab, setSelectedTab] = useState<PostType>("discussion");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSector, setSelectedSector] = useState<string>("");
 
@@ -72,7 +74,7 @@ const Community = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (selectedTab !== "all") {
+      if (selectedTab) {
         query = query.eq("post_type", selectedTab);
       }
 
@@ -148,9 +150,9 @@ const Community = () => {
           </div>
 
           {/* Main Content */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+          <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as PostType)}>
             <TabsList className="grid grid-cols-2 md:grid-cols-6 lg:w-[600px]">
-              <TabsTrigger value="discussions">
+              <TabsTrigger value="discussion">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Discussions
               </TabsTrigger>
