@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { NavHeader } from "@/components/NavHeader";
 import {
   Select,
   SelectContent,
@@ -167,116 +168,119 @@ const ComplaintDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <Button
-          variant="outline"
-          className="mb-6"
-          onClick={() => navigate("/complaints")}
-        >
-          Back to Complaints
-        </Button>
+    <div className="min-h-screen bg-gray-50">
+      <NavHeader />
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <Button
+            variant="outline"
+            className="mb-6"
+            onClick={() => navigate("/complaints")}
+          >
+            Back to Complaints
+          </Button>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-2xl">{complaint.title}</CardTitle>
-                <div className="mt-2 text-sm text-gray-500">
-                  Sector: {complaint.sectors.name}
-                </div>
-                <div className="text-sm text-gray-500">
-                  By: {complaint.profiles.name}
-                </div>
-                <div className="mt-2 text-sm text-gray-500">
-                  Submitted on:{" "}
-                  {new Date(complaint.created_at).toLocaleDateString()}
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    complaint.status
-                  )}`}
-                >
-                  {complaint.status || "Pending"}
-                </span>
-                {(isAdmin || isOwner) && (
-                  <Select
-                    value={selectedStatus || complaint?.status || null}
-                    onValueChange={(value: ComplaintStatus) => {
-                      setSelectedStatus(value);
-                      updateStatusMutation.mutate(value);
-                    }}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Update status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 whitespace-pre-wrap">
-              {complaint.description}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Updates</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              {complaint.complaint_updates
-                .sort(
-                  (a, b) =>
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
-                )
-                .map((update) => (
-                  <div
-                    key={update.id}
-                    className="bg-white p-4 rounded-lg border"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium">
-                        {update.profiles.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(update.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <p className="text-gray-700 whitespace-pre-wrap">
-                      {update.content}
-                    </p>
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-2xl">{complaint.title}</CardTitle>
+                  <div className="mt-2 text-sm text-gray-500">
+                    Sector: {complaint.sectors.name}
                   </div>
-                ))}
-            </div>
+                  <div className="text-sm text-gray-500">
+                    By: {complaint.profiles.name}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500">
+                    Submitted on:{" "}
+                    {new Date(complaint.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                      complaint.status
+                    )}`}
+                  >
+                    {complaint.status || "Pending"}
+                  </span>
+                  {(isAdmin || isOwner) && (
+                    <Select
+                      value={selectedStatus || complaint?.status || null}
+                      onValueChange={(value: ComplaintStatus) => {
+                        setSelectedStatus(value);
+                        updateStatusMutation.mutate(value);
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Update status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {complaint.description}
+              </p>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-4">
-              <Textarea
-                placeholder="Add an update..."
-                value={newUpdate}
-                onChange={(e) => setNewUpdate(e.target.value)}
-              />
-              <Button
-                onClick={() => addUpdateMutation.mutate()}
-                disabled={!newUpdate.trim() || addUpdateMutation.isPending}
-              >
-                {addUpdateMutation.isPending ? "Adding..." : "Add Update"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Updates</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {complaint.complaint_updates
+                  .sort(
+                    (a, b) =>
+                      new Date(b.created_at).getTime() -
+                      new Date(a.created_at).getTime()
+                  )
+                  .map((update) => (
+                    <div
+                      key={update.id}
+                      className="bg-white p-4 rounded-lg border"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="font-medium">
+                          {update.profiles.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(update.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <p className="text-gray-700 whitespace-pre-wrap">
+                        {update.content}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="space-y-4">
+                <Textarea
+                  placeholder="Add an update..."
+                  value={newUpdate}
+                  onChange={(e) => setNewUpdate(e.target.value)}
+                />
+                <Button
+                  onClick={() => addUpdateMutation.mutate()}
+                  disabled={!newUpdate.trim() || addUpdateMutation.isPending}
+                >
+                  {addUpdateMutation.isPending ? "Adding..." : "Add Update"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

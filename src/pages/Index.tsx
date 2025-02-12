@@ -3,8 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MegaphoneIcon, Users2Icon, ShieldCheckIcon, AudioWaveform } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Hero Section */}
@@ -27,19 +37,30 @@ const Index = () => {
             Your voice matters. India's first unified public complaint platform for all sectors.
           </p>
           <div className="flex gap-4 justify-center animate-fade-in">
-            <Button
-              asChild
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
-            >
-              <Link to="/signup">Register Now</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
-            >
-              <Link to="/login">Sign In</Link>
-            </Button>
+            {session ? (
+              <Button
+                asChild
+                className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
+              >
+                <Link to="/complaints">View Complaints</Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
+                >
+                  <Link to="/signup">Register Now</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="text-lg px-8 py-6 transform transition-transform hover:scale-105 shadow-lg"
+                >
+                  <Link to="/login">Sign In</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
