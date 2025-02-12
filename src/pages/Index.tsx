@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { MegaphoneIcon, HelpCircle, Eye } from "lucide-react";
+import { MegaphoneIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,71 +43,21 @@ const Index = () => {
           <p className="text-xl md:text-2xl text-gray-600 mb-8">
             Your voice matters. India's first unified public complaint platform.
           </p>
-          <div className="flex gap-4 justify-center mb-16">
+          <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
             <Button
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6"
+              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 w-full md:w-auto"
             >
-              <Link to="/signup">Register Now</Link>
+              <Link to="/signup">Register / Sign Up</Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="text-lg px-8 py-6"
+              className="text-lg px-8 py-6 w-full md:w-auto"
             >
-              <Link to="/login">Sign In</Link>
+              <Link to="/complaints/new">Report Without Login</Link>
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Report Without Login Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <MegaphoneIcon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Report a Complaint</h3>
-                <p className="text-gray-600 mb-4">
-                  File your complaint without creating an account
-                </p>
-                <Button asChild className="w-full">
-                  <Link to="/complaints/new">Report Now</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Eye className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">View Public Complaints</h3>
-                <p className="text-gray-600 mb-4">
-                  Browse through existing public complaints
-                </p>
-                <Button asChild variant="outline" className="w-full">
-                  <Link to="/complaints">View Complaints</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Help Section</h3>
-                <p className="text-gray-600 mb-4">
-                  Learn how to effectively report your complaints
-                </p>
-                <Button asChild variant="outline" className="w-full">
-                  <Link to="/help">View Guide</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
