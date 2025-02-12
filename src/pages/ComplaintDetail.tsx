@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
 
+type ComplaintStatus = Database["public"]["Enums"]["complaint_status"];
+
 type Complaint = Database["public"]["Tables"]["complaints"]["Row"] & {
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
   profiles: Database["public"]["Tables"]["profiles"]["Row"];
@@ -30,7 +31,7 @@ const ComplaintDetail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newUpdate, setNewUpdate] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | "">("");
 
   const { data: complaint, isLoading } = useQuery({
     queryKey: ["complaint", id],
@@ -39,21 +40,11 @@ const ComplaintDetail = () => {
         .from("complaints")
         .select(`
           *,
-          sectors (
-            id,
-            name
-          ),
-          profiles (
-            id,
-            name,
-            email
-          ),
+          sectors (*),
+          profiles (*),
           complaint_updates (
             *,
-            profiles (
-              id,
-              name
-            )
+            profiles (*)
           )
         `)
         .eq("id", id)
@@ -114,7 +105,7 @@ const ComplaintDetail = () => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async (newStatus: string) => {
+    mutationFn: async (newStatus: ComplaintStatus) => {
       const { error } = await supabase
         .from("complaints")
         .update({ status: newStatus })
@@ -147,9 +138,9 @@ const ComplaintDetail = () => {
   }
 
   const isAdmin = currentUser?.role === "admin";
-  const isOwner = currentUser?.id === complaint.user_id;
+  const isOwner = currentUser?.id === complaint?.user_id;
 
-  const getStatusColor = (status: string | null) => {
+  const getStatusColor = (status: ComplaintStatus | null) => {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800";

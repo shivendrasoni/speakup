@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -17,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { PlusCircle, Filter } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
+type ComplaintStatus = Database["public"]["Enums"]["complaint_status"];
+
 type Complaint = Database["public"]["Tables"]["complaints"]["Row"] & {
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
   profiles: Database["public"]["Tables"]["profiles"]["Row"];
@@ -28,11 +29,11 @@ const statusOptions = [
   { value: "in_progress", label: "In Progress" },
   { value: "resolved", label: "Resolved" },
   { value: "rejected", label: "Rejected" },
-];
+] as const;
 
 const Complaints = () => {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | ComplaintStatus>("all");
 
   const { data: complaints = [], isLoading } = useQuery({
     queryKey: ["complaints", search, statusFilter],
@@ -41,15 +42,8 @@ const Complaints = () => {
         .from("complaints")
         .select(`
           *,
-          sectors (
-            id,
-            name
-          ),
-          profiles (
-            id,
-            name,
-            email
-          )
+          sectors (*),
+          profiles (*)
         `)
         .order("created_at", { ascending: false });
 
@@ -68,7 +62,7 @@ const Complaints = () => {
     },
   });
 
-  const getStatusColor = (status: string | null) => {
+  const getStatusColor = (status: ComplaintStatus | null) => {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800";
