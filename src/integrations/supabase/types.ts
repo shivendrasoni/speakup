@@ -94,12 +94,14 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_public: boolean
           sector_id: string
           shares: number | null
           status: Database["public"]["Enums"]["complaint_status"] | null
           title: string
           updated_at: string
           user_id: string
+          view_count: number
           views: number | null
         }
         Insert: {
@@ -107,12 +109,14 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          is_public?: boolean
           sector_id: string
           shares?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           title: string
           updated_at?: string
           user_id: string
+          view_count?: number
           views?: number | null
         }
         Update: {
@@ -120,12 +124,14 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          is_public?: boolean
           sector_id?: string
           shares?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           title?: string
           updated_at?: string
           user_id?: string
+          view_count?: number
           views?: number | null
         }
         Relationships: [
