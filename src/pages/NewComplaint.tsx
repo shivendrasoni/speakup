@@ -1,13 +1,15 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MegaphoneIcon } from "lucide-react";
+import { MegaphoneIcon, ChartBar, Languages, ArrowRight } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { InfoCards } from "@/components/complaints/InfoCards";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 export type SubmissionType = "complaint" | "feedback" | "compliment";
@@ -248,7 +250,8 @@ const NewComplaint = () => {
   const [language, setLanguage] = useState<LanguageCode>("english");
   const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
   const [isRecording, setIsRecording] = useState(false);
-  const [showLanguageDialog, setShowLanguageDialog] = useState(true);
+  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
@@ -383,6 +386,7 @@ const NewComplaint = () => {
       setTitle("");
       setDescription("");
       setSectorId("");
+      setShowComplaintForm(false);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -402,6 +406,57 @@ const NewComplaint = () => {
         language={language}
         onLanguageChange={setLanguage}
       />
+
+      {/* Navigation Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-4">
+        <Button
+          variant="outline"
+          onClick={() => setShowLanguageDialog(true)}
+          className="flex items-center gap-2"
+        >
+          <Languages className="w-4 h-4" />
+          {TRANSLATIONS[language].changeLanguage}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => window.location.href = "/complaints"}
+          className="flex items-center gap-2"
+        >
+          <ChartBar className="w-4 h-4" />
+          {TRANSLATIONS[language].viewDashboard}
+        </Button>
+      </div>
+
+      {/* Complaint Form Dialog */}
+      <Dialog open={showComplaintForm} onOpenChange={setShowComplaintForm}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <Card className="border-0 shadow-none">
+            <CardHeader>
+              <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ComplaintForm
+                title={title}
+                setTitle={setTitle}
+                description={description}
+                setDescription={setDescription}
+                sectorId={sectorId}
+                setSectorId={setSectorId}
+                sectors={sectors}
+                loading={loading}
+                language={language}
+                submissionType={submissionType}
+                setSubmissionType={setSubmissionType}
+                isRecording={isRecording}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+                onShowLanguageDialog={() => setShowLanguageDialog(true)}
+                onSubmit={handleSubmit}
+              />
+            </CardContent>
+          </Card>
+        </DialogContent>
+      </Dialog>
 
       {/* Wave Pattern Header */}
       <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300">
@@ -426,30 +481,33 @@ const NewComplaint = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          <Card className="lg:row-span-2 bg-white shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {/* Submit Your Voice Card */}
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader>
-              <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <MegaphoneIcon className="w-6 h-6 text-red-600" />
+                </div>
+                {TRANSLATIONS[language].title}
+              </CardTitle>
+              <CardDescription>
+                Share your voice and make a difference in your community
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <ComplaintForm
-                title={title}
-                setTitle={setTitle}
-                description={description}
-                setDescription={setDescription}
-                sectorId={sectorId}
-                setSectorId={setSectorId}
-                sectors={sectors}
-                loading={loading}
-                language={language}
-                submissionType={submissionType}
-                setSubmissionType={setSubmissionType}
-                isRecording={isRecording}
-                onStartRecording={startRecording}
-                onStopRecording={stopRecording}
-                onShowLanguageDialog={() => setShowLanguageDialog(true)}
-                onSubmit={handleSubmit}
-              />
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Submit complaints, feedback, or compliments about public services and initiatives.
+                </p>
+                <Button 
+                  onClick={() => setShowComplaintForm(true)} 
+                  className="w-full group"
+                >
+                  Start Submission
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
