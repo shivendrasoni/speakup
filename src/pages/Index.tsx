@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { MegaphoneIcon } from "lucide-react";
+import { MegaphoneIcon, ChevronRight, Globe2, Users2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,7 +34,6 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Handle session error
   useEffect(() => {
     if (sessionError) {
       console.error('Session error:', sessionError);
@@ -49,11 +48,11 @@ const Index = () => {
 
   if (session) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
         <div className="container mx-auto px-4 pt-20 pb-16">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
-            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <h1 className="text-4xl font-bold mb-6 text-blue-900">Welcome Back!</h1>
+            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6">
               <Link to="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
@@ -63,33 +62,74 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-20 pb-16">
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="mb-8 relative">
-            <MegaphoneIcon className="w-20 h-20 text-blue-600 mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Speak Up India
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8">
-            Your voice matters. India's first unified public complaint platform.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
-            <Button
-              asChild
-              className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 w-full md:w-auto"
-            >
-              <Link to="/signup">Register / Sign Up</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="text-lg px-8 py-6 w-full md:w-auto"
-            >
-              <Link to="/complaints/new">Report Without Login</Link>
-            </Button>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-600/5 backdrop-blur-3xl">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        </div>
+
+        <div className="container mx-auto px-4 pt-20 pb-32 relative">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="mb-8 relative inline-block">
+              <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+              <MegaphoneIcon className="w-24 h-24 text-blue-600 mx-auto transform -rotate-12 transition-all duration-300 hover:rotate-0 hover:scale-110 relative z-10" />
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+              Speak Up <span className="text-blue-600">India</span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed max-w-3xl mx-auto">
+              Your voice matters. Join India's first unified public complaint platform and be part of the change.
+            </p>
+
+            <div className="flex flex-col md:flex-row gap-6 justify-center items-center mb-16">
+              <Button
+                asChild
+                className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 rounded-full group w-full md:w-auto"
+              >
+                <Link to="/signup">
+                  Register / Sign Up
+                  <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="text-lg px-8 py-6 rounded-full border-2 hover:bg-blue-50 w-full md:w-auto"
+              >
+                <Link to="/complaints/new">Report Without Login</Link>
+              </Button>
+            </div>
+
+            {/* Features Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <MegaphoneIcon className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Voice Your Concerns</h3>
+                <p className="text-gray-600">Submit complaints, feedback, or compliments easily and securely.</p>
+              </div>
+
+              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Globe2 className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Multi-language Support</h3>
+                <p className="text-gray-600">Access the platform in your preferred language for better communication.</p>
+              </div>
+
+              <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Users2 className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Community Support</h3>
+                <p className="text-gray-600">Connect with others, share experiences, and drive positive change together.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
