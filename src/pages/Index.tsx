@@ -4,15 +4,48 @@ import { MegaphoneIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const { data: session } = useQuery({
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { data: session, error: sessionError } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
       return session;
     },
+    retry: false
   });
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/');
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  // Handle session error
+  useEffect(() => {
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      toast({
+        title: "Session expired",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+      navigate('/login');
+    }
+  }, [sessionError, navigate, toast]);
 
   if (session) {
     return (
