@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,17 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff, ChartBar, Languages, MegaphoneIcon, Search } from "lucide-react";
+import { 
+  Mic, 
+  MicOff, 
+  ChartBar, 
+  Languages, 
+  MegaphoneIcon, 
+  MessageSquare, 
+  Calendar, 
+  Users,
+  ArrowRight
+} from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
@@ -438,12 +448,8 @@ const NewComplaint = () => {
             <div className="mb-8 relative">
               <MegaphoneIcon className="w-20 h-20 text-white mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              {t.title}
-            </h1>
-            <p className="text-xl text-white/90 mb-8">
-              Your voice matters. Share your concerns with us.
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
+            <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
           </div>
         </div>
         {/* Wave SVG */}
@@ -456,122 +462,204 @@ const NewComplaint = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
-        <Card className="max-w-2xl mx-auto bg-white shadow-lg">
-          <CardHeader>
-            <div className="flex justify-between items-center mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowLanguageDialog(true)}
-                className="flex items-center gap-2"
-              >
-                <Languages className="w-4 h-4" />
-                {t.changeLanguage}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/complaints")}
-                className="flex items-center gap-2"
-              >
-                <ChartBar className="w-4 h-4" />
-                {t.viewDashboard}
-              </Button>
-            </div>
-            <div className="mb-6">
-              <RadioGroup
-                defaultValue="complaint"
-                onValueChange={(value) => setSubmissionType(value as SubmissionType)}
-                className="flex flex-col md:flex-row gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="complaint" id="complaint" />
-                  <Label htmlFor="complaint">{t.complaint}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="feedback" id="feedback" />
-                  <Label htmlFor="feedback">{t.feedback}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="compliment" id="compliment" />
-                  <Label htmlFor="compliment">{t.compliment}</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t.placeholders.title}
-                  disabled={loading}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="sector">{t.sector}</Label>
-                <Select
-                  value={sectorId}
-                  onValueChange={setSectorId}
-                  disabled={loading}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          {/* Submit Your Voice Card */}
+          <Card className="lg:row-span-2 bg-white shadow-lg">
+            <CardHeader>
+              <div className="flex justify-between items-center mb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLanguageDialog(true)}
+                  className="flex items-center gap-2"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a sector" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectors.map((sector) => (
-                      <SelectItem key={sector.id} value={sector.id}>
-                        {sector.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Languages className="w-4 h-4" />
+                  {t.changeLanguage}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/complaints")}
+                  className="flex items-center gap-2"
+                >
+                  <ChartBar className="w-4 h-4" />
+                  {t.viewDashboard}
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="description">{t.description}</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className="flex items-center gap-2"
-                  >
-                    {isRecording ? (
-                      <>
-                        <MicOff className="w-4 h-4" />
-                        {t.stopRecording}
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4" />
-                        {t.startRecording}
-                      </>
-                    )}
-                  </Button>
+              <CardTitle>{t.title}</CardTitle>
+              <div className="mb-6">
+                <RadioGroup
+                  defaultValue="complaint"
+                  onValueChange={(value) => setSubmissionType(value as SubmissionType)}
+                  className="flex flex-col md:flex-row gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="complaint" id="complaint" />
+                    <Label htmlFor="complaint">{t.complaint}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="feedback" id="feedback" />
+                    <Label htmlFor="feedback">{t.feedback}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="compliment" id="compliment" />
+                    <Label htmlFor="compliment">{t.compliment}</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={t.placeholders.title}
+                    disabled={loading}
+                    required
+                    className="w-full"
+                  />
                 </div>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t.placeholders.description}
-                  className="min-h-[150px]"
-                  disabled={loading}
-                  required
-                />
-              </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Submitting..." : t.submit}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="sector">{t.sector}</Label>
+                  <Select
+                    value={sectorId}
+                    onValueChange={setSectorId}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a sector" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectors.map((sector) => (
+                        <SelectItem key={sector.id} value={sector.id}>
+                          {sector.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="description">{t.description}</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className="flex items-center gap-2"
+                    >
+                      {isRecording ? (
+                        <>
+                          <MicOff className="w-4 h-4" />
+                          {t.stopRecording}
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          {t.startRecording}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t.placeholders.description}
+                    className="min-h-[150px]"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Submitting..." : t.submit}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Community Forum Card */}
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <MessageSquare className="w-6 h-6 text-purple-600" />
+                </div>
+                Community Forum
+              </CardTitle>
+              <CardDescription>
+                Join discussions, share experiences, and connect with others
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Engage with a community of active citizens working together for positive change.
+                </p>
+                <Button onClick={() => navigate("/community")} className="w-full group">
+                  Join the Discussion
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Upcoming Webinars Card */}
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="w-6 h-6 text-blue-600" />
+                </div>
+                Upcoming Webinars
+              </CardTitle>
+              <CardDescription>
+                Learn from experts and stay informed
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Join our educational webinars on consumer rights, civic engagement, and more.
+                </p>
+                <Button variant="outline" className="w-full group">
+                  View Schedule
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* NGOs Card */}
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Users className="w-6 h-6 text-green-600" />
+                </div>
+                NGO Partners
+              </CardTitle>
+              <CardDescription>
+                Connect with organizations making a difference
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Discover and collaborate with NGOs working towards social improvement.
+                </p>
+                <Button variant="outline" className="w-full group">
+                  Explore NGOs
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
