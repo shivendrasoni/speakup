@@ -98,7 +98,9 @@ async function transcribeWithOpenAI(audioBlob: Uint8Array, language: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${await response.text()}`);
+    const errorData = await response.text();
+    console.error('OpenAI API error:', errorData);
+    throw new Error(`OpenAI API error: ${errorData}`);
   }
 
   const result = await response.json();
@@ -114,29 +116,47 @@ serve(async (req) => {
     const { audio, language } = await req.json();
     
     if (!audio) {
-      throw new Error('No audio data provided');
+      return new Response(
+        JSON.stringify({ error: 'No audio data provided' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const langCode = LANGUAGE_CODES[language as keyof typeof LANGUAGE_CODES] || 'en';
     let text = '';
 
-    // Use Bhashini for Indian languages and OpenAI for English
-    if (langCode !== 'en') {
-      text = await transcribeWithBhashini(audio, langCode);
-    } else {
-      const audioBlob = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
-      text = await transcribeWithOpenAI(audioBlob, langCode);
+    try {
+      // Use Bhashini for Indian languages and OpenAI for English
+      if (langCode !== 'en') {
+        text = await transcribeWithBhashini(audio, langCode);
+      } else {
+        const audioBlob = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
+        text = await transcribeWithOpenAI(audioBlob, langCode);
+      }
+
+      return new Response(
+        JSON.stringify({ text }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    } catch (transcriptionError) {
+      console.error('Transcription error:', transcriptionError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to transcribe audio' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
-
-    return new Response(
-      JSON.stringify({ text }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Server error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
