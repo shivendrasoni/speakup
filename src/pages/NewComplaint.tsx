@@ -1,32 +1,16 @@
-
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { 
-  Mic, 
-  MicOff, 
-  ChartBar, 
-  Languages, 
-  MegaphoneIcon, 
-  MessageSquare, 
-  Calendar, 
-  Users,
-  ArrowRight
-} from "lucide-react";
+import { MegaphoneIcon } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
+import { ComplaintForm } from "@/components/complaints/ComplaintForm";
+import { InfoCards } from "@/components/complaints/InfoCards";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
-type SubmissionType = "complaint" | "feedback" | "compliment";
-type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
+export type SubmissionType = "complaint" | "feedback" | "compliment";
+export type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
 
 const LANGUAGE_CODES = {
   english: 'en',
@@ -112,10 +96,10 @@ const TRANSLATIONS = {
     recording: "రికార్డింగ్...",
     startRecording: "వాయిస్ ఇన్పుట్ ప్రారంభించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
-    viewDashboard: "పబ్లిక్ డాష్బోర్డ్ చూడండి",
+    viewDashboard: "పబ్లిక్ డ్యాష్బోర్డ్ చూడండి",
     changeLanguage: "భాష మార్చండి",
     placeholders: {
-      title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షిక",
+      title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షికె",
       description: "వివరణాత్మక వివరణ"
     }
   },
@@ -131,7 +115,7 @@ const TRANSLATIONS = {
     recording: "பதிவு செய்கிறது...",
     startRecording: "குரல் உள்ளீடு தொடங்கவும்",
     stopRecording: "பதிவை நிறுத்தவும்",
-    viewDashboard: "பொது டாஷ்போர்டைக் காண்க",
+    viewDashboard: "பொது ஡ாஷ்போர்டைக் காண்க",
     changeLanguage: "மொழியை மாற்றவும்",
     placeholders: {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
@@ -150,7 +134,7 @@ const TRANSLATIONS = {
     recording: "રેકોર્ડિંગ...",
     startRecording: "વૉઇસ ઇનપુટ શરૂ કરો",
     stopRecording: "રેકોર્ડિંગ બંધ કરો",
-    viewDashboard: "પબ્લિક ડેશબોર્ડ જુઓ",
+    viewDashboard: "પબલિક ડેશબોર્ડ જુઓ",
     changeLanguage: "ભાષા બદલો",
     placeholders: {
       title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
@@ -187,7 +171,7 @@ const TRANSLATIONS = {
     submit: "സമർപ്പിക്കുക",
     recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
-    stopRecording: "റെക്കോർഡിംഗ് നിർത്തുക",
+    stopRecording: "റെക്കോർഡിംഗ് നില್ಲಿസി",
     viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് കാണുക",
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {
@@ -207,7 +191,7 @@ const TRANSLATIONS = {
     recording: "रेकॉर्डिंग...",
     startRecording: "व्हॉइस इनपुट सुरू करा",
     stopRecording: "रेकॉर्डिंग थांबवा",
-    viewDashboard: "पब्लिक डॅशबोर्ड पहा",
+    viewDashboard: "पब्लिक डॅशबॉर्ड पहा",
     changeLanguage: "भाषा बदला",
     placeholders: {
       title: "तुमच्या सबमिशनचे संक्षिप्त शीर्षक",
@@ -235,7 +219,7 @@ const TRANSLATIONS = {
   },
   odia: {
     title: "ଆପଣଙ୍କର ସ୍ୱର ଦାଖଲ କରନ୍ତୁ",
-    languageSelect: "ଭାଷା ବାଛନ୍ତୁ",
+    languageSelect: "ଭାଷ ବାଛନ୍ତୁ",
     complaint: "ଅଭିଯୋଗ ଦାଖଲ କରନ୍ତୁ",
     feedback: "ମତାମତ ସେୟାର କରନ୍ତୁ",
     compliment: "ପ୍ରଶଂସା କରନ୍ତୁ",
@@ -267,8 +251,6 @@ const NewComplaint = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const t = TRANSLATIONS[language];
 
   useEffect(() => {
     const fetchSectors = async () => {
@@ -309,7 +291,7 @@ const NewComplaint = () => {
       setIsRecording(true);
       toast({
         title: "Started Recording",
-        description: t.recording,
+        description: TRANSLATIONS[language].recording,
       });
     } catch (error) {
       toast({
@@ -387,7 +369,7 @@ const NewComplaint = () => {
           language,
           submission_type: submissionType,
           is_public: true,
-          user_id: null // Set to null for anonymous submissions
+          user_id: null
         });
 
       if (error) throw error;
@@ -397,7 +379,9 @@ const NewComplaint = () => {
         description: "Your submission has been received successfully",
       });
       
-      navigate("/complaints");
+      setTitle("");
+      setDescription("");
+      setSectorId("");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -411,35 +395,15 @@ const NewComplaint = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Language Selection Dialog */}
-      <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Select Your Preferred Language | भाषा चुनें</DialogTitle>
-          </DialogHeader>
-          <RadioGroup
-            defaultValue={language}
-            onValueChange={(value) => {
-              setLanguage(value as LanguageCode);
-              setShowLanguageDialog(false);
-            }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            {(Object.keys(TRANSLATIONS) as LanguageCode[]).map((lang) => (
-              <div key={lang} className="flex items-center space-x-2">
-                <RadioGroupItem value={lang} id={lang} />
-                <Label htmlFor={lang}>
-                  {TRANSLATIONS[lang].languageSelect}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </DialogContent>
-      </Dialog>
+      <LanguageSelectionDialog
+        open={showLanguageDialog}
+        onOpenChange={setShowLanguageDialog}
+        language={language}
+        onLanguageChange={setLanguage}
+      />
 
       {/* Wave Pattern Header */}
       <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300">
-        {/* Geometric Shapes */}
         <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute top-0 right-0 w-48 h-48 bg-blue-300 rounded-full opacity-20 translate-x-1/3 -translate-y-1/3"></div>
         
@@ -452,7 +416,6 @@ const NewComplaint = () => {
             <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
           </div>
         </div>
-        {/* Wave SVG */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 200L60 181.3C120 163 240 125 360 106.7C480 88 600 88 720 100C840 112 960 137 1080 143.3C1200 150 1320 137 1380 131.3L1440 125V200H1380C1320 200 1200 200 1080 200C960 200 840 200 720 200C600 200 480 200 360 200C240 200 120 200 60 200H0Z" fill="white"/>
@@ -463,202 +426,33 @@ const NewComplaint = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* Submit Your Voice Card */}
           <Card className="lg:row-span-2 bg-white shadow-lg">
             <CardHeader>
-              <div className="flex justify-between items-center mb-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowLanguageDialog(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Languages className="w-4 h-4" />
-                  {t.changeLanguage}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/complaints")}
-                  className="flex items-center gap-2"
-                >
-                  <ChartBar className="w-4 h-4" />
-                  {t.viewDashboard}
-                </Button>
-              </div>
-              <CardTitle>{t.title}</CardTitle>
-              <div className="mb-6">
-                <RadioGroup
-                  defaultValue="complaint"
-                  onValueChange={(value) => setSubmissionType(value as SubmissionType)}
-                  className="flex flex-col md:flex-row gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="complaint" id="complaint" />
-                    <Label htmlFor="complaint">{t.complaint}</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="feedback" id="feedback" />
-                    <Label htmlFor="feedback">{t.feedback}</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="compliment" id="compliment" />
-                    <Label htmlFor="compliment">{t.compliment}</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder={t.placeholders.title}
-                    disabled={loading}
-                    required
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sector">{t.sector}</Label>
-                  <Select
-                    value={sectorId}
-                    onValueChange={setSectorId}
-                    disabled={loading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a sector" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sectors.map((sector) => (
-                        <SelectItem key={sector.id} value={sector.id}>
-                          {sector.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="description">{t.description}</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className="flex items-center gap-2"
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="w-4 h-4" />
-                          {t.stopRecording}
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="w-4 h-4" />
-                          {t.startRecording}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder={t.placeholders.description}
-                    className="min-h-[150px]"
-                    disabled={loading}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Submitting..." : t.submit}
-                </Button>
-              </form>
+              <ComplaintForm
+                title={title}
+                setTitle={setTitle}
+                description={description}
+                setDescription={setDescription}
+                sectorId={sectorId}
+                setSectorId={setSectorId}
+                sectors={sectors}
+                loading={loading}
+                language={language}
+                submissionType={submissionType}
+                setSubmissionType={setSubmissionType}
+                isRecording={isRecording}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+                onShowLanguageDialog={() => setShowLanguageDialog(true)}
+                onSubmit={handleSubmit}
+              />
             </CardContent>
           </Card>
 
-          {/* Community Forum Card */}
-          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <MessageSquare className="w-6 h-6 text-purple-600" />
-                </div>
-                Community Forum
-              </CardTitle>
-              <CardDescription>
-                Join discussions, share experiences, and connect with others
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Engage with a community of active citizens working together for positive change.
-                </p>
-                <Button onClick={() => navigate("/community")} className="w-full group">
-                  Join the Discussion
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Webinars Card */}
-          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="w-6 h-6 text-blue-600" />
-                </div>
-                Upcoming Webinars
-              </CardTitle>
-              <CardDescription>
-                Learn from experts and stay informed
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Join our educational webinars on consumer rights, civic engagement, and more.
-                </p>
-                <Button variant="outline" className="w-full group">
-                  View Schedule
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* NGOs Card */}
-          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Users className="w-6 h-6 text-green-600" />
-                </div>
-                NGO Partners
-              </CardTitle>
-              <CardDescription>
-                Connect with organizations making a difference
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Discover and collaborate with NGOs working towards social improvement.
-                </p>
-                <Button variant="outline" className="w-full group">
-                  Explore NGOs
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <InfoCards />
         </div>
       </div>
     </div>
