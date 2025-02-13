@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,6 +9,7 @@ import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { InfoCards } from "@/components/complaints/InfoCards";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 export type SubmissionType = "complaint" | "feedback" | "compliment";
@@ -174,7 +174,7 @@ export const TRANSLATIONS = {
     submit: "സമർപ്പിക്കുക",
     recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
-    stopRecording: "റെക്കോർഡിംഗ് നില്ಲಿസി",
+    stopRecording: "റെക്കോർഡിംഗ് നില്ILLിസി",
     viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് കാണുക",
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {
@@ -207,13 +207,13 @@ export const TRANSLATIONS = {
     complaint: "ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ",
     feedback: "ਫੀਡਬੈਕ ਸਾਂਝਾ ਕਰੋ",
     compliment: "ਸ਼ਾਬਾਸ਼ੀ ਦਿਓ",
-    sector: "ਵਿਭਾਗ/ਖੇਤਰ",
+    sector: "ਵਿਭਾग/ਖੇਤਰ",
     description: "ਵੇਰਵਾ",
     submit: "ਜਮ੍ਹਾਂ ਕਰੋ",
     recording: "ਰਿਕਾਰਡਿੰਗ...",
     startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
-    stopRecording: "ਰਿਕਾਰਡਿੰਗ ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋਰਡ ਦੇਖੋ",
+    stopRecording: "ਰਿਕਾਰਡਿੰग ਰੋਕੋ",
+    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋरਡ ਦੇਖੋ",
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
@@ -407,27 +407,37 @@ const NewComplaint = () => {
         onLanguageChange={setLanguage}
       />
 
-      {/* Navigation Buttons */}
-      <div className="fixed top-4 right-4 z-50 flex gap-4">
-        <Button
-          variant="outline"
-          onClick={() => setShowLanguageDialog(true)}
-          className="flex items-center gap-2"
-        >
-          <Languages className="w-4 h-4" />
-          {TRANSLATIONS[language].changeLanguage}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => window.location.href = "/complaints"}
-          className="flex items-center gap-2"
-        >
-          <ChartBar className="w-4 h-4" />
-          {TRANSLATIONS[language].viewDashboard}
-        </Button>
+      <ComplaintsNav
+        language={language}
+        onLanguageClick={() => setShowLanguageDialog(true)}
+      />
+
+      <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300 pt-16">
+        <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-300 rounded-full opacity-20 translate-x-1/3 -translate-y-1/3"></div>
+        
+        <div className="container mx-auto px-4 pt-12 pb-32 relative">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="mb-8 relative">
+              <MegaphoneIcon className="w-20 h-20 text-white mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
+            <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 200L60 181.3C120 163 240 125 360 106.7C480 88 600 88 720 100C840 112 960 137 1080 143.3C1200 150 1320 137 1380 131.3L1440 125V200H1380C1320 200 1200 200 1080 200C960 200 840 200 720 200C600 200 480 200 360 200C240 200 120 200 60 200H0Z" fill="white"/>
+          </svg>
+        </div>
       </div>
 
-      {/* Complaint Form Dialog */}
+      <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <InfoCards />
+        </div>
+      </div>
+
       <Dialog open={showComplaintForm} onOpenChange={setShowComplaintForm}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <Card className="border-0 shadow-none">
@@ -457,63 +467,6 @@ const NewComplaint = () => {
           </Card>
         </DialogContent>
       </Dialog>
-
-      {/* Wave Pattern Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300">
-        <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-300 rounded-full opacity-20 translate-x-1/3 -translate-y-1/3"></div>
-        
-        <div className="container mx-auto px-4 pt-12 pb-32 relative">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="mb-8 relative">
-              <MegaphoneIcon className="w-20 h-20 text-white mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
-            <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 200L60 181.3C120 163 240 125 360 106.7C480 88 600 88 720 100C840 112 960 137 1080 143.3C1200 150 1320 137 1380 131.3L1440 125V200H1380C1320 200 1200 200 1080 200C960 200 840 200 720 200C600 200 480 200 360 200C240 200 120 200 60 200H0Z" fill="white"/>
-          </svg>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {/* Submit Your Voice Card */}
-          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <MegaphoneIcon className="w-6 h-6 text-red-600" />
-                </div>
-                {TRANSLATIONS[language].title}
-              </CardTitle>
-              <CardDescription>
-                Share your voice and make a difference in your community
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Submit complaints, feedback, or compliments about public services and initiatives.
-                </p>
-                <Button 
-                  onClick={() => setShowComplaintForm(true)} 
-                  className="w-full group"
-                >
-                  Start Submission
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <InfoCards />
-        </div>
-      </div>
     </div>
   );
 };
