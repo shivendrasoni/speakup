@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భాష ఎంచుకోండి",
-    complaint: "ఫిర్యాదు నమోదు చేయండి",
+    complaint: "ఫిర్యాద��� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్ని పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
@@ -410,6 +410,7 @@ const NewComplaint = () => {
       <ComplaintsNav
         language={language}
         onLanguageClick={() => setShowLanguageDialog(true)}
+        onVoiceConcernsClick={() => setShowComplaintForm(true)}
       />
 
       <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300 pt-16">
@@ -423,6 +424,12 @@ const NewComplaint = () => {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
             <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
+            <Button 
+              onClick={() => setShowComplaintForm(true)}
+              className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+            >
+              Voice Your Concerns
+            </Button>
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
