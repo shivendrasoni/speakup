@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భాష ఎంచుకోండి",
-    complaint: "ఫిర్యాద��� నమోదు చేయండి",
+    complaint: "ఫిర్యాద����� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్ని పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
@@ -213,7 +213,7 @@ export const TRANSLATIONS = {
     recording: "ਰਿਕਾਰਡਿੰਗ...",
     startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
     stopRecording: "ਰਿਕਾਰਡਿੰग ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋरਡ ਦੇਖੋ",
+    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋਰਡ ਦੇਖੋ",
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
@@ -226,7 +226,7 @@ export const TRANSLATIONS = {
     complaint: "ଅଭିଯୋଗ ଦାଖଲ କରନ୍ତୁ",
     feedback: "ମତାମତ ସେୟାର କରନ୍ତୁ",
     compliment: "ପ୍ରଶଂସା କରନ୍ତୁ",
-    sector: "ବିଭାଗ/କ୍ଷେତ୍ର",
+    sector: "ବିଭାગ/କ୍ଷେତ୍ର",
     description: "ବିବରଣୀ",
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡିଂ...",
@@ -424,12 +424,6 @@ const NewComplaint = () => {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
             <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
-            <Button 
-              onClick={() => setShowComplaintForm(true)}
-              className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
-            >
-              Voice Your Concerns
-            </Button>
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
@@ -441,7 +435,7 @@ const NewComplaint = () => {
 
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          <InfoCards />
+          <InfoCards onVoiceConcernsClick={() => setShowComplaintForm(true)} />
         </div>
       </div>
 

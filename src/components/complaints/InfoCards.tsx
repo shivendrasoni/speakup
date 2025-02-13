@@ -1,14 +1,44 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Calendar, Users, ArrowRight } from "lucide-react";
+import { MessageSquare, Calendar, Users, ArrowRight, MegaphoneIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export function InfoCards() {
+interface InfoCardsProps {
+  onVoiceConcernsClick: () => void;
+}
+
+export function InfoCards({ onVoiceConcernsClick }: InfoCardsProps) {
   const navigate = useNavigate();
 
   return (
     <>
+      {/* Voice Your Concerns Card */}
+      <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={onVoiceConcernsClick}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <MegaphoneIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            Voice Your Concerns
+          </CardTitle>
+          <CardDescription>
+            Submit a complaint, feedback, or compliment
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Share your experience and help improve public services. Your voice matters.
+            </p>
+            <Button className="w-full group">
+              Submit Now
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
