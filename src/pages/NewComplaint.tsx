@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff, ChartBar, Languages } from "lucide-react";
+import { Mic, MicOff, ChartBar, Languages, MegaphoneIcon, Search } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
@@ -400,7 +400,8 @@ const NewComplaint = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4 py-12">
+    <div className="min-h-screen bg-white">
+      {/* Language Selection Dialog */}
       <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -426,123 +427,152 @@ const NewComplaint = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">{t.title}</CardTitle>
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => setShowLanguageDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Languages className="w-4 h-4" />
-              {t.changeLanguage}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/complaints")}
-              className="flex items-center gap-2"
-            >
-              <ChartBar className="w-4 h-4" />
-              {t.viewDashboard}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <RadioGroup
-              defaultValue="complaint"
-              onValueChange={(value) => setSubmissionType(value as SubmissionType)}
-              className="flex flex-col md:flex-row gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="complaint" id="complaint" />
-                <Label htmlFor="complaint">{t.complaint}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="feedback" id="feedback" />
-                <Label htmlFor="feedback">{t.feedback}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compliment" id="compliment" />
-                <Label htmlFor="compliment">{t.compliment}</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t.placeholders.title}
-                disabled={loading}
-                required
-              />
+      {/* Wave Pattern Header */}
+      <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300">
+        {/* Geometric Shapes */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-300 rounded-full opacity-20 translate-x-1/3 -translate-y-1/3"></div>
+        
+        <div className="container mx-auto px-4 pt-12 pb-32 relative">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="mb-8 relative">
+              <MegaphoneIcon className="w-20 h-20 text-white mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
             </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {t.title}
+            </h1>
+            <p className="text-xl text-white/90 mb-8">
+              Your voice matters. Share your concerns with us.
+            </p>
+          </div>
+        </div>
+        {/* Wave SVG */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 200L60 181.3C120 163 240 125 360 106.7C480 88 600 88 720 100C840 112 960 137 1080 143.3C1200 150 1320 137 1380 131.3L1440 125V200H1380C1320 200 1200 200 1080 200C960 200 840 200 720 200C600 200 480 200 360 200C240 200 120 200 60 200H0Z" fill="white"/>
+          </svg>
+        </div>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="sector">{t.sector}</Label>
-              <Select
-                value={sectorId}
-                onValueChange={setSectorId}
-                disabled={loading}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
+        <Card className="max-w-2xl mx-auto bg-white shadow-lg">
+          <CardHeader>
+            <div className="flex justify-between items-center mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowLanguageDialog(true)}
+                className="flex items-center gap-2"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a sector" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Languages className="w-4 h-4" />
+                {t.changeLanguage}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/complaints")}
+                className="flex items-center gap-2"
+              >
+                <ChartBar className="w-4 h-4" />
+                {t.viewDashboard}
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="description">{t.description}</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className="flex items-center gap-2"
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff className="w-4 h-4" />
-                      {t.stopRecording}
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4" />
-                      {t.startRecording}
-                    </>
-                  )}
-                </Button>
+            <div className="mb-6">
+              <RadioGroup
+                defaultValue="complaint"
+                onValueChange={(value) => setSubmissionType(value as SubmissionType)}
+                className="flex flex-col md:flex-row gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="complaint" id="complaint" />
+                  <Label htmlFor="complaint">{t.complaint}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="feedback" id="feedback" />
+                  <Label htmlFor="feedback">{t.feedback}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="compliment" id="compliment" />
+                  <Label htmlFor="compliment">{t.compliment}</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t.placeholders.title}
+                  disabled={loading}
+                  required
+                  className="w-full"
+                />
               </div>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={t.placeholders.description}
-                className="min-h-[150px]"
-                disabled={loading}
-                required
-              />
-            </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Submitting..." : t.submit}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="sector">{t.sector}</Label>
+                <Select
+                  value={sectorId}
+                  onValueChange={setSectorId}
+                  disabled={loading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a sector" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sectors.map((sector) => (
+                      <SelectItem key={sector.id} value={sector.id}>
+                        {sector.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="description">{t.description}</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className="flex items-center gap-2"
+                  >
+                    {isRecording ? (
+                      <>
+                        <MicOff className="w-4 h-4" />
+                        {t.stopRecording}
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4" />
+                        {t.startRecording}
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t.placeholders.description}
+                  className="min-h-[150px]"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Submitting..." : t.submit}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
