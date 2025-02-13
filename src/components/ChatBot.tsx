@@ -18,7 +18,7 @@ export function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm your navigation assistant. How can I help you today?",
+      text: "Hello! I'm your navigation assistant. How can I help you today? You can ask me about:\n- Submitting complaints\n- Community forum\n- Dashboard\n- Resources\n- Login/Signup\n- Language settings",
       isBot: true
     }
   ]);
@@ -37,7 +37,7 @@ export function ChatBot() {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
 
-    // Simple response logic
+    // Enhanced response logic
     let botResponse = {
       id: (Date.now() + 1).toString(),
       isBot: true,
@@ -45,22 +45,68 @@ export function ChatBot() {
     };
 
     const lowerInput = input.toLowerCase();
+
+    // Navigation logic
     if (lowerInput.includes("complaint") || lowerInput.includes("voice") || lowerInput.includes("concern")) {
-      botResponse.text = "You can submit a complaint by visiting our Voice Your Concerns page. Would you like me to take you there?";
+      botResponse.text = "You can submit a new complaint, feedback, or compliment through our Voice Your Concerns page. Would you like me to take you there?";
       setMessages(prev => [...prev, botResponse]);
       setTimeout(() => navigate("/complaints/new"), 2000);
-    } else if (lowerInput.includes("community") || lowerInput.includes("forum")) {
-      botResponse.text = "Our community forum is a great place to connect with others. Let me take you there.";
+    } 
+    else if (lowerInput.includes("dashboard") || lowerInput.includes("overview")) {
+      botResponse.text = "I'll take you to the dashboard where you can view all complaints and their status.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/dashboard"), 2000);
+    }
+    else if (lowerInput.includes("community") || lowerInput.includes("forum") || lowerInput.includes("discuss")) {
+      botResponse.text = "The community forum is where you can connect with others and share experiences. Let me show you.";
       setMessages(prev => [...prev, botResponse]);
       setTimeout(() => navigate("/community"), 2000);
-    } else if (lowerInput.includes("language") || lowerInput.includes("translate")) {
-      botResponse.text = "You can change the language using the language selector button in the navigation bar.";
+    }
+    else if (lowerInput.includes("help") || lowerInput.includes("support") || lowerInput.includes("assistance")) {
+      botResponse.text = "I'll take you to our help center where you can find guides and FAQs.";
       setMessages(prev => [...prev, botResponse]);
-    } else if (lowerInput.includes("help") || lowerInput.includes("assistance")) {
-      botResponse.text = "I can help you navigate the platform. You can ask about submitting complaints, accessing the community forum, changing language, or any other feature.";
+      setTimeout(() => navigate("/help"), 2000);
+    }
+    else if (lowerInput.includes("login") || lowerInput.includes("sign in")) {
+      botResponse.text = "I'll direct you to the login page.";
       setMessages(prev => [...prev, botResponse]);
-    } else {
-      botResponse.text = "I'm here to help you navigate the platform. You can ask about submitting complaints, accessing the community forum, or changing language settings.";
+      setTimeout(() => navigate("/login"), 2000);
+    }
+    else if (lowerInput.includes("signup") || lowerInput.includes("register") || lowerInput.includes("create account")) {
+      botResponse.text = "Let me take you to the signup page to create your account.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/signup"), 2000);
+    }
+    else if (lowerInput.includes("language") || lowerInput.includes("translate")) {
+      botResponse.text = "You can change the language using the language selector button in the navigation bar. Look for the globe icon at the top of the page.";
+      setMessages(prev => [...prev, botResponse]);
+    }
+    else if (lowerInput.includes("home") || lowerInput.includes("main page")) {
+      botResponse.text = "I'll take you to the home page.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/"), 2000);
+    }
+    else if (lowerInput.includes("thank")) {
+      botResponse.text = "You're welcome! Is there anything else I can help you with?";
+      setMessages(prev => [...prev, botResponse]);
+    }
+    else if (lowerInput.includes("all complaints") || lowerInput.includes("view complaints")) {
+      botResponse.text = "I'll show you the complaints dashboard where you can view all complaints.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/complaints"), 2000);
+    }
+    else if (lowerInput.includes("success") || lowerInput.includes("stories")) {
+      botResponse.text = "Let me show you our success stories section in the community.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/community?tab=success_stories"), 2000);
+    }
+    else if (lowerInput.includes("peer") || lowerInput.includes("support group")) {
+      botResponse.text = "I'll take you to our peer support section where you can connect with others.";
+      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => navigate("/community?tab=peer_support"), 2000);
+    }
+    else {
+      botResponse.text = "I can help you navigate the platform. You can ask about:\n- Submitting complaints\n- Viewing the dashboard\n- Community forum\n- Success stories\n- Peer support\n- Login/Signup\n- Language settings\n\nWhat would you like to know more about?";
       setMessages(prev => [...prev, botResponse]);
     }
   };
@@ -104,7 +150,9 @@ export function ChatBot() {
                         : 'bg-primary text-primary-foreground'
                     }`}
                   >
-                    {message.text}
+                    {message.text.split('\n').map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
                   </div>
                 </div>
               ))}
