@@ -2,7 +2,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { LanguageCode, TRANSLATIONS } from "@/pages/NewComplaint";
+import type { LanguageCode } from "@/types/complaints";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 interface LanguageSelectionDialogProps {
   open: boolean;

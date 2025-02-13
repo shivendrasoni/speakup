@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,7 +13,7 @@ type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 export type SubmissionType = "complaint" | "feedback" | "compliment";
 export type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
 
-const LANGUAGE_CODES = {
+export const LANGUAGE_CODES = {
   english: 'en',
   hindi: 'hi',
   bengali: 'bn',
@@ -26,7 +27,7 @@ const LANGUAGE_CODES = {
   malayalam: 'ml'
 } as const;
 
-const TRANSLATIONS = {
+export const TRANSLATIONS = {
   english: {
     title: "Submit Your Voice",
     languageSelect: "Select Language",
@@ -171,7 +172,7 @@ const TRANSLATIONS = {
     submit: "സമർപ്പിക്കുക",
     recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
-    stopRecording: "റെക്കോർഡിംഗ് നില್ಲಿസി",
+    stopRecording: "റെക്കോർഡിംഗ് നില്ಲಿസി",
     viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് കാണുക",
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {

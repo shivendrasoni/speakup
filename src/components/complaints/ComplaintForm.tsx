@@ -8,7 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChartBar, Languages, Mic, MicOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
-import { LanguageCode, SubmissionType, TRANSLATIONS } from "@/pages/NewComplaint";
+import type { LanguageCode, SubmissionType } from "@/types/complaints";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 
