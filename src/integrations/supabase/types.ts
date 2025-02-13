@@ -19,7 +19,7 @@ export type Database = {
           title: string
           updated_at: string
           upvotes: number | null
-          user_id: string
+          user_id: string | null
           views: number | null
         }
         Insert: {
@@ -31,7 +31,7 @@ export type Database = {
           title: string
           updated_at?: string
           upvotes?: number | null
-          user_id: string
+          user_id?: string | null
           views?: number | null
         }
         Update: {
@@ -43,7 +43,7 @@ export type Database = {
           title?: string
           updated_at?: string
           upvotes?: number | null
-          user_id?: string
+          user_id?: string | null
           views?: number | null
         }
         Relationships: [
