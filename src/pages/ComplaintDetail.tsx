@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,10 +32,14 @@ type Complaint = {
   user_id: string;
   views: number | null;
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
-  profiles: Database["public"]["Tables"]["profiles"]["Row"];
-  complaint_updates: (Database["public"]["Tables"]["complaint_updates"]["Row"] & {
-    profiles: Database["public"]["Tables"]["profiles"]["Row"];
-  })[];
+  profiles: Database["public"]["Tables"]["profiles"]["Row"] | null;
+  complaint_updates: Array<{
+    id: string;
+    content: string;
+    created_at: string;
+    user_id: string;
+    profiles: Database["public"]["Tables"]["profiles"]["Row"] | null;
+  }>;
 };
 
 const ComplaintDetail = () => {
@@ -55,8 +60,11 @@ const ComplaintDetail = () => {
           sectors (*),
           profiles (*),
           complaint_updates (
-            *,
-            profiles (*)
+            id,
+            content,
+            created_at,
+            user_id,
+            profiles:user_id (*)
           )
         `)
         .eq("id", id)
@@ -189,7 +197,7 @@ const ComplaintDetail = () => {
                     Sector: {complaint.sectors.name}
                   </div>
                   <div className="text-sm text-gray-500">
-                    By: {complaint.profiles.name}
+                    By: {complaint.profiles?.name || "Anonymous"}
                   </div>
                   <div className="mt-2 text-sm text-gray-500">
                     Submitted on:{" "}
@@ -206,7 +214,7 @@ const ComplaintDetail = () => {
                   </span>
                   {(isAdmin || isOwner) && (
                     <Select
-                      value={selectedStatus || complaint?.status || null}
+                      value={selectedStatus || complaint?.status || undefined}
                       onValueChange={(value: ComplaintStatus) => {
                         setSelectedStatus(value);
                         updateStatusMutation.mutate(value);
@@ -252,7 +260,7 @@ const ComplaintDetail = () => {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-medium">
-                          {update.profiles.name}
+                          {update.profiles?.name || "Anonymous"}
                         </div>
                         <div className="text-sm text-gray-500">
                           {new Date(update.created_at).toLocaleDateString()}
