@@ -10,6 +10,7 @@ import { InfoCards } from "@/components/complaints/InfoCards";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
+import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 export type SubmissionType = "complaint" | "feedback" | "compliment";
@@ -175,7 +176,7 @@ export const TRANSLATIONS = {
     recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
     stopRecording: "റെക്കോർഡിംഗ് നില്ILLിസി",
-    viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് കാണുക",
+    viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് ଦେଖନ୍ତୁ",
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {
       title: "നിങ്ങളുടെ സമർപ്പണത്തിന്റെ ചുരുക്കമായ തലക്കെട്ട്",
@@ -229,7 +230,7 @@ export const TRANSLATIONS = {
     sector: "ବିଭାગ/କ୍ଷେତ୍ର",
     description: "ବିବରଣୀ",
     submit: "ଦାଖଲ କରନ୍ତୁ",
-    recording: "ରେକର୍ଡିଂ...",
+    recording: "ରେକର୍ଡ���ଂ...",
     startRecording: "ଭ��ସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
     stopRecording: "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ",
     viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
@@ -480,6 +481,10 @@ const NewComplaint = () => {
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           <InfoCards onVoiceConcernsClick={() => setShowComplaintForm(true)} />
+        </div>
+        
+        <div className="mt-8">
+          <AIComplaintBot />
         </div>
       </div>
 
