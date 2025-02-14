@@ -144,7 +144,7 @@ export function AIComplaintBot() {
       }
 
       console.log('Getting token from realtime-chat-token function...');
-      const response = await supabase.functions.invoke('realtime-chat-token', {
+      const { data, error } = await supabase.functions.invoke('realtime-chat-token', {
         body: { 
           model: "gpt-4o-realtime-preview-2024-10-01",
           voice: "alloy",
@@ -152,93 +152,107 @@ export function AIComplaintBot() {
         }
       });
 
-      if (response.error || !response.data?.token) {
-        console.error('Token error:', response.error || 'No token received');
+      if (error || !data?.client_secret?.value) {
+        console.error('Token error:', error || 'No token received');
         throw new Error('Failed to get authentication token');
       }
+
+      const token = data.client_secret.value;
+      console.log('Token received:', token);
 
       console.log('Creating WebSocket connection...');
       const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01');
       wsRef.current = ws;
 
+      if (!audioQueueRef.current) {
+        audioQueueRef.current = new AudioQueue();
+      }
+
       ws.onopen = () => {
-        console.log('WebSocket connection opened');
-        
-        // Initialize session with token
+        console.log('WebSocket connection opened, initializing session...');
         ws.send(JSON.stringify({
           type: "session.init",
           session: {
-            token: response.data.token
+            token
           }
         }));
       };
 
       ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
-        console.log('Received message:', data);
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Received message:', data);
 
-        if (data.type === 'session.created') {
-          console.log('Session created successfully');
-          setIsConnected(true);
+          if (data.type === 'session.created') {
+            console.log('Session created successfully');
+            setIsConnected(true);
 
-          // Set up audio recorder after session is created
-          if (!audioQueueRef.current) {
-            audioQueueRef.current = new AudioQueue();
-          }
-
-          audioRecorderRef.current = new AudioRecorder((audioData) => {
-            if (ws.readyState === WebSocket.OPEN) {
-              const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
-              ws.send(JSON.stringify({
-                type: 'input_audio_buffer.append',
-                audio: base64Audio
-              }));
-            }
-          });
-
-          await audioRecorderRef.current.start();
-
-          // Configure session
-          ws.send(JSON.stringify({
-            type: "session.update",
-            session: {
-              modalities: ["text", "audio"],
-              input_audio_format: "wav",
-              output_audio_format: "wav",
-              turn_detection: {
-                type: "server_vad",
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 1000
+            // Configure session
+            ws.send(JSON.stringify({
+              type: "session.update",
+              session: {
+                modalities: ["text", "audio"],
+                input_audio_format: "wav",
+                output_audio_format: "wav",
+                turn_detection: {
+                  type: "server_vad",
+                  threshold: 0.5,
+                  prefix_padding_ms: 300,
+                  silence_duration_ms: 1000
+                }
               }
-            }
-          }));
+            }));
 
-          // Start conversation
-          ws.send(JSON.stringify({
-            type: 'conversation.item.create',
-            item: {
-              type: 'message',
-              role: 'user',
-              content: [{ type: 'input_text', text: 'Hello' }]
-            }
-          }));
-          ws.send(JSON.stringify({ type: 'response.create' }));
-        }
+            // Set up audio recorder
+            audioRecorderRef.current = new AudioRecorder((audioData) => {
+              if (ws.readyState === WebSocket.OPEN) {
+                const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
+                ws.send(JSON.stringify({
+                  type: 'input_audio_buffer.append',
+                  audio: base64Audio
+                }));
+              }
+            });
 
-        // Handle audio responses
-        if (data.type === 'response.audio.delta') {
-          setIsSpeaking(true);
-          const binaryString = atob(data.delta);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+            try {
+              await audioRecorderRef.current.start();
+              console.log('Audio recorder started successfully');
+
+              // Start conversation
+              ws.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: {
+                  type: 'message',
+                  role: 'user',
+                  content: [{ type: 'input_text', text: 'Hello' }]
+                }
+              }));
+              ws.send(JSON.stringify({ type: 'response.create' }));
+            } catch (error) {
+              console.error('Failed to start audio recorder:', error);
+              toast({
+                title: "Microphone Error",
+                description: "Failed to access microphone. Please ensure microphone permissions are granted.",
+                variant: "destructive"
+              });
+            }
           }
-          await audioQueueRef.current?.addToQueue(bytes);
-        }
 
-        if (data.type === 'response.audio.done') {
-          setIsSpeaking(false);
+          if (data.type === 'response.audio.delta') {
+            setIsSpeaking(true);
+            const binaryString = atob(data.delta);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            await audioQueueRef.current?.addToQueue(bytes);
+          }
+
+          if (data.type === 'response.audio.done') {
+            setIsSpeaking(false);
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
         }
       };
 
