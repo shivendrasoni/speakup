@@ -46,21 +46,33 @@ serve(async (req) => {
     const data = await response.json();
     console.log("Session created:", data);
 
-    return new Response(JSON.stringify({
+    // Properly structure the response as expected by the client
+    const responseData = {
       token: data.token,
       client_secret: { value: data.token },
-      client_id: data.client_id || "default-client"
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      client_id: "default-client"
+    };
+
+    return new Response(JSON.stringify(responseData), {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
     });
 
   } catch (error) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
       }
     );
   }
