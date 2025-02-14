@@ -91,10 +91,57 @@ async function transcribeWithBhashini(audioBase64: string, language: string) {
   }
 }
 
-async function transcribeWithOpenAI(audioBlob: Uint8Array, language: string) {
+async function transcribeWithOpenAI(audioBase64: string, language: string) {
   console.log(`Transcribing with OpenAI for language: ${language}`);
+  
+  // Convert base64 to binary
+  const binaryString = atob(audioBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Create WAV header
+  const wavHeader = new Uint8Array(44);
+  const view = new DataView(wavHeader.buffer);
+  
+  // Write WAV header
+  const writeString = (view: DataView, offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  const sampleRate = 24000;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = bytes.length;
+  const fileSize = 36 + dataSize;
+
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, fileSize, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(view, 36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Combine header and audio data
+  const wavFile = new Uint8Array(wavHeader.length + bytes.length);
+  wavFile.set(wavHeader);
+  wavFile.set(bytes, wavHeader.length);
+
+  // Create form data with WAV file
   const formData = new FormData();
-  formData.append('file', new Blob([audioBlob], { type: 'audio/webm' }));
+  formData.append('file', new Blob([wavFile], { type: 'audio/wav' }), 'audio.wav');
   formData.append('model', 'whisper-1');
   formData.append('language', language);
 
@@ -163,8 +210,7 @@ serve(async (req) => {
         text = await transcribeWithBhashini(audio, langCode);
       } else {
         console.log('Using OpenAI API');
-        const audioBlob = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
-        text = await transcribeWithOpenAI(audioBlob, langCode);
+        text = await transcribeWithOpenAI(audio, langCode);
       }
 
       if (!text) {
