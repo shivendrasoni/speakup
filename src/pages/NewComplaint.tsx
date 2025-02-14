@@ -90,14 +90,14 @@ export const TRANSLATIONS = {
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భాష ఎంచుకోండి",
-    complaint: "ఫిర్యాద����� నమోదు చేయండి",
+    complaint: "ఫిర్యాద������� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్ని పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
     description: "వివరణ",
     submit: "సమర్పించండి",
     recording: "రికార్డింగ్...",
-    startRecording: "వాయిస్ ఇన్పుట్ ప్రారంభించండి",
+    startRecording: "వాయిస్ ఇన్పుట్ ప్రారंಭించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
     viewDashboard: "పబ్లిక్ డ్యాష్బోర్డ్ చూడండి",
     changeLanguage: "భాష మార్చండి",
@@ -230,7 +230,7 @@ export const TRANSLATIONS = {
     description: "ବିବରଣୀ",
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡିଂ...",
-    startRecording: "ଭଏସ୍ ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
+    startRecording: "ଭଏସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
     stopRecording: "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ",
     viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
@@ -255,6 +255,11 @@ const NewComplaint = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
+  const [files, setFiles] = useState<File[]>([]);
+  const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [complimentRecipient, setComplimentRecipient] = useState("");
 
   useEffect(() => {
     const fetchSectors = async () => {
@@ -352,10 +357,10 @@ const NewComplaint = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim() || !description.trim() || !sectorId) {
+    if (!title.trim() || !description.trim() || (submissionType === "complaint" && !sectorId)) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -364,17 +369,51 @@ const NewComplaint = () => {
     try {
       setLoading(true);
       
+      const uploadedFiles = [];
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('complaint_attachments')
+          .upload(fileName, file);
+          
+        if (uploadError) throw uploadError;
+        
+        if (data) {
+          uploadedFiles.push({
+            name: file.name,
+            path: data.path,
+            type: file.type,
+            size: file.size
+          });
+        }
+      }
+      
+      const formData = {
+        title,
+        description,
+        sector_id: sectorId,
+        language,
+        submission_type: submissionType,
+        is_public: true,
+        attachments: uploadedFiles,
+        ...(submissionType === "feedback" && {
+          feedback_category: feedbackCategory,
+          user_name: userName,
+          email: userEmail,
+        }),
+        ...(submissionType === "compliment" && {
+          compliment_recipient: complimentRecipient,
+          user_name: userName,
+          email: userEmail,
+        }),
+      };
+
       const { error } = await supabase
         .from("complaints")
-        .insert({
-          title,
-          description,
-          sector_id: sectorId,
-          language,
-          submission_type: submissionType,
-          is_public: true,
-          user_id: null
-        });
+        .insert(formData);
 
       if (error) throw error;
 
@@ -386,6 +425,11 @@ const NewComplaint = () => {
       setTitle("");
       setDescription("");
       setSectorId("");
+      setFiles([]);
+      setUserName("");
+      setUserEmail("");
+      setFeedbackCategory("");
+      setComplimentRecipient("");
       setShowComplaintForm(false);
     } catch (error: any) {
       toast({
@@ -463,6 +507,16 @@ const NewComplaint = () => {
                 onStopRecording={stopRecording}
                 onShowLanguageDialog={() => setShowLanguageDialog(true)}
                 onSubmit={handleSubmit}
+                files={files}
+                setFiles={setFiles}
+                feedbackCategory={feedbackCategory}
+                setFeedbackCategory={setFeedbackCategory}
+                userName={userName}
+                setUserName={setUserName}
+                userEmail={userEmail}
+                setUserEmail={setUserEmail}
+                complimentRecipient={complimentRecipient}
+                setComplimentRecipient={setComplimentRecipient}
               />
             </CardContent>
           </Card>

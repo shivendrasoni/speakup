@@ -1,3 +1,4 @@
+<lov-code>
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,6 +94,14 @@ const sectorSpecificFields: SectorSpecificFields = {
   // Add more sector-specific fields as needed
 };
 
+// Add feedback categories options
+const FEEDBACK_CATEGORIES = [
+  { label: "Platform Experience", value: "platform_experience" },
+  { label: "Response Time", value: "response_time" },
+  { label: "Accessibility", value: "accessibility" },
+  { label: "Other", value: "other" },
+];
+
 export function ComplaintForm({
   title,
   setTitle,
@@ -123,6 +132,12 @@ export function ComplaintForm({
   const [district, setDistrict] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [additionalDetails, setAdditionalDetails] = useState<{[key: string]: string}>({});
+
+  // Add state for new fields
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [feedbackCategory, setFeedbackCategory] = useState<string>("");
+  const [complimentRecipient, setComplimentRecipient] = useState("");
 
   // Get districts based on selected state
   const availableDistricts = useMemo(() => {
@@ -221,6 +236,99 @@ export function ComplaintForm({
     return acc;
   }, [] as Sector[]);
 
+  const renderFormFields = () => {
+    switch (submissionType) {
+      case "feedback":
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="userName">Name (Optional)</Label>
+                <Input
+                  id="userName"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="userEmail">Email (Optional)</Label>
+                <Input
+                  id="userEmail"
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="feedbackCategory">Feedback Category *</Label>
+              <Select 
+                value={feedbackCategory} 
+                onValueChange={setFeedbackCategory}
+                required
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select feedback category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FEEDBACK_CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+      case "compliment":
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="userName">Name (Optional)</Label>
+                <Input
+                  id="userName"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="userEmail">Email (Optional)</Label>
+                <Input
+                  id="userEmail"
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="complimentRecipient">Who/What is this compliment for? *</Label>
+              <Input
+                id="complimentRecipient"
+                value={complimentRecipient}
+                onChange={(e) => setComplimentRecipient(e.target.value)}
+                placeholder="Enter the name of person, department, or service"
+                required
+                className="w-full"
+              />
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -264,107 +372,173 @@ export function ComplaintForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name *</Label>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="relative">
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your full name"
-                      required
-                      className="w-full"
-                    />
-                    <HelpCircle className="w-4 h-4 absolute right-3 top-3 text-gray-400" />
+        {renderFormFields()}
+        
+        {submissionType === "complaint" && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name *</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <Input
+                          id="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Enter your full name"
+                          required
+                          className="w-full"
+                        />
+                        <HelpCircle className="w-4 h-4 absolute right-3 top-3 text-gray-400" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enter your full name as per official documents</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Enter your phone number"
+                  required
+                  pattern="[0-9]{10}"
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email (Optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pincode">Pincode *</Label>
+                <Input
+                  id="pincode"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value)}
+                  placeholder="Enter your pincode"
+                  required
+                  pattern="[0-9]{6}"
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="state">State *</Label>
+                <Select value={state} onValueChange={handleStateChange} required>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select your state" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50">
+                    {STATES.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">District *</Label>
+                <Select 
+                  value={district} 
+                  onValueChange={setDistrict} 
+                  required
+                  disabled={!state}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder={state ? "Select your district" : "Please select a state first"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white z-50">
+                    {availableDistricts.map((district) => (
+                      <SelectItem key={district} value={district}>
+                        {district}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sector">Department/Sector *</Label>
+              <Select
+                value={sectorId}
+                onValueChange={setSectorId}
+                disabled={loading}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select a sector" />
+                </SelectTrigger>
+                <SelectContent className="bg-white z-50">
+                  {uniqueSectors.map((sector) => (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {sectorFields && (
+              <div className="space-y-4">
+                {sectorFields.map((field, index) => (
+                  <div key={index} className="space-y-2">
+                    <Label htmlFor={field.label.toLowerCase().replace(/\s+/g, '-')}>
+                      {field.label}
+                    </Label>
+                    {field.type === 'select' ? (
+                      <Select
+                        value={additionalDetails[field.label] || ''}
+                        onValueChange={(value) => 
+                          setAdditionalDetails(prev => ({...prev, [field.label]: value}))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options?.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id={field.label.toLowerCase().replace(/\s+/g, '-')}
+                        value={additionalDetails[field.label] || ''}
+                        onChange={(e) => 
+                          setAdditionalDetails(prev => ({...prev, [field.label]: e.target.value}))
+                        }
+                        placeholder={`Enter ${field.label.toLowerCase()}`}
+                      />
+                    )}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Enter your full name as per official documents</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number *</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Enter your phone number"
-              required
-              pattern="[0-9]{10}"
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email (Optional)</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address"
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="pincode">Pincode *</Label>
-            <Input
-              id="pincode"
-              value={pincode}
-              onChange={(e) => setPincode(e.target.value)}
-              placeholder="Enter your pincode"
-              required
-              pattern="[0-9]{6}"
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="state">State *</Label>
-            <Select value={state} onValueChange={handleStateChange} required>
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Select your state" />
-              </SelectTrigger>
-              <SelectContent className="bg-white z-50">
-                {STATES.map((state) => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="district">District *</Label>
-            <Select 
-              value={district} 
-              onValueChange={setDistrict} 
-              required
-              disabled={!state}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder={state ? "Select your district" : "Please select a state first"} />
-              </SelectTrigger>
-              <SelectContent className="bg-white z-50">
-                {availableDistricts.map((district) => (
-                  <SelectItem key={district} value={district}>
-                    {district}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+              </div>
+            )}
+          </>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="title">Title *</Label>
@@ -379,142 +553,4 @@ export function ComplaintForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="sector">Department/Sector *</Label>
-          <Select
-            value={sectorId}
-            onValueChange={setSectorId}
-            disabled={loading}
-          >
-            <SelectTrigger className="bg-white">
-              <SelectValue placeholder="Select a sector" />
-            </SelectTrigger>
-            <SelectContent className="bg-white z-50">
-              {uniqueSectors.map((sector) => (
-                <SelectItem key={sector.id} value={sector.id}>
-                  {sector.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {sectorFields && (
-          <div className="space-y-4">
-            {sectorFields.map((field, index) => (
-              <div key={index} className="space-y-2">
-                <Label htmlFor={field.label.toLowerCase().replace(/\s+/g, '-')}>
-                  {field.label}
-                </Label>
-                {field.type === 'select' ? (
-                  <Select
-                    value={additionalDetails[field.label] || ''}
-                    onValueChange={(value) => 
-                      setAdditionalDetails(prev => ({...prev, [field.label]: value}))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {field.options?.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    id={field.label.toLowerCase().replace(/\s+/g, '-')}
-                    value={additionalDetails[field.label] || ''}
-                    onChange={(e) => 
-                      setAdditionalDetails(prev => ({...prev, [field.label]: e.target.value}))
-                    }
-                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="description">Description *</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={isRecording ? onStopRecording : onStartRecording}
-              className="flex items-center gap-2"
-            >
-              {isRecording ? (
-                <>
-                  <MicOff className="w-4 h-4" />
-                  {t.stopRecording}
-                </>
-              ) : (
-                <>
-                  <Mic className="w-4 h-4" />
-                  {t.startRecording}
-                </>
-              )}
-            </Button>
-          </div>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t.placeholders.description}
-            className="min-h-[150px]"
-            disabled={loading}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="attachments">Attachments (Optional)</Label>
-          <div className="flex flex-col gap-4">
-            <Input
-              id="attachments"
-              type="file"
-              onChange={handleFileChange}
-              className="w-full"
-              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
-              multiple
-            />
-            {files.length > 0 && (
-              <div className="space-y-2">
-                <Label>Selected Files:</Label>
-                <ul className="list-disc pl-5">
-                  {files.map((file, index) => (
-                    <li key={index} className="text-sm text-gray-600">
-                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="ml-2 text-red-500 hover:text-red-700"
-                        onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                      >
-                        Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-gray-500">
-            Supported formats: JPG, PNG, PDF, DOC, DOCX (Max 5MB per file)
-          </p>
-        </div>
-
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Submitting..." : t.submit}
-        </Button>
-      </form>
-    </div>
-  );
-}
+        <div className="

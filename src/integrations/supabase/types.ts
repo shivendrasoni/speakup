@@ -94,9 +94,14 @@ export type Database = {
           ai_category: string | null
           attachments: Json | null
           complaint_id: string | null
+          compliment_recipient: string | null
           created_at: string
           description: string
           district: string | null
+          email: string | null
+          feedback_category:
+            | Database["public"]["Enums"]["feedback_category"]
+            | null
           id: string
           is_public: boolean
           language: string
@@ -110,6 +115,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string | null
+          user_name: string | null
           view_count: number
           views: number | null
         }
@@ -118,9 +124,14 @@ export type Database = {
           ai_category?: string | null
           attachments?: Json | null
           complaint_id?: string | null
+          compliment_recipient?: string | null
           created_at?: string
           description: string
           district?: string | null
+          email?: string | null
+          feedback_category?:
+            | Database["public"]["Enums"]["feedback_category"]
+            | null
           id?: string
           is_public?: boolean
           language?: string
@@ -134,6 +145,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id?: string | null
+          user_name?: string | null
           view_count?: number
           views?: number | null
         }
@@ -142,9 +154,14 @@ export type Database = {
           ai_category?: string | null
           attachments?: Json | null
           complaint_id?: string | null
+          compliment_recipient?: string | null
           created_at?: string
           description?: string
           district?: string | null
+          email?: string | null
+          feedback_category?:
+            | Database["public"]["Enums"]["feedback_category"]
+            | null
           id?: string
           is_public?: boolean
           language?: string
@@ -158,6 +175,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string | null
+          user_name?: string | null
           view_count?: number
           views?: number | null
         }
@@ -390,6 +408,11 @@ export type Database = {
     }
     Enums: {
       complaint_status: "pending" | "in_progress" | "resolved" | "rejected"
+      feedback_category:
+        | "platform_experience"
+        | "response_time"
+        | "accessibility"
+        | "other"
       post_type:
         | "discussion"
         | "success_story"
