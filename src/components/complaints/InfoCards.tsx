@@ -78,7 +78,7 @@ export function InfoCards({
             <p className="text-gray-600">
               Join our educational webinars on consumer rights, civic engagement, and more.
             </p>
-            <Button variant="outline" className="w-full group bg-slate-950 hover:bg-slate-800 text-slate-50">
+            <Button variant="outline" className="w-full group">
               View Schedule
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -103,7 +103,7 @@ export function InfoCards({
             <p className="text-gray-600">
               Discover and collaborate with NGOs working towards social improvement.
             </p>
-            <Button variant="outline" className="w-full group bg-slate-950 hover:bg-slate-800 text-slate-50">
+            <Button variant="outline" className="w-full group">
               Explore NGOs
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
