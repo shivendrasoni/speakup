@@ -1,18 +1,15 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Calendar, Users, ArrowRight, MegaphoneIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 interface InfoCardsProps {
   onVoiceConcernsClick: () => void;
 }
-
-export function InfoCards({ onVoiceConcernsClick }: InfoCardsProps) {
+export function InfoCards({
+  onVoiceConcernsClick
+}: InfoCardsProps) {
   const navigate = useNavigate();
-
-  return (
-    <>
+  return <>
       {/* Voice Your Concerns Card */}
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={onVoiceConcernsClick}>
         <CardHeader>
@@ -81,7 +78,7 @@ export function InfoCards({ onVoiceConcernsClick }: InfoCardsProps) {
             <p className="text-gray-600">
               Join our educational webinars on consumer rights, civic engagement, and more.
             </p>
-            <Button variant="outline" className="w-full group">
+            <Button variant="outline" className="w-full group bg-slate-950 hover:bg-slate-800 text-slate-50">
               View Schedule
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -106,13 +103,12 @@ export function InfoCards({ onVoiceConcernsClick }: InfoCardsProps) {
             <p className="text-gray-600">
               Discover and collaborate with NGOs working towards social improvement.
             </p>
-            <Button variant="outline" className="w-full group">
+            <Button variant="outline" className="w-full group bg-slate-950 hover:bg-slate-800 text-slate-50">
               Explore NGOs
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </CardContent>
       </Card>
-    </>
-  );
+    </>;
 }
