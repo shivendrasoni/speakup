@@ -198,6 +198,7 @@ export function AIComplaintBot() {
         return;
       }
 
+      console.log('Getting token from realtime-chat-token function...');
       const { data, error } = await supabase.functions.invoke('realtime-chat-token', {
         body: { 
           model: "gpt-4o-realtime-preview-2024-10-01",
@@ -206,8 +207,16 @@ export function AIComplaintBot() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error getting token:', error);
+        throw error;
+      }
 
+      if (!data?.client_secret?.value) {
+        throw new Error('No token received from realtime-chat-token function');
+      }
+
+      console.log('Creating WebSocket connection...');
       const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01');
       wsRef.current = ws;
       
@@ -219,6 +228,7 @@ export function AIComplaintBot() {
         console.log('WebSocket connection established');
         setIsConnected(true);
 
+        // Set up audio recorder
         audioRecorderRef.current = new AudioRecorder((audioData) => {
           if (ws.readyState === WebSocket.OPEN) {
             try {
@@ -242,18 +252,12 @@ export function AIComplaintBot() {
           });
         });
 
+        // Initialize session with our token
         ws.send(JSON.stringify({
-          type: "session.update",
+          type: "session.init",
           session: {
-            modalities: ["text", "audio"],
-            input_audio_format: "wav",
-            output_audio_format: "wav",
-            turn_detection: {
-              type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 1000
-            }
+            client_secret: data.client_secret.value,
+            client_id: data.client_id
           }
         }));
       };
@@ -261,6 +265,41 @@ export function AIComplaintBot() {
       ws.onmessage = async (event) => {
         const data = JSON.parse(event.data);
         console.log('Received:', data);
+
+        // Handle session created event
+        if (data.type === 'session.created') {
+          console.log('Session created, sending configuration...');
+          ws.send(JSON.stringify({
+            type: "session.update",
+            session: {
+              modalities: ["text", "audio"],
+              input_audio_format: "wav",
+              output_audio_format: "wav",
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 1000
+              }
+            }
+          }));
+
+          // Send initial message to start conversation
+          ws.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+              type: 'message',
+              role: 'user',
+              content: [
+                {
+                  type: 'input_text',
+                  text: 'Hello'
+                }
+              ]
+            }
+          }));
+          ws.send(JSON.stringify({ type: 'response.create' }));
+        }
 
         switch (data.type) {
           case 'response.audio.delta': {
@@ -292,6 +331,7 @@ export function AIComplaintBot() {
       };
 
       ws.onclose = () => {
+        console.log('WebSocket connection closed');
         setIsConnected(false);
         if (audioRecorderRef.current) {
           audioRecorderRef.current.stop();
@@ -301,6 +341,7 @@ export function AIComplaintBot() {
 
     } catch (error) {
       console.error('Error starting conversation:', error);
+      setIsConnected(false);
       toast({
         title: "Error",
         description: "Failed to start AI conversation",
