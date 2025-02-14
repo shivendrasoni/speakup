@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -126,16 +125,47 @@ function encodeAudioForAPI(float32Array: Float32Array): string {
     const s = Math.max(-1, Math.min(1, float32Array[i]));
     int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
   }
-  
-  const uint8Array = new Uint8Array(int16Array.buffer);
+
+  const wavHeader = new ArrayBuffer(44);
+  const view = new DataView(wavHeader);
+  const writeString = (offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  const sampleRate = 24000;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = int16Array.byteLength;
+  const fileSize = 36 + dataSize;
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, fileSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  const wavBytes = new Uint8Array(wavHeader.byteLength + int16Array.byteLength);
+  wavBytes.set(new Uint8Array(wavHeader), 0);
+  wavBytes.set(new Uint8Array(int16Array.buffer), wavHeader.byteLength);
+
   let binary = '';
-  const chunkSize = 0x8000;
-  
-  for (let i = 0; i < uint8Array.length; i += chunkSize) {
-    const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
-    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  const bytes = new Uint8Array(wavBytes.buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
-  
   return btoa(binary);
 }
 
@@ -189,14 +219,17 @@ export function AIComplaintBot() {
         console.log('WebSocket connection established');
         setIsConnected(true);
 
-        // Initialize audio recorder
         audioRecorderRef.current = new AudioRecorder((audioData) => {
           if (ws.readyState === WebSocket.OPEN) {
-            const encodedAudio = encodeAudioForAPI(audioData);
-            ws.send(JSON.stringify({
-              type: 'input_audio_buffer.append',
-              audio: encodedAudio
-            }));
+            try {
+              const encodedAudio = encodeAudioForAPI(audioData);
+              ws.send(JSON.stringify({
+                type: 'input_audio_buffer.append',
+                audio: encodedAudio
+              }));
+            } catch (error) {
+              console.error('Error encoding audio:', error);
+            }
           }
         });
 
@@ -209,13 +242,12 @@ export function AIComplaintBot() {
           });
         });
 
-        // Send session configuration
         ws.send(JSON.stringify({
           type: "session.update",
           session: {
             modalities: ["text", "audio"],
-            input_audio_format: "pcm16",
-            output_audio_format: "pcm16",
+            input_audio_format: "wav",
+            output_audio_format: "wav",
             turn_detection: {
               type: "server_vad",
               threshold: 0.5,
