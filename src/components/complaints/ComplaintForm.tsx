@@ -9,21 +9,23 @@ import { useNavigate } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 import type { LanguageCode, SubmissionType } from "@/types/complaints";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 
-// Indian states data
-const STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
-  "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", 
-  "West Bengal"
-];
+// Indian states and districts data
+const STATES_DISTRICTS: { [key: string]: string[] } = {
+  "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"],
+  "Arunachal Pradesh": ["Anjaw", "Changlang", "East Siang", "Kurung Kumey", "Lohit", "Lower Dibang Valley", "Lower Subansiri", "Papum Pare", "Tawang", "Tirap", "Upper Siang", "Upper Subansiri", "West Kameng", "West Siang"],
+  "Assam": ["Baksa", "Barpeta", "Biswanath", "Bongaigaon", "Cachar", "Charaideo", "Chirang", "Darrang", "Dhemaji", "Dhubri", "Dibrugarh", "Dima Hasao", "Goalpara", "Golaghat", "Hailakandi", "Hojai", "Jorhat", "Kamrup", "Kamrup Metropolitan", "Karbi Anglong", "Karimganj", "Kokrajhar", "Lakhimpur", "Majuli", "Morigaon", "Nagaon", "Nalbari", "Sivasagar", "Sonitpur", "South Salmara-Mankachar", "Tinsukia", "Udalguri", "West Karbi Anglong"],
+  "Bihar": ["Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar", "Darbhanga", "East Champaran", "Gaya", "Gopalganj", "Jamui", "Jehanabad", "Kaimur", "Katihar", "Khagaria", "Kishanganj", "Lakhisarai", "Madhepura", "Madhubani", "Munger", "Muzaffarpur", "Nalanda", "Nawada", "Patna", "Purnia", "Rohtas", "Saharsa", "Samastipur", "Saran", "Sheikhpura", "Sheohar", "Sitamarhi", "Siwan", "Supaul", "Vaishali", "West Champaran"],
+  // ... Add more states and their districts
+};
+
+const STATES = Object.keys(STATES_DISTRICTS);
 
 interface ComplaintFormProps {
   title: string;
@@ -90,6 +92,17 @@ export function ComplaintForm({
   const [district, setDistrict] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [additionalDetails, setAdditionalDetails] = useState<{[key: string]: string}>({});
+
+  // Get districts based on selected state
+  const availableDistricts = useMemo(() => {
+    return state ? STATES_DISTRICTS[state] || [] : [];
+  }, [state]);
+
+  // Reset district when state changes
+  const handleStateChange = (newState: string) => {
+    setState(newState);
+    setDistrict(""); // Reset district when state changes
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -286,7 +299,7 @@ export function ComplaintForm({
 
           <div className="space-y-2">
             <Label htmlFor="state">State *</Label>
-            <Select value={state} onValueChange={setState} required>
+            <Select value={state} onValueChange={handleStateChange} required>
               <SelectTrigger className="bg-white">
                 <SelectValue placeholder="Select your state" />
               </SelectTrigger>
@@ -302,14 +315,23 @@ export function ComplaintForm({
 
           <div className="space-y-2">
             <Label htmlFor="district">District *</Label>
-            <Input
-              id="district"
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              placeholder="Enter your district"
+            <Select 
+              value={district} 
+              onValueChange={setDistrict} 
               required
-              className="w-full bg-white"
-            />
+              disabled={!state}
+            >
+              <SelectTrigger className="bg-white">
+                <SelectValue placeholder={state ? "Select your district" : "Please select a state first"} />
+              </SelectTrigger>
+              <SelectContent className="bg-white z-50">
+                {availableDistricts.map((district) => (
+                  <SelectItem key={district} value={district}>
+                    {district}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
