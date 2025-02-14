@@ -90,14 +90,21 @@ export type Database = {
       }
       complaints: {
         Row: {
+          additional_details: Json | null
           ai_category: string | null
+          attachments: Json | null
+          complaint_id: string | null
           created_at: string
           description: string
+          district: string | null
           id: string
           is_public: boolean
           language: string
+          phone: string | null
+          pincode: string | null
           sector_id: string
           shares: number | null
+          state: string | null
           status: Database["public"]["Enums"]["complaint_status"] | null
           submission_type: Database["public"]["Enums"]["submission_type"]
           title: string
@@ -107,14 +114,21 @@ export type Database = {
           views: number | null
         }
         Insert: {
+          additional_details?: Json | null
           ai_category?: string | null
+          attachments?: Json | null
+          complaint_id?: string | null
           created_at?: string
           description: string
+          district?: string | null
           id?: string
           is_public?: boolean
           language?: string
+          phone?: string | null
+          pincode?: string | null
           sector_id: string
           shares?: number | null
+          state?: string | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title: string
@@ -124,14 +138,21 @@ export type Database = {
           views?: number | null
         }
         Update: {
+          additional_details?: Json | null
           ai_category?: string | null
+          attachments?: Json | null
+          complaint_id?: string | null
           created_at?: string
           description?: string
+          district?: string | null
           id?: string
           is_public?: boolean
           language?: string
+          phone?: string | null
+          pincode?: string | null
           sector_id?: string
           shares?: number | null
+          state?: string | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title?: string
