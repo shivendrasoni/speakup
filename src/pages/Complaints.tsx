@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -32,7 +33,7 @@ type Complaint = {
   user_id: string;
   views: number | null;
   sectors: Database["public"]["Tables"]["sectors"]["Row"];
-  profiles: Database["public"]["Tables"]["profiles"]["Row"];
+  profiles: Database["public"]["Tables"]["profiles"]["Row"] | null;
 };
 
 const statusOptions = [
@@ -158,7 +159,7 @@ const Complaints = () => {
                           Sector: {complaint.sectors.name}
                         </div>
                         <div className="mt-1 text-sm text-gray-500">
-                          By: {complaint.profiles.name}
+                          By: {complaint.profiles?.name || "Anonymous"}
                         </div>
                         <div className="mt-2 line-clamp-2 text-gray-700">
                           {complaint.description}
