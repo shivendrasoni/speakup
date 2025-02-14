@@ -16,20 +16,6 @@ type TranslationType = {
   stopRecording: string;
   viewDashboard: string;
   changeLanguage: string;
-  common: {
-    welcome: string;
-    login: string;
-    signup: string;
-    email: string;
-    password: string;
-    help: string;
-    dashboard: string;
-    complaints: string;
-    community: string;
-    logout: string;
-    submit: string;
-    cancel: string;
-  };
   placeholders: {
     title: string;
     description: string;
