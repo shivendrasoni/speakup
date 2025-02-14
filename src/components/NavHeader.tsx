@@ -4,16 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { HomeIcon, LogOutIcon, Languages } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
-import { useState } from "react";
+import { HomeIcon, LogOutIcon } from "lucide-react";
 
 export const NavHeader = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { language, setLanguage, t } = useLanguage();
-  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session"],
@@ -37,55 +32,29 @@ export const NavHeader = () => {
   };
 
   return (
-    <>
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <HomeIcon className="h-5 w-5" />
-                </Button>
-              </Link>
-              {session && (
-                <>
-                  <Link to="/complaints">
-                    <Button variant="ghost">{t("common.complaints")}</Button>
-                  </Link>
-                  <Link to="/dashboard">
-                    <Button variant="ghost">{t("common.dashboard")}</Button>
-                  </Link>
-                  <Link to="/community">
-                    <Button variant="ghost">{t("common.community")}</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setShowLanguageDialog(true)}
-              >
-                <Languages className="h-5 w-5" />
+    <header className="bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-4">
+            <Link to="/">
+              <Button variant="ghost" size="icon">
+                <HomeIcon className="h-5 w-5" />
               </Button>
-              {session && (
-                <Button variant="ghost" onClick={handleLogout}>
-                  <LogOutIcon className="h-5 w-5 mr-2" />
-                  {t("common.logout")}
-                </Button>
-              )}
-            </div>
+            </Link>
+            {session && (
+              <Link to="/complaints">
+                <Button variant="ghost">Complaints</Button>
+              </Link>
+            )}
           </div>
+          {session && (
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOutIcon className="h-5 w-5 mr-2" />
+              Sign Out
+            </Button>
+          )}
         </div>
-      </header>
-
-      <LanguageSelectionDialog
-        open={showLanguageDialog}
-        onOpenChange={setShowLanguageDialog}
-        language={language}
-        onLanguageChange={setLanguage}
-      />
-    </>
+      </div>
+    </header>
   );
 };
