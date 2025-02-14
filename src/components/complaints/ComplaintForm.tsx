@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,6 +168,15 @@ export function ComplaintForm({
   const selectedSector = sectors.find(s => s.id === sectorId);
   const sectorFields = selectedSector ? sectorSpecificFields[selectedSector.name.toLowerCase()] : undefined;
 
+  // Get unique sectors by name to avoid duplicates
+  const uniqueSectors = sectors.reduce((acc, current) => {
+    const x = acc.find(item => item.name === current.name);
+    if (!x) {
+      return acc.concat([current]);
+    }
+    return acc;
+  }, [] as Sector[]);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -279,10 +287,10 @@ export function ComplaintForm({
           <div className="space-y-2">
             <Label htmlFor="state">State *</Label>
             <Select value={state} onValueChange={setState} required>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white">
                 <SelectValue placeholder="Select your state" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white z-50">
                 {STATES.map((state) => (
                   <SelectItem key={state} value={state}>
                     {state}
@@ -300,7 +308,7 @@ export function ComplaintForm({
               onChange={(e) => setDistrict(e.target.value)}
               placeholder="Enter your district"
               required
-              className="w-full"
+              className="w-full bg-white"
             />
           </div>
         </div>
@@ -325,11 +333,11 @@ export function ComplaintForm({
             onValueChange={setSectorId}
             disabled={loading}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-white">
               <SelectValue placeholder="Select a sector" />
             </SelectTrigger>
-            <SelectContent>
-              {sectors.map((sector) => (
+            <SelectContent className="bg-white z-50">
+              {uniqueSectors.map((sector) => (
                 <SelectItem key={sector.id} value={sector.id}>
                   {sector.name}
                 </SelectItem>
