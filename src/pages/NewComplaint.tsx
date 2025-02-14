@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భాష ఎంచుకోండి",
-    complaint: "ఫిర్యాద������� నమోదు చేయండి",
+    complaint: "ఫిర్యాద�������� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్ని పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
@@ -213,7 +213,7 @@ export const TRANSLATIONS = {
     recording: "ਰਿਕਾਰਡਿੰਗ...",
     startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
     stopRecording: "ਰਿਕਾਰਡਿੰग ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ਡੈਸ਼ਬੋਰਡ ਦੇਖੋ",
+    viewDashboard: "ਪਬਲਿਕ ࡭ാസ്‌ബോർഡ ଦେଖନ୍ତୁ",
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
@@ -230,7 +230,7 @@ export const TRANSLATIONS = {
     description: "ବିବରଣୀ",
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡିଂ...",
-    startRecording: "ଭଏସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
+    startRecording: "ଭ��ସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
     stopRecording: "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ",
     viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
@@ -400,14 +400,14 @@ const NewComplaint = () => {
         is_public: true,
         attachments: uploadedFiles,
         ...(submissionType === "feedback" && {
-          feedback_category: feedbackCategory,
-          user_name: userName,
-          email: userEmail,
+          feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
+          user_name: userName || null,
+          email: userEmail || null,
         }),
         ...(submissionType === "compliment" && {
           compliment_recipient: complimentRecipient,
-          user_name: userName,
-          email: userEmail,
+          user_name: userName || null,
+          email: userEmail || null,
         }),
       };
 

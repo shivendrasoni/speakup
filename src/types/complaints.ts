@@ -1,27 +1,10 @@
 
+import type { Database } from "@/integrations/supabase/types";
+
 export type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
-export type SubmissionType = "complaint" | "feedback" | "compliment";
 
-type TranslationType = {
-  title: string;
-  languageSelect: string;
-  complaint: string;
-  feedback: string;
-  compliment: string;
-  sector: string;
-  description: string;
-  submit: string;
-  recording: string;
-  startRecording: string;
-  stopRecording: string;
-  viewDashboard: string;
-  changeLanguage: string;
-  placeholders: {
-    title: string;
-    description: string;
-  };
-};
+export type SubmissionType = Database["public"]["Enums"]["submission_type"];
 
-export type TranslationsType = {
-  [key in LanguageCode]: TranslationType;
-};
+export type Sector = Database["public"]["Tables"]["sectors"]["Row"];
+
+export type FeedbackCategory = Database["public"]["Enums"]["feedback_category"];

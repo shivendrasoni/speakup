@@ -20,7 +20,7 @@ type Complaint = {
   };
   profiles: {
     name: string;
-  };
+  } | null;
 };
 
 interface ComplaintsProps {
@@ -99,7 +99,7 @@ export const Complaints = ({ isPublic }: ComplaintsProps) => {
                     Sector: {complaint.sectors.name}
                   </div>
                   <div className="mt-1 text-sm text-gray-500">
-                    By: {complaint.profiles.name}
+                    By: {complaint.profiles?.name || "Anonymous"}
                   </div>
                   <div className="mt-2 line-clamp-2 text-gray-700">
                     {complaint.description}
