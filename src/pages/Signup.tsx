@@ -91,7 +91,7 @@ const Signup = () => {
           data: {
             name: name,
           },
-          emailRedirectTo: `${window.location.origin}/login`,
+          emailRedirectTo: `${window.location.origin}/login?verified=true`,
         },
       });
 
@@ -108,7 +108,7 @@ const Signup = () => {
 
       toast({
         title: "Success!",
-        description: "Please check your email to confirm your account.",
+        description: "Please check your email to confirm your account. Don't forget to check your spam folder.",
       });
       navigate("/login");
     } catch (error: any) {

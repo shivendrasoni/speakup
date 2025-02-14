@@ -1,10 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
@@ -13,12 +14,27 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check if the user just verified their email
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      toast({
+        title: "Email Verified",
+        description: "Your email has been verified. You can now log in.",
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        }
       });
 
       if (error) throw error;
@@ -26,6 +42,43 @@ const Login = () => {
       toast({
         title: "Error",
         description: error.message || `Error signing in with ${provider}`,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login?verified=true`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Verification Email Sent",
+        description: "Please check your email (including spam folder) for the verification link.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend verification email",
         variant: "destructive",
       });
     } finally {
@@ -57,54 +110,28 @@ const Login = () => {
       return;
     }
 
-    // Password validation
-    if (password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setLoading(true);
-
-      // Attempt to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // If we get an invalid credentials error, it could be due to:
-      // 1. Email not confirmed
-      // 2. Wrong password
-      // 3. User doesn't exist
       if (signInError) {
-        if (signInError.message.includes('Invalid login credentials')) {
-          // Try to resend verification email in case the email isn't verified
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email,
+        // Check if the error is due to unverified email
+        if (signInError.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email Not Verified",
+            description: "Please verify your email before logging in. Would you like to resend the verification email?",
+            action: (
+              <Button variant="outline" onClick={handleResendVerification}>
+                Resend Email
+              </Button>
+            ),
           });
-
-          if (!resendError) {
-            toast({
-              title: "Email Verification Required",
-              description: "If your email is not verified, we've sent a new verification email. Please check your inbox and spam folder.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Error",
-              description: "Invalid email or password. Please try again.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          throw signInError;
+          return;
         }
-        return;
+        throw signInError;
       }
 
       toast({
