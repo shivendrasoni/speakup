@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mic, MicOff } from "lucide-react";
 import type { Sector } from "@/types/complaints";
 import type { SubmissionType, LanguageCode } from "@/types/complaints";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 // Add feedback categories options
 const FEEDBACK_CATEGORIES = [
@@ -78,9 +80,33 @@ export function ComplaintForm({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setFiles(selectedFiles);
+      const validFiles = selectedFiles.filter(file => {
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (!validTypes.includes(file.type)) {
+          alert(`File ${file.name} is not a supported format. Please upload images (JPG/PNG), PDFs, or Word documents.`);
+          return false;
+        }
+        if (file.size > maxSize) {
+          alert(`File ${file.name} is too large. Maximum file size is 5MB.`);
+          return false;
+        }
+        return true;
+      });
+      setFiles(validFiles);
     }
   };
+
+  const renderFieldHint = (hint: string) => (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <InfoCircledIcon className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 p-3 text-sm">
+        {hint}
+      </HoverCardContent>
+    </HoverCard>
+  );
 
   const renderFormFields = () => {
     switch (submissionType) {
@@ -201,28 +227,67 @@ export function ComplaintForm({
         {renderFormFields()}
         
         {submissionType === "complaint" && (
-          <div className="space-y-2">
-            <Label htmlFor="sector">Department/Sector *</Label>
-            <Select
-              value={sectorId}
-              onValueChange={setSectorId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a sector" />
-              </SelectTrigger>
-              <SelectContent>
-                {sectors.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="userName">
+                  Full Name *
+                  {renderFieldHint("Enter your full name as per official documents")}
+                </Label>
+                <Input
+                  id="userName"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter your full name"
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="userEmail">
+                  Email Address (Optional)
+                  {renderFieldHint("We'll send updates about your complaint to this email")}
+                </Label>
+                <Input
+                  id="userEmail"
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sector">
+                Department/Sector *
+                {renderFieldHint("Select the department or sector related to your complaint")}
+              </Label>
+              <Select
+                value={sectorId}
+                onValueChange={setSectorId}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select a sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sectors.map((sector) => (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="title">Title *</Label>
+          <Label htmlFor="title">
+            Title *
+            {renderFieldHint("A brief title that describes your submission")}
+          </Label>
           <Input
             id="title"
             value={title}
@@ -235,7 +300,10 @@ export function ComplaintForm({
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">
+              Description *
+              {renderFieldHint("Provide detailed information about your complaint")}
+            </Label>
             <Button
               type="button"
               variant="outline"
@@ -267,7 +335,10 @@ export function ComplaintForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="attachments">Attachments (Optional)</Label>
+          <Label htmlFor="attachments">
+            Attachments (Optional)
+            {renderFieldHint("Upload relevant documents or images (max 5MB each)")}
+          </Label>
           <Input
             id="attachments"
             type="file"
