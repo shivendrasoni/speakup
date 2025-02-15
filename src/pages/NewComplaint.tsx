@@ -402,6 +402,9 @@ const NewComplaint = () => {
           });
         }
       }
+
+      // Get the current authenticated user if any
+      const { data: { user } } = await supabase.auth.getUser();
       
       const formData = {
         title,
@@ -413,6 +416,7 @@ const NewComplaint = () => {
         attachments: uploadedFiles,
         state_id: selectedState ? parseInt(selectedState) : null,
         district_id: selectedDistrict ? parseInt(selectedDistrict) : null,
+        user_id: user?.id || null, // Set user_id to null for anonymous submissions
         ...(submissionType === "feedback" && {
           feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
           user_name: userName || null,
@@ -458,6 +462,7 @@ const NewComplaint = () => {
         description: error.message || "Failed to submit",
         variant: "destructive",
       });
+      console.error('Submission error:', error);
     } finally {
       setLoading(false);
     }
