@@ -12,6 +12,9 @@ import { PersonalInfoFields } from "./PersonalInfoFields";
 import { LocationSelector } from "./LocationSelector";
 import { FileUploadField } from "./FileUploadField";
 import { DescriptionField } from "./DescriptionField";
+import { SectorQuestions } from "./SectorQuestions";
+import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
 
 const FEEDBACK_CATEGORIES = [
   { label: "Platform Experience", value: "platform_experience" },
@@ -85,6 +88,56 @@ export function ComplaintForm({
   selectedDistrict,
   setSelectedDistrict,
 }: ComplaintFormProps) {
+  const [formProgress, setFormProgress] = useState(0);
+  const [sectorAnswers, setSectorAnswers] = useState<Record<string, any>>({});
+
+  // Calculate form progress
+  const calculateProgress = () => {
+    let totalFields = 0;
+    let filledFields = 0;
+
+    // Common fields
+    totalFields += 2; // title and description
+    if (title) filledFields++;
+    if (description) filledFields++;
+
+    if (submissionType === "complaint") {
+      totalFields += 4; // sector, state, district, personal info
+      if (sectorId) filledFields++;
+      if (selectedState) filledFields++;
+      if (selectedDistrict) filledFields++;
+      if (userName && userEmail) filledFields++;
+    } else if (submissionType === "feedback") {
+      totalFields += 3; // category and personal info
+      if (feedbackCategory) filledFields++;
+      if (userName) filledFields++;
+      if (userEmail) filledFields++;
+    } else if (submissionType === "compliment") {
+      totalFields += 3; // recipient and personal info
+      if (complimentRecipient) filledFields++;
+      if (userName) filledFields++;
+      if (userEmail) filledFields++;
+    }
+
+    setFormProgress((filledFields / totalFields) * 100);
+  };
+
+  // Update progress when form fields change
+  React.useEffect(() => {
+    calculateProgress();
+  }, [
+    title,
+    description,
+    sectorId,
+    selectedState,
+    selectedDistrict,
+    userName,
+    userEmail,
+    feedbackCategory,
+    complimentRecipient,
+    submissionType,
+  ]);
+
   const renderFormFields = () => {
     switch (submissionType) {
       case "feedback":
@@ -144,7 +197,15 @@ export function ComplaintForm({
   };
 
   return (
-    <div>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <div className="mb-2 flex justify-between items-center">
+          <span className="text-sm text-gray-600">Form Progress</span>
+          <span className="text-sm text-gray-600">{Math.round(formProgress)}%</span>
+        </div>
+        <Progress value={formProgress} className="w-full" />
+      </div>
+
       <div className="mb-6">
         <RadioGroup
           defaultValue="complaint"
@@ -214,6 +275,14 @@ export function ComplaintForm({
                 </SelectContent>
               </Select>
             </div>
+
+            {sectorId && (
+              <SectorQuestions
+                sectorId={sectorId}
+                answers={sectorAnswers}
+                setAnswers={setSectorAnswers}
+              />
+            )}
           </>
         )}
 
@@ -252,8 +321,19 @@ export function ComplaintForm({
           setFiles={setFiles}
         />
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Submitting..." : "Submit"}
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+              Submitting...
+            </div>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </form>
     </div>
