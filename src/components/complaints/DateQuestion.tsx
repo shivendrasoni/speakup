@@ -42,7 +42,11 @@ export function DateQuestion({ label, required, value, onChange, questionId }: D
             mode="single"
             selected={value}
             onSelect={onChange}
-            disabled={(date) => date > today}
+            disabled={(date) => {
+              // Disable dates after today
+              const disableDate = date > today;
+              return disableDate;
+            }}
             initialFocus
           />
         </PopoverContent>
