@@ -5,6 +5,7 @@ import { Info } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface State {
   id: number;
@@ -32,10 +33,13 @@ export function LocationSelector({
 }: LocationSelectorProps) {
   const [states, setStates] = useState<State[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   // Fetch states on component mount
   useEffect(() => {
     const fetchStates = async () => {
+      setLoading(true);
       try {
         const { data, error } = await supabase
           .from('states')
@@ -43,6 +47,11 @@ export function LocationSelector({
           .order('name');
 
         if (error) {
+          toast({
+            title: "Error",
+            description: "Failed to load states. Please try again.",
+            variant: "destructive",
+          });
           console.error('Error fetching states:', error);
           return;
         }
@@ -50,11 +59,13 @@ export function LocationSelector({
         setStates(data || []);
       } catch (error) {
         console.error('Error fetching states:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStates();
-  }, []);
+  }, [toast]);
 
   // Fetch districts when state changes
   useEffect(() => {
@@ -64,6 +75,7 @@ export function LocationSelector({
         return;
       }
 
+      setLoading(true);
       try {
         const { data, error } = await supabase
           .from('districts')
@@ -72,6 +84,11 @@ export function LocationSelector({
           .order('name');
 
         if (error) {
+          toast({
+            title: "Error",
+            description: "Failed to load districts. Please try again.",
+            variant: "destructive",
+          });
           console.error('Error fetching districts:', error);
           return;
         }
@@ -79,11 +96,13 @@ export function LocationSelector({
         setDistricts(data || []);
       } catch (error) {
         console.error('Error fetching districts:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchDistricts();
-  }, [selectedState]);
+  }, [selectedState, toast]);
 
   const handleStateChange = (newStateId: string) => {
     setSelectedState(newStateId);
@@ -107,9 +126,10 @@ export function LocationSelector({
         <Select
           value={selectedState}
           onValueChange={handleStateChange}
+          disabled={loading}
         >
           <SelectTrigger className="bg-white">
-            <SelectValue placeholder="Select a state" />
+            <SelectValue placeholder={loading ? "Loading states..." : "Select a state"} />
           </SelectTrigger>
           <SelectContent>
             {states.map((state) => (
@@ -136,10 +156,16 @@ export function LocationSelector({
         <Select
           value={selectedDistrict}
           onValueChange={setSelectedDistrict}
-          disabled={!selectedState}
+          disabled={!selectedState || loading}
         >
           <SelectTrigger className="bg-white">
-            <SelectValue placeholder={selectedState ? "Select a district" : "First select a state"} />
+            <SelectValue 
+              placeholder={
+                loading ? "Loading districts..." : 
+                !selectedState ? "First select a state" : 
+                "Select a district"
+              } 
+            />
           </SelectTrigger>
           <SelectContent>
             {districts.map((district) => (
