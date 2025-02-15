@@ -28,6 +28,17 @@ export function DateQuestion({
   const today = new Date();
   today.setHours(23, 59, 59, 999); // Set to end of day to allow selecting today
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Ensure the date is set to local midnight
+      const localDate = new Date(date);
+      localDate.setHours(0, 0, 0, 0);
+      onChange(localDate);
+    } else {
+      onChange(undefined);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label>
@@ -41,27 +52,34 @@ export function DateQuestion({
               "w-full justify-start text-left font-normal",
               !value && "text-muted-foreground"
             )}
+            type="button" // Prevent form submission on click
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value ? format(value, "PPP") : "Pick a date"}
+            {value ? format(value, "yyyy-MM-dd") : "Pick a date"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={value}
-            onSelect={onChange}
+            onSelect={handleDateSelect}
             disabled={(date) => {
-              // Only restrict future dates for complaints
-              if (submissionType === 'complaint') {
-                return date > today;
-              }
-              return false;
+              const currentDate = new Date();
+              currentDate.setHours(23, 59, 59, 999);
+              return date > currentDate;
             }}
             initialFocus
+            captionLayout="dropdown-buttons"
+            fromYear={1900}
+            toYear={new Date().getFullYear()}
           />
         </PopoverContent>
       </Popover>
+      <input 
+        type="hidden" 
+        name={questionId} 
+        value={value ? format(value, "yyyy-MM-dd") : ''} 
+      />
     </div>
   );
 }
