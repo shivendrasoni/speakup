@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,9 +14,7 @@ import { HeroSection } from "@/components/complaints/HeroSection";
 import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
 
-type Sector = Database["public"]["Tables"]["sectors"]["Row"];
-export type SubmissionType = "complaint" | "feedback" | "compliment";
-export type LanguageCode = "english" | "hindi" | "bengali" | "telugu" | "marathi" | "tamil" | "gujarati" | "kannada" | "odia" | "punjabi" | "malayalam";
+// Remove duplicate type declarations and use the imported ones instead
 
 export const LANGUAGE_CODES = {
   english: 'en',
@@ -281,7 +280,7 @@ const NewComplaint = () => {
         return;
       }
 
-      setSectors(data);
+      setSectors(data || []);
     };
 
     fetchSectors();
@@ -441,6 +440,7 @@ const NewComplaint = () => {
         description: "Your submission has been received successfully",
       });
       
+      // Reset form
       setTitle("");
       setDescription("");
       setSectorId("");
