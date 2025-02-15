@@ -40,18 +40,28 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
 
         if (error) throw error;
         
-        // Properly type and validate the questions data
-        const questionsData = data?.questions as Question[] || [];
+        // First cast to unknown, then to an array of any
+        const rawQuestions = data?.questions as unknown as any[];
         
-        // Validate that the data matches our Question interface
-        const validQuestions = questionsData.filter((q): q is Question => {
+        if (!Array.isArray(rawQuestions)) {
+          setQuestions([]);
+          return;
+        }
+
+        // Type guard function to verify if an object is a valid Question
+        const isValidQuestion = (q: any): q is Question => {
           return (
-            typeof q.id === 'string' &&
-            typeof q.question === 'string' &&
-            ['text', 'select', 'radio', 'checkbox'].includes(q.type) &&
-            typeof q.required === 'boolean'
+            typeof q?.id === 'string' &&
+            typeof q?.question === 'string' &&
+            ['text', 'select', 'radio', 'checkbox'].includes(q?.type) &&
+            typeof q?.required === 'boolean' &&
+            (!q?.options || Array.isArray(q?.options)) &&
+            (!q?.description || typeof q?.description === 'string')
           );
-        });
+        };
+
+        // Filter and map the raw questions to ensure they match our Question interface
+        const validQuestions = rawQuestions.filter(isValidQuestion);
 
         setQuestions(validQuestions);
       } catch (err: any) {
