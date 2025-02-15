@@ -143,14 +143,80 @@ export function ComplaintForm({
 
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date);
-    setSectorAnswers(prev => ({
-      ...prev,
-      date
-    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(e);
   };
 
   const renderFormFields = () => {
     switch (submissionType) {
+      case "complaint":
+        return (
+          <>
+            <PersonalInfoFields
+              userName={userName}
+              setUserName={setUserName}
+              userEmail={userEmail}
+              setUserEmail={setUserEmail}
+              required
+            />
+
+            <LocationSelector
+              selectedState={selectedState}
+              setSelectedState={setSelectedState}
+              selectedDistrict={selectedDistrict}
+              setSelectedDistrict={setSelectedDistrict}
+            />
+
+            <DateQuestion
+              label="Date of Incident"
+              required
+              value={selectedDate}
+              onChange={handleDateChange}
+              questionId="date"
+              submissionType="complaint"
+            />
+
+            <div className="space-y-2">
+              <Label htmlFor="sector">
+                Department/Sector *
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80 p-3 text-sm">
+                    Select the department or sector related to your complaint
+                  </HoverCardContent>
+                </HoverCard>
+              </Label>
+              <Select
+                value={sectorId}
+                onValueChange={setSectorId}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Select a sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sectors.map((sector) => (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {sectorId && (
+              <SectorQuestions
+                sectorId={sectorId}
+                answers={sectorAnswers}
+                setAnswers={setSectorAnswers}
+              />
+            )}
+          </>
+        );
       case "feedback":
         return (
           <>
@@ -238,73 +304,8 @@ export function ComplaintForm({
         </RadioGroup>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {renderFormFields()}
-        
-        {submissionType === "complaint" && (
-          <>
-            <PersonalInfoFields
-              userName={userName}
-              setUserName={setUserName}
-              userEmail={userEmail}
-              setUserEmail={setUserEmail}
-              required
-            />
-
-            <LocationSelector
-              selectedState={selectedState}
-              setSelectedState={setSelectedState}
-              selectedDistrict={selectedDistrict}
-              setSelectedDistrict={setSelectedDistrict}
-            />
-
-            <DateQuestion
-              label="Date of Incident"
-              required
-              value={selectedDate}
-              onChange={handleDateChange}
-              questionId="date"
-              submissionType="complaint"
-            />
-
-            <div className="space-y-2">
-              <Label htmlFor="sector">
-                Department/Sector *
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80 p-3 text-sm">
-                    Select the department or sector related to your complaint
-                  </HoverCardContent>
-                </HoverCard>
-              </Label>
-              <Select
-                value={sectorId}
-                onValueChange={setSectorId}
-              >
-                <SelectTrigger className="bg-white">
-                  <SelectValue placeholder="Select a sector" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {sectorId && (
-              <SectorQuestions
-                sectorId={sectorId}
-                answers={sectorAnswers}
-                setAnswers={setSectorAnswers}
-              />
-            )}
-          </>
-        )}
 
         <div className="space-y-2">
           <Label htmlFor="title">

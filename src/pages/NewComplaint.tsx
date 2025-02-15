@@ -12,6 +12,7 @@ import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
 import { HeroSection } from "@/components/complaints/HeroSection";
 import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 export const LANGUAGE_CODES = {
   english: 'en',
@@ -82,7 +83,7 @@ export const TRANSLATIONS = {
     changeLanguage: "ভাষা পরিবর্তন করুন",
     placeholders: {
       title: "আপনার জমার সংক্ষিপ্ত শিরোনাম",
-      description: "বিস্তারিত বিবরণ"
+      description: "বিস্তারিত বি঵রণ"
     }
   },
   telugu: {
@@ -97,7 +98,7 @@ export const TRANSLATIONS = {
     recording: "రికార్డింగ్...",
     startRecording: "వ౉इస్ ఇన్పుట్ ప్రారंಭించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
-    viewDashboard: "పబ్లిక్ డ్యాష్బోర్డ్ చూడండి",
+    viewDashboard: "పొతు డాష్బోర్డైக் காண்க",
     changeLanguage: "భాష మార్చండి",
     placeholders: {
       title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షికె",
@@ -116,7 +117,7 @@ export const TRANSLATIONS = {
     recording: "பதிவு செய்கிறது...",
     startRecording: "வ௉इస் இந்புட்ட் ஆரம்பிக்கவும்",
     stopRecording: "பதிவை நிறுத்தவும்",
-    viewDashboard: "పొతు ஡ాష్బోర్డైக் காண்க",
+    viewDashboard: "పొతు డాష్బోర్డైக் காண்க",
     changeLanguage: "மொழியை மாற்றவும்",
     placeholders: {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
@@ -173,7 +174,7 @@ export const TRANSLATIONS = {
     recording: "റെക്കോർഡ് ചെയ്കிறതு...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
     stopRecording: "റെക്കോർഡിംഗ് നില്ILLിസി",
-    viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് ଦେଖନ୍ତୁ",
+    viewDashboard: "പൊതു ഡാഷ്‌ബോର୍ଡ് ଦେଖନ୍ତୁ",
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {
       title: "നിങ്ങളുടെ സമർപ്പണത്തിന്റെ ചുരുക്കമായ തലക്കെട്ട്",
@@ -229,7 +230,7 @@ export const TRANSLATIONS = {
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡ���ଂ...",
     startRecording: "ଭ��ସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
-    stopRecording: "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ",
+    stopRecording: "ରେକର୍���ିଂ ବନ୍ଦ କରନ୍ତୁ",
     viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
     placeholders: {
@@ -367,10 +368,10 @@ const NewComplaint = () => {
       return;
     }
 
-    if (submissionType === "complaint" && (!selectedState || !selectedDistrict)) {
+    if (submissionType === "complaint" && (!selectedState || !selectedDistrict || !selectedDate)) {
       toast({
         title: "Error",
-        description: "Please select both state and district",
+        description: "Please fill in all required fields including state, district, and date",
         variant: "destructive",
       });
       return;
@@ -415,7 +416,7 @@ const NewComplaint = () => {
         state_id: selectedState ? parseInt(selectedState) : null,
         district_id: selectedDistrict ? parseInt(selectedDistrict) : null,
         user_id: user?.id || null,
-        date: selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : null,
+        date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
         ...(submissionType === "feedback" && {
           feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
           user_name: userName || null,
