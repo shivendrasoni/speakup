@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,8 +12,6 @@ import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
 import { HeroSection } from "@/components/complaints/HeroSection";
 import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
-
-// Remove duplicate type declarations and use the imported ones instead
 
 export const LANGUAGE_CODES = {
   english: 'en',
@@ -76,7 +73,7 @@ export const TRANSLATIONS = {
     feedback: "মতামত শেয়ার করুন",
     compliment: "প্রশংসা করুন",
     sector: "বিভাগ/সেক্টর",
-    description: "বিবরণ",
+    description: "বি঵রণ",
     submit: "জমা দিন",
     recording: "রেকর্ডিং চলছে...",
     startRecording: "ভয়েস ইনপুট শুরু করুন",
@@ -92,7 +89,7 @@ export const TRANSLATIONS = {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భ��ష ఎంచుకోండి",
     complaint: "ఫిర్యాద�������� నమోదు చేయండి",
-    feedback: "అభిప్రాయాన్ని పంచుకోండి",
+    feedback: "అభిప్రాయాన్న�� పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
     description: "వివరణ",
@@ -119,7 +116,7 @@ export const TRANSLATIONS = {
     recording: "பதிவு செய்கிறது...",
     startRecording: "வ௉इస் இந்புட்ட் ஆரம்பிக்கவும்",
     stopRecording: "பதிவை நிறுத்தவும்",
-    viewDashboard: "பொது ஡ாஷ்போர்டைக் காண்க",
+    viewDashboard: "పొతు ஡ాష్బోర్డైக் காண்க",
     changeLanguage: "மொழியை மாற்றவும்",
     placeholders: {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
@@ -173,7 +170,7 @@ export const TRANSLATIONS = {
     sector: "വകുപ്പ്/മേഖല",
     description: "വിവരണം",
     submit: "സമർപ്പിക്കുക",
-    recording: "റെക്കോർഡ് ചെയ്യുന്നു...",
+    recording: "റെക്കോർഡ് ചെയ്കிறതு...",
     startRecording: "വോയ്‌സ് ഇൻപുട്ട് ആരംഭിക്കുക",
     stopRecording: "റെക്കോർഡിംഗ് നില്ILLിസി",
     viewDashboard: "പൊതു ഡാഷ്‌ബോർഡ് ଦେଖନ୍ତୁ",
@@ -207,14 +204,14 @@ export const TRANSLATIONS = {
     languageSelect: "ਭਾਸ਼ਾ ਚੁਣੋ",
     complaint: "ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ",
     feedback: "ਫੀਡਬੈਕ ਸਾਂਝਾ ਕਰੋ",
-    compliment: "ਸ਼ਾਬਾਸ਼ੀ ਦਿਓ",
+    compliment: "ਸ਼ਾਬਾਸ਼ੀ ਨਲਕੁਕ",
     sector: "ਵਿਭਾग/ਖੇਤਰ",
     description: "ਵੇਰਵਾ",
     submit: "ਜਮ੍ਹਾਂ ਕਰੋ",
     recording: "ਰਿਕਾਰਡਿੰਗ...",
     startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
     stopRecording: "ਰਿਕਾਰਡਿੰग ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ࡭ാസ്‌ബോർഡ ଦେଖନ୍ତୁ",
+    viewDashboard: "ਪਬਲਿਕ ࡭ാസ്‌ബോର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
@@ -263,6 +260,7 @@ const NewComplaint = () => {
   const [complimentRecipient, setComplimentRecipient] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     const fetchSectors = async () => {
@@ -416,7 +414,8 @@ const NewComplaint = () => {
         attachments: uploadedFiles,
         state_id: selectedState ? parseInt(selectedState) : null,
         district_id: selectedDistrict ? parseInt(selectedDistrict) : null,
-        user_id: user?.id || null, // Set user_id to null for anonymous submissions
+        user_id: user?.id || null,
+        date: selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : null,
         ...(submissionType === "feedback" && {
           feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
           user_name: userName || null,
@@ -455,6 +454,7 @@ const NewComplaint = () => {
       setComplimentRecipient("");
       setSelectedState("");
       setSelectedDistrict("");
+      setSelectedDate(undefined);
       setShowComplaintForm(false);
     } catch (error: any) {
       toast({
