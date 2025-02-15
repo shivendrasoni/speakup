@@ -96,6 +96,7 @@ export type Database = {
           complaint_id: string | null
           compliment_recipient: string | null
           created_at: string
+          date: string | null
           description: string
           district: string | null
           district_id: number | null
@@ -131,6 +132,7 @@ export type Database = {
           complaint_id?: string | null
           compliment_recipient?: string | null
           created_at?: string
+          date?: string | null
           description: string
           district?: string | null
           district_id?: number | null
@@ -166,6 +168,7 @@ export type Database = {
           complaint_id?: string | null
           compliment_recipient?: string | null
           created_at?: string
+          date?: string | null
           description?: string
           district?: string | null
           district_id?: number | null

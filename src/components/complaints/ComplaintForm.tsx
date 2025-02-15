@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,7 @@ import { FileUploadField } from "./FileUploadField";
 import { DescriptionField } from "./DescriptionField";
 import { SectorQuestions } from "./SectorQuestions";
 import { Progress } from "@/components/ui/progress";
+import { DateQuestion } from "./DateQuestion";
 
 const FEEDBACK_CATEGORIES = [
   { label: "Platform Experience", value: "platform_experience" },
@@ -90,6 +90,7 @@ export function ComplaintForm({
 }: ComplaintFormProps) {
   const [formProgress, setFormProgress] = useState(0);
   const [sectorAnswers, setSectorAnswers] = useState<Record<string, any>>({});
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   // Calculate form progress
   const calculateProgress = () => {
@@ -102,11 +103,12 @@ export function ComplaintForm({
     if (description) filledFields++;
 
     if (submissionType === "complaint") {
-      totalFields += 4; // sector, state, district, personal info
+      totalFields += 5; // sector, state, district, personal info, date
       if (sectorId) filledFields++;
       if (selectedState) filledFields++;
       if (selectedDistrict) filledFields++;
       if (userName && userEmail) filledFields++;
+      if (selectedDate) filledFields++;
     } else if (submissionType === "feedback") {
       totalFields += 3; // category and personal info
       if (feedbackCategory) filledFields++;
@@ -136,7 +138,16 @@ export function ComplaintForm({
     feedbackCategory,
     complimentRecipient,
     submissionType,
+    selectedDate,
   ]);
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    setSectorAnswers(prev => ({
+      ...prev,
+      date
+    }));
+  };
 
   const renderFormFields = () => {
     switch (submissionType) {
@@ -245,6 +256,15 @@ export function ComplaintForm({
               setSelectedState={setSelectedState}
               selectedDistrict={selectedDistrict}
               setSelectedDistrict={setSelectedDistrict}
+            />
+
+            <DateQuestion
+              label="Date of Incident"
+              required
+              value={selectedDate}
+              onChange={handleDateChange}
+              questionId="date"
+              submissionType="complaint"
             />
 
             <div className="space-y-2">
