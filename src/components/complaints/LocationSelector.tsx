@@ -35,46 +35,48 @@ export function LocationSelector({
   const [filteredDistricts, setFilteredDistricts] = useState<District[]>([]);
 
   useEffect(() => {
-    const fetchStatesAndDistricts = async () => {
-      const { data: statesData, error: statesError } = await supabase
-        .from('states')
-        .select('*')
-        .order('name');
+    const fetchLocations = async () => {
+      try {
+        // Fetch states
+        const { data: statesData, error: statesError } = await supabase
+          .from('states')
+          .select('*')
+          .order('name');
 
-      if (statesError) {
-        console.error('Error fetching states:', statesError);
-        return;
+        if (statesError) {
+          console.error('Error fetching states:', statesError);
+          return;
+        }
+
+        setStates(statesData || []);
+
+        // Fetch districts for the selected state if one is selected
+        if (selectedState) {
+          const { data: districtsData, error: districtsError } = await supabase
+            .from('districts')
+            .select('*')
+            .eq('state_id', parseInt(selectedState))
+            .order('name');
+
+          if (districtsError) {
+            console.error('Error fetching districts:', districtsError);
+            return;
+          }
+
+          setFilteredDistricts(districtsData || []);
+        }
+      } catch (error) {
+        console.error('Error fetching location data:', error);
       }
-
-      const { data: districtsData, error: districtsError } = await supabase
-        .from('districts')
-        .select('*')
-        .order('name');
-
-      if (districtsError) {
-        console.error('Error fetching districts:', districtsError);
-        return;
-      }
-
-      setStates(statesData);
-      setDistricts(districtsData);
     };
 
-    fetchStatesAndDistricts();
-  }, []);
+    fetchLocations();
+  }, [selectedState]); // Re-fetch when selected state changes
 
-  useEffect(() => {
-    if (selectedState && districts.length > 0) {
-      const stateId = parseInt(selectedState);
-      const filtered = districts.filter(district => district.state_id === stateId);
-      setFilteredDistricts(filtered);
-      if (!filtered.find(d => d.id.toString() === selectedDistrict)) {
-        setSelectedDistrict("");
-      }
-    } else {
-      setFilteredDistricts([]);
-    }
-  }, [selectedState, districts, selectedDistrict, setSelectedDistrict]);
+  const handleStateChange = (newStateId: string) => {
+    setSelectedState(newStateId);
+    setSelectedDistrict(''); // Reset district when state changes
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -92,7 +94,7 @@ export function LocationSelector({
         </Label>
         <Select
           value={selectedState}
-          onValueChange={setSelectedState}
+          onValueChange={handleStateChange}
         >
           <SelectTrigger className="bg-white">
             <SelectValue placeholder="Select a state" />
