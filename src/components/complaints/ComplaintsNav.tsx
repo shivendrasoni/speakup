@@ -2,7 +2,7 @@
 import { Languages, ChartBar, Award, BookOpen, Users, Mic, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
-import type { LanguageCode } from "@/pages/NewComplaint";
+import type { LanguageCode } from "@/types/complaints";
 
 interface ComplaintsNavProps {
   language: LanguageCode;
