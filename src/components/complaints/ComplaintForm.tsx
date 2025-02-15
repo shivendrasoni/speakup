@@ -1,17 +1,14 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff } from "lucide-react";
+import { Mic, MicOff, Info } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import type { Sector } from "@/types/complaints";
 import type { SubmissionType, LanguageCode } from "@/types/complaints";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
 
-// Add feedback categories options
 const FEEDBACK_CATEGORIES = [
   { label: "Platform Experience", value: "platform_experience" },
   { label: "Response Time", value: "response_time" },
@@ -100,7 +97,7 @@ export function ComplaintForm({
   const renderFieldHint = (hint: string) => (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <InfoCircledIcon className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+        <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-3 text-sm">
         {hint}
