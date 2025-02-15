@@ -17,11 +17,13 @@ interface DateQuestionProps {
 
 export function DateQuestion({ label, required, value, onChange, questionId }: DateQuestionProps) {
   const today = new Date();
-  today.setHours(23, 59, 59, 999); // Set to end of day
+  today.setHours(23, 59, 59, 999); // Set to end of day to allow selecting today
 
   return (
     <div className="space-y-2">
-      <Label>{label} {required && <span className="text-red-500 ml-1">*</span>}</Label>
+      <Label>
+        {label} {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
