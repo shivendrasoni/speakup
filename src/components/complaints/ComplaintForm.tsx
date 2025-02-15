@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mic, MicOff, Info } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Sector } from "@/types/complaints";
 import type { SubmissionType, LanguageCode } from "@/types/complaints";
 
@@ -15,6 +18,17 @@ const FEEDBACK_CATEGORIES = [
   { label: "Accessibility", value: "accessibility" },
   { label: "Other", value: "other" },
 ];
+
+interface State {
+  id: number;
+  name: string;
+}
+
+interface District {
+  id: number;
+  name: string;
+  state_id: number;
+}
 
 interface ComplaintFormProps {
   title: string;
@@ -73,6 +87,51 @@ export function ComplaintForm({
   complimentRecipient,
   setComplimentRecipient,
 }: ComplaintFormProps) {
+  const [states, setStates] = useState<State[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
+  const [filteredDistricts, setFilteredDistricts] = useState<District[]>([]);
+
+  useEffect(() => {
+    const fetchStatesAndDistricts = async () => {
+      const { data: statesData, error: statesError } = await supabase
+        .from('states')
+        .select('*')
+        .order('name');
+
+      if (statesError) {
+        console.error('Error fetching states:', statesError);
+        return;
+      }
+
+      const { data: districtsData, error: districtsError } = await supabase
+        .from('districts')
+        .select('*')
+        .order('name');
+
+      if (districtsError) {
+        console.error('Error fetching districts:', districtsError);
+        return;
+      }
+
+      setStates(statesData);
+      setDistricts(districtsData);
+    };
+
+    fetchStatesAndDistricts();
+  }, []);
+
+  useEffect(() => {
+    if (selectedState && districts.length > 0) {
+      const stateId = parseInt(selectedState);
+      const filtered = districts.filter(district => district.state_id === stateId);
+      setFilteredDistricts(filtered);
+      setSelectedDistrict(""); // Reset district selection when state changes
+    } else {
+      setFilteredDistricts([]);
+    }
+  }, [selectedState, districts]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -253,6 +312,53 @@ export function ComplaintForm({
                   placeholder="Enter your email address"
                   className="w-full"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="state">
+                  State *
+                  {renderFieldHint("Select your state")}
+                </Label>
+                <Select
+                  value={selectedState}
+                  onValueChange={setSelectedState}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {states.map((state) => (
+                      <SelectItem key={state.id} value={state.id.toString()}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">
+                  District *
+                  {renderFieldHint("Select your district")}
+                </Label>
+                <Select
+                  value={selectedDistrict}
+                  onValueChange={setSelectedDistrict}
+                  disabled={!selectedState}
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder={selectedState ? "Select a district" : "First select a state"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredDistricts.map((district) => (
+                      <SelectItem key={district.id} value={district.id.toString()}>
+                        {district.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
