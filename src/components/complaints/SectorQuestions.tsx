@@ -48,13 +48,16 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
       try {
         const { data, error } = await supabase
           .from('sectors')
-          .select('sub_categories, questions')
+          .select('sub_categories')
           .eq('id', sectorId)
           .single();
 
         if (error) throw error;
 
-        // Handle sub-categories
+        // Reset selected sub-category when sector changes
+        setSelectedSubCategory("");
+        
+        // Parse sub-categories
         const rawSubCategories = data?.sub_categories as any[] || [];
         const validSubCategories = rawSubCategories.filter((sc): sc is SubCategory => {
           return (
@@ -63,23 +66,9 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
             Array.isArray(sc?.questions)
           );
         });
+        
         setSubCategories(validSubCategories);
-
-        // Handle legacy questions (if any)
-        const rawQuestions = data?.questions as any[] || [];
-        if (Array.isArray(rawQuestions) && rawQuestions.length > 0) {
-          const isValidQuestion = (q: any): q is Question => {
-            return (
-              typeof q?.id === 'string' &&
-              typeof q?.question === 'string' &&
-              ['text', 'select', 'radio', 'checkbox', 'date'].includes(q?.type) &&
-              typeof q?.required === 'boolean' &&
-              (!q?.options || Array.isArray(q?.options)) &&
-              (!q?.description || typeof q?.description === 'string')
-            );
-          };
-          setQuestions(rawQuestions.filter(isValidQuestion));
-        }
+        setQuestions([]); // Clear questions until a sub-category is selected
       } catch (err: any) {
         setError(err.message);
         console.error('Error fetching sector data:', err);
@@ -96,7 +85,13 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
   useEffect(() => {
     if (selectedSubCategory) {
       const subCategory = subCategories.find(sc => sc.id === selectedSubCategory);
-      setQuestions(subCategory?.questions || []);
+      if (subCategory) {
+        setQuestions(subCategory.questions);
+      } else {
+        setQuestions([]);
+      }
+    } else {
+      setQuestions([]);
     }
   }, [selectedSubCategory, subCategories]);
 
@@ -109,27 +104,6 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
 
   return (
     <div className="space-y-6">
-      {subCategories.length > 0 && (
-        <div className="space-y-2">
-          <Label>Sub-category</Label>
-          <Select
-            value={selectedSubCategory}
-            onValueChange={setSelectedSubCategory}
-          >
-            <SelectTrigger className="bg-white">
-              <SelectValue placeholder="Select a sub-category" />
-            </SelectTrigger>
-            <SelectContent>
-              {subCategories.map((subCategory) => (
-                <SelectItem key={subCategory.id} value={subCategory.id}>
-                  {subCategory.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
       {/* Date of Incident/Concern */}
       <div className="space-y-2">
         <Label>Date of Incident/Concern *</Label>
@@ -157,7 +131,39 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
         </Popover>
       </div>
 
-      {/* Render questions based on selected sub-category */}
+      {/* Sub-category Selection */}
+      {subCategories.length > 0 && (
+        <div className="space-y-2">
+          <Label>
+            Sub-category *
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 p-3 text-sm">
+                Select a specific category to help us better understand your concern
+              </HoverCardContent>
+            </HoverCard>
+          </Label>
+          <Select
+            value={selectedSubCategory}
+            onValueChange={setSelectedSubCategory}
+          >
+            <SelectTrigger className="bg-white">
+              <SelectValue placeholder="Select a sub-category" />
+            </SelectTrigger>
+            <SelectContent>
+              {subCategories.map((subCategory) => (
+                <SelectItem key={subCategory.id} value={subCategory.id}>
+                  {subCategory.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Dynamic Questions based on selected sub-category */}
       {questions.map((question) => (
         <div key={question.id} className="space-y-2">
           <Label className="flex items-center">
