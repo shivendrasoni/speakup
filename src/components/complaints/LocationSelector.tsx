@@ -31,56 +31,49 @@ export function LocationSelector({
   setSelectedDistrict,
 }: LocationSelectorProps) {
   const [states, setStates] = useState<State[]>([]);
-  const [availableDistricts, setAvailableDistricts] = useState<District[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [filteredDistricts, setFilteredDistricts] = useState<District[]>([]);
 
-  // Fetch states on component mount
   useEffect(() => {
-    const fetchStates = async () => {
+    const fetchLocations = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch states
+        const { data: statesData, error: statesError } = await supabase
           .from('states')
           .select('*')
           .order('name');
 
-        if (error) throw error;
-        console.log('Fetched states:', data);
-        setStates(data || []);
+        if (statesError) {
+          console.error('Error fetching states:', statesError);
+          return;
+        }
+
+        setStates(statesData || []);
+
+        // Fetch districts for the selected state if one is selected
+        if (selectedState) {
+          const { data: districtsData, error: districtsError } = await supabase
+            .from('districts')
+            .select('*')
+            .eq('state_id', parseInt(selectedState))
+            .order('name');
+
+          if (districtsError) {
+            console.error('Error fetching districts:', districtsError);
+            return;
+          }
+
+          setFilteredDistricts(districtsData || []);
+        }
       } catch (error) {
-        console.error('Error fetching states:', error);
+        console.error('Error fetching location data:', error);
       }
     };
 
-    fetchStates();
-  }, []);
-
-  // Fetch districts when state is selected
-  useEffect(() => {
-    const fetchDistricts = async () => {
-      if (!selectedState) {
-        setAvailableDistricts([]);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('districts')
-          .select('*')
-          .eq('state_id', parseInt(selectedState))
-          .order('name');
-
-        if (error) throw error;
-        console.log('Fetched districts for state:', selectedState, data);
-        setAvailableDistricts(data || []);
-      } catch (error) {
-        console.error('Error fetching districts:', error);
-      }
-    };
-
-    fetchDistricts();
-  }, [selectedState]);
+    fetchLocations();
+  }, [selectedState]); // Re-fetch when selected state changes
 
   const handleStateChange = (newStateId: string) => {
-    console.log('State changed to:', newStateId);
     setSelectedState(newStateId);
     setSelectedDistrict(''); // Reset district when state changes
   };
@@ -137,7 +130,7 @@ export function LocationSelector({
             <SelectValue placeholder={selectedState ? "Select a district" : "First select a state"} />
           </SelectTrigger>
           <SelectContent>
-            {availableDistricts.map((district) => (
+            {filteredDistricts.map((district) => (
               <SelectItem key={district.id} value={district.id.toString()}>
                 {district.name}
               </SelectItem>
