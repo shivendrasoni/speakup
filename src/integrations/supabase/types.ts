@@ -107,9 +107,11 @@ export type Database = {
           is_public: boolean
           language: string
           phone: string | null
+          phone_number: string | null
           pincode: string | null
           sector_id: string
           sector_specific_answers: Json | null
+          sector_specific_data: Json | null
           shares: number | null
           state: string | null
           state_id: number | null
@@ -140,9 +142,11 @@ export type Database = {
           is_public?: boolean
           language?: string
           phone?: string | null
+          phone_number?: string | null
           pincode?: string | null
           sector_id: string
           sector_specific_answers?: Json | null
+          sector_specific_data?: Json | null
           shares?: number | null
           state?: string | null
           state_id?: number | null
@@ -173,9 +177,11 @@ export type Database = {
           is_public?: boolean
           language?: string
           phone?: string | null
+          phone_number?: string | null
           pincode?: string | null
           sector_id?: string
           sector_specific_answers?: Json | null
+          sector_specific_data?: Json | null
           shares?: number | null
           state?: string | null
           state_id?: number | null
