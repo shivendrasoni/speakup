@@ -16,8 +16,6 @@ export function SubCategorySelector({
   selectedSubCategory, 
   onSubCategoryChange 
 }: SubCategorySelectorProps) {
-  if (subCategories.length === 0) return null;
-
   return (
     <div className="space-y-2">
       <Label>

@@ -16,6 +16,9 @@ interface DateQuestionProps {
 }
 
 export function DateQuestion({ label, required, value, onChange, questionId }: DateQuestionProps) {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // Set to end of day
+
   return (
     <div className="space-y-2">
       <Label>{label} {required && <span className="text-red-500 ml-1">*</span>}</Label>
@@ -37,6 +40,7 @@ export function DateQuestion({ label, required, value, onChange, questionId }: D
             mode="single"
             selected={value}
             onSelect={onChange}
+            disabled={(date) => date > today}
             initialFocus
           />
         </PopoverContent>

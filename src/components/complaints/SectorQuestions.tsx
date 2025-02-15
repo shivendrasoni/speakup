@@ -20,23 +20,30 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           .from('sectors')
           .select('sub_categories')
           .eq('id', sectorId)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
         setSelectedSubCategory("");
         
         const rawSubCategories = data?.sub_categories as any[] || [];
-        const validSubCategories = rawSubCategories.filter((sc): sc is SubCategory => {
-          return (
-            typeof sc?.id === 'string' &&
-            typeof sc?.name === 'string' &&
-            Array.isArray(sc?.questions)
-          );
-        });
+        // Ensure unique subcategories by ID
+        const uniqueSubCategories = Array.from(
+          new Map(
+            rawSubCategories
+              .filter((sc): sc is SubCategory => {
+                return (
+                  typeof sc?.id === 'string' &&
+                  typeof sc?.name === 'string' &&
+                  Array.isArray(sc?.questions)
+                );
+              })
+              .map(item => [item.id, item])
+          ).values()
+        );
         
-        console.log('Fetched sub-categories:', validSubCategories); // Debug log
-        setSubCategories(validSubCategories);
+        console.log('Fetched sub-categories:', uniqueSubCategories);
+        setSubCategories(uniqueSubCategories);
         setQuestions([]);
       } catch (err: any) {
         setError(err.message);
@@ -48,6 +55,10 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
 
     if (sectorId) {
       fetchSectorData();
+      // Reset answers related to previous sector's questions
+      const updatedAnswers = { ...answers };
+      delete updatedAnswers.selectedSubCategory;
+      setAnswers(updatedAnswers);
     }
   }, [sectorId]);
 
@@ -74,18 +85,20 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
   return (
     <div className="space-y-6">
       <DateQuestion
-        label="Date of Incident/Concern"
+        label="Date of Concern"
         required
         value={answers.incidentDate}
         onChange={(date) => handleAnswerChange('incidentDate', date)}
         questionId="incidentDate"
       />
 
-      <SubCategorySelector
-        subCategories={subCategories}
-        selectedSubCategory={selectedSubCategory}
-        onSubCategoryChange={setSelectedSubCategory}
-      />
+      {subCategories.length > 0 && (
+        <SubCategorySelector
+          subCategories={subCategories}
+          selectedSubCategory={selectedSubCategory}
+          onSubCategoryChange={setSelectedSubCategory}
+        />
+      )}
 
       {questions.map((question) => (
         <DynamicQuestion
