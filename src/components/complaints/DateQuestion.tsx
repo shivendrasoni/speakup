@@ -25,6 +25,20 @@ export function DateQuestion({
   questionId,
   submissionType 
 }: DateQuestionProps) {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // Set to end of day to allow selecting today
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Ensure the date is set to local midnight
+      const localDate = new Date(date);
+      localDate.setHours(0, 0, 0, 0);
+      onChange(localDate);
+    } else {
+      onChange(undefined);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor={questionId}>
@@ -36,7 +50,7 @@ export function DateQuestion({
             id={questionId}
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal bg-white",
+              "w-full justify-start text-left font-normal bg-white hover:bg-gray-50",
               !value && "text-muted-foreground"
             )}
             type="button"
@@ -49,14 +63,28 @@ export function DateQuestion({
           <Calendar
             mode="single"
             selected={value}
-            onSelect={onChange}
+            onSelect={handleDateSelect}
             disabled={(date) => {
-              // Disable future dates
-              return date > new Date();
+              // Convert both dates to midnight for accurate comparison
+              const compareDate = new Date(date);
+              compareDate.setHours(0, 0, 0, 0);
+              const todayMidnight = new Date();
+              todayMidnight.setHours(0, 0, 0, 0);
+              
+              // Allow today and past dates, disable future dates
+              return compareDate > todayMidnight;
             }}
             initialFocus
+            captionLayout="dropdown"
             fromYear={1900}
             toYear={new Date().getFullYear()}
+            classNames={{
+              day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+              day_today: "bg-accent text-accent-foreground",
+              day: cn(
+                "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+              ),
+            }}
           />
         </PopoverContent>
       </Popover>
