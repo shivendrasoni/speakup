@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +56,10 @@ interface ComplaintFormProps {
   setUserEmail: (email: string) => void;
   complimentRecipient: string;
   setComplimentRecipient: (recipient: string) => void;
+  selectedState: string;
+  setSelectedState: (state: string) => void;
+  selectedDistrict: string;
+  setSelectedDistrict: (district: string) => void;
 }
 
 export function ComplaintForm({
@@ -86,11 +89,13 @@ export function ComplaintForm({
   setUserEmail,
   complimentRecipient,
   setComplimentRecipient,
+  selectedState,
+  setSelectedState,
+  selectedDistrict,
+  setSelectedDistrict,
 }: ComplaintFormProps) {
   const [states, setStates] = useState<State[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
-  const [selectedState, setSelectedState] = useState<string>("");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
   const [filteredDistricts, setFilteredDistricts] = useState<District[]>([]);
 
   useEffect(() => {
@@ -127,12 +132,14 @@ export function ComplaintForm({
       const stateId = parseInt(selectedState);
       const filtered = districts.filter(district => district.state_id === stateId);
       setFilteredDistricts(filtered);
-      setSelectedDistrict(""); // Reset district selection when state changes
+      if (!filtered.find(d => d.id.toString() === selectedDistrict)) {
+        setSelectedDistrict(""); // Reset district selection if current selection is not valid for new state
+      }
     } else {
       setFilteredDistricts([]);
     }
-  }, [selectedState, districts]);
-  
+  }, [selectedState, districts, selectedDistrict, setSelectedDistrict]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);

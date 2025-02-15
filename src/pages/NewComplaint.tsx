@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
   },
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
-    languageSelect: "భాష ఎంచుకోండి",
+    languageSelect: "భ��ష ఎంచుకోండి",
     complaint: "ఫిర్యాద�������� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్ని పంచుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
@@ -98,7 +98,7 @@ export const TRANSLATIONS = {
     description: "వివరణ",
     submit: "సమర్పించండి",
     recording: "రికార్డింగ్...",
-    startRecording: "వాయిస్ ఇન్పుట్ ప్రారंಭించండి",
+    startRecording: "వ౉इస్ ఇન్పుట్ ప్రారंಭించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
     viewDashboard: "పబ్లిక్ డ్యాష్బోర్డ్ చూడండి",
     changeLanguage: "భాష మార్చండి",
@@ -123,7 +123,7 @@ export const TRANSLATIONS = {
     changeLanguage: "மொழியை மாற்றவும்",
     placeholders: {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
-      description: "விரிவான விளக்கம்"
+      description: "விழான விளக்கம்"
     }
   },
   gujarati: {
@@ -157,7 +157,7 @@ export const TRANSLATIONS = {
     recording: "ರೆಕಾರ್ಡಿಂಗ್...",
     startRecording: "ಧ್ವನಿ ಇನ್ಪುಟ್ ಪ್ರಾರಂಭಿಸಿ",
     stopRecording: "ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ",
-    viewDashboard: "ಸ���ರ್ವಜನಿಕ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
+    viewDashboard: "ಸ���ರ���ವಜನಿಕ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
     changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
     placeholders: {
       title: "ನಿಮ್ಮ ಸಲ್ಲಿಕೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
@@ -261,6 +261,8 @@ const NewComplaint = () => {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [complimentRecipient, setComplimentRecipient] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
 
   useEffect(() => {
     const fetchSectors = async () => {
@@ -367,6 +369,15 @@ const NewComplaint = () => {
       return;
     }
 
+    if (submissionType === "complaint" && (!selectedState || !selectedDistrict)) {
+      toast({
+        title: "Error",
+        description: "Please select both state and district",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -400,6 +411,8 @@ const NewComplaint = () => {
         submission_type: submissionType,
         is_public: true,
         attachments: uploadedFiles,
+        state_id: selectedState ? parseInt(selectedState) : null,
+        district_id: selectedDistrict ? parseInt(selectedDistrict) : null,
         ...(submissionType === "feedback" && {
           feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
           user_name: userName || null,
@@ -408,6 +421,10 @@ const NewComplaint = () => {
         ...(submissionType === "compliment" && {
           compliment_recipient: complimentRecipient,
           user_name: userName || null,
+          email: userEmail || null,
+        }),
+        ...(submissionType === "complaint" && {
+          user_name: userName,
           email: userEmail || null,
         }),
       };
@@ -431,6 +448,8 @@ const NewComplaint = () => {
       setUserEmail("");
       setFeedbackCategory("");
       setComplimentRecipient("");
+      setSelectedState("");
+      setSelectedDistrict("");
       setShowComplaintForm(false);
     } catch (error: any) {
       toast({
@@ -522,6 +541,10 @@ const NewComplaint = () => {
                 setUserEmail={setUserEmail}
                 complimentRecipient={complimentRecipient}
                 setComplimentRecipient={setComplimentRecipient}
+                selectedState={selectedState}
+                setSelectedState={setSelectedState}
+                selectedDistrict={selectedDistrict}
+                setSelectedDistrict={setSelectedDistrict}
               />
             </CardContent>
           </Card>
