@@ -35,6 +35,7 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           );
         });
         
+        console.log('Fetched sub-categories:', validSubCategories); // Debug log
         setSubCategories(validSubCategories);
         setQuestions([]);
       } catch (err: any) {
