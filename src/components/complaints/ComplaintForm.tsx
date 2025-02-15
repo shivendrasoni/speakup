@@ -54,6 +54,8 @@ interface ComplaintFormProps {
   setSelectedState: (state: string) => void;
   selectedDistrict: string;
   setSelectedDistrict: (district: string) => void;
+  selectedDate: Date | undefined;
+  setSelectedDate: (date: Date | undefined) => void;
 }
 
 export function ComplaintForm({
@@ -87,10 +89,11 @@ export function ComplaintForm({
   setSelectedState,
   selectedDistrict,
   setSelectedDistrict,
+  selectedDate,
+  setSelectedDate,
 }: ComplaintFormProps) {
   const [formProgress, setFormProgress] = useState(0);
   const [sectorAnswers, setSectorAnswers] = useState<Record<string, any>>({});
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   // Calculate form progress
   const calculateProgress = () => {

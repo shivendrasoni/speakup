@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { DateQuestion } from "./DateQuestion";
 import { SubCategorySelector } from "./SubCategorySelector";
 import { DynamicQuestion } from "./DynamicQuestion";
 import type { SectorQuestionsProps, SubCategory, Question } from "./types";
@@ -42,7 +41,6 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           ).values()
         );
         
-        console.log('Fetched sub-categories:', uniqueSubCategories);
         setSubCategories(uniqueSubCategories);
         setQuestions([]);
       } catch (err: any) {
@@ -75,24 +73,11 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
     }
   }, [selectedSubCategory, subCategories]);
 
-  const handleAnswerChange = (questionId: string, value: any) => {
-    setAnswers({ ...answers, [questionId]: value });
-  };
-
   if (loading) return <div>Loading questions...</div>;
   if (error) return <div>Error loading questions: {error}</div>;
 
   return (
     <div className="space-y-6">
-      <DateQuestion
-        label="Date of Concern"
-        required
-        value={answers.incidentDate}
-        onChange={(date) => handleAnswerChange('incidentDate', date)}
-        questionId="incidentDate"
-        submissionType="complaint"
-      />
-
       {subCategories.length > 0 && (
         <SubCategorySelector
           subCategories={subCategories}
@@ -106,7 +91,7 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           key={question.id}
           question={question}
           value={answers[question.id]}
-          onChange={(value) => handleAnswerChange(question.id, value)}
+          onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
         />
       ))}
     </div>

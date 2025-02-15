@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భ��ష ఎంచుకోండి",
     complaint: "ఫిర్యాద�������� నమోదు చేయండి",
-    feedback: "అభిప్రాయాన్న�� పంచుకోండి",
+    feedback: "అభిప్రాయాన్న�� పం���ుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
     description: "వివరణ",
@@ -115,7 +115,7 @@ export const TRANSLATIONS = {
     description: "விவரம்",
     submit: "சமர்ப்பிக்கவும்",
     recording: "பதிவு செய்கிறது...",
-    startRecording: "வ௉इస் இந்புட்ட் ஆரம்பிக்கவும்",
+    startRecording: "வ௉इస் இந்புட்ட் ஆரम்பிக்கவும்",
     stopRecording: "பதிவை நிறுத்தவும்",
     viewDashboard: "పొతు డాష్బోర్డైக் காண்க",
     changeLanguage: "மொழியை மாற்றவும்",
@@ -158,7 +158,7 @@ export const TRANSLATIONS = {
     viewDashboard: "ಸ���ರ���ವಜನಿಕ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
     changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
     placeholders: {
-      title: "ನಿಮ್ಮ ಸಲ್ಲಿಕೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
+      title: "ನಿಮ್ಮ ಸಲ್ಲಿ��ೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
       description: "ವಿವರವಾದ ವಿವರಣೆ"
     }
   },
@@ -534,6 +534,8 @@ const NewComplaint = () => {
                 setSelectedState={setSelectedState}
                 selectedDistrict={selectedDistrict}
                 setSelectedDistrict={setSelectedDistrict}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
               />
             </CardContent>
           </Card>
