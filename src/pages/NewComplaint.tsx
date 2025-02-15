@@ -1,16 +1,17 @@
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MegaphoneIcon, ChartBar, Languages, ArrowRight } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { InfoCards } from "@/components/complaints/InfoCards";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
 import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
+import { HeroSection } from "@/components/complaints/HeroSection";
+import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
+import { useQuery } from "@tanstack/react-query";
 
 type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 export type SubmissionType = "complaint" | "feedback" | "compliment";
@@ -98,7 +99,7 @@ export const TRANSLATIONS = {
     description: "వివరణ",
     submit: "సమర్పించండి",
     recording: "రికార్డింగ్...",
-    startRecording: "వ౉इస్ ఇન్పుట్ ప్రారंಭించండి",
+    startRecording: "వ౉इస్ ఇన్పుట్ ప్రారंಭించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
     viewDashboard: "పబ్లిక్ డ్యాష్బోర్డ్ చూడండి",
     changeLanguage: "భాష మార్చండి",
@@ -136,7 +137,7 @@ export const TRANSLATIONS = {
     description: "વિગત",
     submit: "સબમિટ કરો",
     recording: "રેકોર્ડિંગ...",
-    startRecording: "વૉઇસ ઇનપુટ શરૂ કરો",
+    startRecording: "વૉइસ ઇનપુટ શરૂ કરો",
     stopRecording: "રેકોર્ડિંગ બંધ કરો",
     viewDashboard: "પબલિક ડેશબોર્ડ જુઓ",
     changeLanguage: "ભાષા બદલો",
@@ -168,7 +169,7 @@ export const TRANSLATIONS = {
     title: "നിങ്ങളുടെ ശബ്ദം സമർപ്പിക്കുക",
     languageSelect: "ഭാഷ തിരഞ്ഞെടുക്കുക",
     complaint: "പരാതി റിപ്പോർട്ട് ചെയ്യുക",
-    feedback: "ഫീഡ്‌ബാക്ക് പങ്കിടുക",
+    feedback: "ഫീഡ്‌ബാക്ക് പകிரവുക",
     compliment: "പ്രശംസ നൽകുക",
     sector: "വകുപ്പ്/മേഖല",
     description: "വിവരണം",
@@ -228,7 +229,7 @@ export const TRANSLATIONS = {
     feedback: "ମତାମତ ସେୟାର କରନ୍ତୁ",
     compliment: "ପ୍ରଶଂସା କରନ୍ତୁ",
     sector: "ବିଭାગ/କ୍ଷେତ୍ର",
-    description: "ବିବରଣୀ",
+    description: "ବ��ବରଣୀ",
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡ���ଂ...",
     startRecording: "ଭ��ସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
@@ -237,7 +238,7 @@ export const TRANSLATIONS = {
     changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
     placeholders: {
       title: "ଆପଣଙ୍କ ଦାଖଲର ସଂକ୍ଷିପ୍ତ ଶୀର୍ଷକ",
-      description: "ବିସ୍ତୃତ ବିବରଣୀ"
+      description: "ବିସ୍ତୃତ ଵିବରଣୀ"
     }
   }
 } as const;
@@ -477,25 +478,7 @@ const NewComplaint = () => {
         onVoiceConcernsClick={() => setShowComplaintForm(true)}
       />
 
-      <div className="relative bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300 pt-16">
-        <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500 rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-300 rounded-full opacity-20 translate-x-1/3 -translate-y-1/3"></div>
-        
-        <div className="container mx-auto px-4 pt-12 pb-32 relative">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="mb-8 relative">
-              <MegaphoneIcon className="w-20 h-20 text-white mx-auto transform -rotate-12 transition-transform hover:rotate-0 hover:scale-110" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Welcome to Speak Up India</h1>
-            <p className="text-xl text-white/90 mb-8">Your Platform for Change and Community Engagement</p>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 200L60 181.3C120 163 240 125 360 106.7C480 88 600 88 720 100C840 112 960 137 1080 143.3C1200 150 1320 137 1380 131.3L1440 125V200H1380C1320 200 1200 200 1080 200C960 200 840 200 720 200C600 200 480 200 360 200C240 200 120 200 60 200H0Z" fill="white"/>
-          </svg>
-        </div>
-      </div>
+      <HeroSection />
 
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">

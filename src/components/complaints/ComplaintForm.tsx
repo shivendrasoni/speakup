@@ -1,15 +1,17 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, MicOff, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import type { Sector } from "@/types/complaints";
 import type { SubmissionType, LanguageCode } from "@/types/complaints";
+import { PersonalInfoFields } from "./PersonalInfoFields";
+import { LocationSelector } from "./LocationSelector";
+import { FileUploadField } from "./FileUploadField";
+import { DescriptionField } from "./DescriptionField";
 
 const FEEDBACK_CATEGORIES = [
   { label: "Platform Experience", value: "platform_experience" },
@@ -17,17 +19,6 @@ const FEEDBACK_CATEGORIES = [
   { label: "Accessibility", value: "accessibility" },
   { label: "Other", value: "other" },
 ];
-
-interface State {
-  id: number;
-  name: string;
-}
-
-interface District {
-  id: number;
-  name: string;
-  state_id: number;
-}
 
 interface ComplaintFormProps {
   title: string;
@@ -94,111 +85,17 @@ export function ComplaintForm({
   selectedDistrict,
   setSelectedDistrict,
 }: ComplaintFormProps) {
-  const [states, setStates] = useState<State[]>([]);
-  const [districts, setDistricts] = useState<District[]>([]);
-  const [filteredDistricts, setFilteredDistricts] = useState<District[]>([]);
-
-  useEffect(() => {
-    const fetchStatesAndDistricts = async () => {
-      const { data: statesData, error: statesError } = await supabase
-        .from('states')
-        .select('*')
-        .order('name');
-
-      if (statesError) {
-        console.error('Error fetching states:', statesError);
-        return;
-      }
-
-      const { data: districtsData, error: districtsError } = await supabase
-        .from('districts')
-        .select('*')
-        .order('name');
-
-      if (districtsError) {
-        console.error('Error fetching districts:', districtsError);
-        return;
-      }
-
-      setStates(statesData);
-      setDistricts(districtsData);
-    };
-
-    fetchStatesAndDistricts();
-  }, []);
-
-  useEffect(() => {
-    if (selectedState && districts.length > 0) {
-      const stateId = parseInt(selectedState);
-      const filtered = districts.filter(district => district.state_id === stateId);
-      setFilteredDistricts(filtered);
-      if (!filtered.find(d => d.id.toString() === selectedDistrict)) {
-        setSelectedDistrict(""); // Reset district selection if current selection is not valid for new state
-      }
-    } else {
-      setFilteredDistricts([]);
-    }
-  }, [selectedState, districts, selectedDistrict, setSelectedDistrict]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      const validFiles = selectedFiles.filter(file => {
-        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (!validTypes.includes(file.type)) {
-          alert(`File ${file.name} is not a supported format. Please upload images (JPG/PNG), PDFs, or Word documents.`);
-          return false;
-        }
-        if (file.size > maxSize) {
-          alert(`File ${file.name} is too large. Maximum file size is 5MB.`);
-          return false;
-        }
-        return true;
-      });
-      setFiles(validFiles);
-    }
-  };
-
-  const renderFieldHint = (hint: string) => (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80 p-3 text-sm">
-        {hint}
-      </HoverCardContent>
-    </HoverCard>
-  );
-
   const renderFormFields = () => {
     switch (submissionType) {
       case "feedback":
         return (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="userName">Name (Optional)</Label>
-                <Input
-                  id="userName"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="userEmail">Email (Optional)</Label>
-                <Input
-                  id="userEmail"
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <PersonalInfoFields
+              userName={userName}
+              setUserName={setUserName}
+              userEmail={userEmail}
+              setUserEmail={setUserEmail}
+            />
             <div className="space-y-2">
               <Label htmlFor="feedbackCategory">Feedback Category *</Label>
               <Select 
@@ -222,29 +119,12 @@ export function ComplaintForm({
       case "compliment":
         return (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="userName">Name (Optional)</Label>
-                <Input
-                  id="userName"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="userEmail">Email (Optional)</Label>
-                <Input
-                  id="userEmail"
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <PersonalInfoFields
+              userName={userName}
+              setUserName={setUserName}
+              userEmail={userEmail}
+              setUserEmail={setUserEmail}
+            />
             <div className="space-y-2">
               <Label htmlFor="complimentRecipient">Who/What is this compliment for? *</Label>
               <Input
@@ -291,88 +171,32 @@ export function ComplaintForm({
         
         {submissionType === "complaint" && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="userName">
-                  Full Name *
-                  {renderFieldHint("Enter your full name as per official documents")}
-                </Label>
-                <Input
-                  id="userName"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Enter your full name"
-                  required
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="userEmail">
-                  Email Address (Optional)
-                  {renderFieldHint("We'll send updates about your complaint to this email")}
-                </Label>
-                <Input
-                  id="userEmail"
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <PersonalInfoFields
+              userName={userName}
+              setUserName={setUserName}
+              userEmail={userEmail}
+              setUserEmail={setUserEmail}
+              required
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="state">
-                  State *
-                  {renderFieldHint("Select your state")}
-                </Label>
-                <Select
-                  value={selectedState}
-                  onValueChange={setSelectedState}
-                >
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Select a state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {states.map((state) => (
-                      <SelectItem key={state.id} value={state.id.toString()}>
-                        {state.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="district">
-                  District *
-                  {renderFieldHint("Select your district")}
-                </Label>
-                <Select
-                  value={selectedDistrict}
-                  onValueChange={setSelectedDistrict}
-                  disabled={!selectedState}
-                >
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder={selectedState ? "Select a district" : "First select a state"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredDistricts.map((district) => (
-                      <SelectItem key={district.id} value={district.id.toString()}>
-                        {district.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <LocationSelector
+              selectedState={selectedState}
+              setSelectedState={setSelectedState}
+              selectedDistrict={selectedDistrict}
+              setSelectedDistrict={setSelectedDistrict}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="sector">
                 Department/Sector *
-                {renderFieldHint("Select the department or sector related to your complaint")}
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80 p-3 text-sm">
+                    Select the department or sector related to your complaint
+                  </HoverCardContent>
+                </HoverCard>
               </Label>
               <Select
                 value={sectorId}
@@ -396,7 +220,14 @@ export function ComplaintForm({
         <div className="space-y-2">
           <Label htmlFor="title">
             Title *
-            {renderFieldHint("A brief title that describes your submission")}
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 p-3 text-sm">
+                A brief title that describes your submission
+              </HoverCardContent>
+            </HoverCard>
           </Label>
           <Input
             id="title"
@@ -408,77 +239,18 @@ export function ComplaintForm({
           />
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="description">
-              Description *
-              {renderFieldHint("Provide detailed information about your complaint")}
-            </Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={isRecording ? onStopRecording : onStartRecording}
-              className="flex items-center gap-2"
-            >
-              {isRecording ? (
-                <>
-                  <MicOff className="w-4 h-4" />
-                  Stop Recording
-                </>
-              ) : (
-                <>
-                  <Mic className="w-4 h-4" />
-                  Start Voice Input
-                </>
-              )}
-            </Button>
-          </div>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Detailed description"
-            className="min-h-[150px]"
-            required
-          />
-        </div>
+        <DescriptionField
+          description={description}
+          setDescription={setDescription}
+          isRecording={isRecording}
+          onStartRecording={onStartRecording}
+          onStopRecording={onStopRecording}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="attachments">
-            Attachments (Optional)
-            {renderFieldHint("Upload relevant documents or images (max 5MB each)")}
-          </Label>
-          <Input
-            id="attachments"
-            type="file"
-            onChange={handleFileChange}
-            className="w-full"
-            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
-            multiple
-          />
-          {files.length > 0 && (
-            <div className="space-y-2">
-              <Label>Selected Files:</Label>
-              <ul className="list-disc pl-5">
-                {files.map((file, index) => (
-                  <li key={index} className="text-sm text-gray-600">
-                    {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="ml-2 text-red-500 hover:text-red-700"
-                      onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                    >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        <FileUploadField
+          files={files}
+          setFiles={setFiles}
+        />
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Submitting..." : "Submit"}
