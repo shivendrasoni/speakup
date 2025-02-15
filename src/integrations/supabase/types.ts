@@ -98,6 +98,7 @@ export type Database = {
           created_at: string
           description: string
           district: string | null
+          district_id: number | null
           email: string | null
           feedback_category:
             | Database["public"]["Enums"]["feedback_category"]
@@ -108,8 +109,10 @@ export type Database = {
           phone: string | null
           pincode: string | null
           sector_id: string
+          sector_specific_answers: Json | null
           shares: number | null
           state: string | null
+          state_id: number | null
           status: Database["public"]["Enums"]["complaint_status"] | null
           submission_type: Database["public"]["Enums"]["submission_type"]
           title: string
@@ -128,6 +131,7 @@ export type Database = {
           created_at?: string
           description: string
           district?: string | null
+          district_id?: number | null
           email?: string | null
           feedback_category?:
             | Database["public"]["Enums"]["feedback_category"]
@@ -138,8 +142,10 @@ export type Database = {
           phone?: string | null
           pincode?: string | null
           sector_id: string
+          sector_specific_answers?: Json | null
           shares?: number | null
           state?: string | null
+          state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title: string
@@ -158,6 +164,7 @@ export type Database = {
           created_at?: string
           description?: string
           district?: string | null
+          district_id?: number | null
           email?: string | null
           feedback_category?:
             | Database["public"]["Enums"]["feedback_category"]
@@ -168,8 +175,10 @@ export type Database = {
           phone?: string | null
           pincode?: string | null
           sector_id?: string
+          sector_specific_answers?: Json | null
           shares?: number | null
           state?: string | null
+          state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
           title?: string
@@ -181,6 +190,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "complaints_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "complaints_sector_id_fkey"
             columns: ["sector_id"]
             isOneToOne: false
@@ -188,10 +204,43 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "complaints_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "states"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "complaints_user_id_fkey1"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      districts: {
+        Row: {
+          id: number
+          name: string
+          state_id: number
+        }
+        Insert: {
+          id?: number
+          name: string
+          state_id: number
+        }
+        Update: {
+          id?: number
+          name?: string
+          state_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "districts_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "states"
             referencedColumns: ["id"]
           },
         ]
@@ -316,15 +365,33 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          questions: Json | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          questions?: Json | null
         }
         Update: {
           created_at?: string
           id?: string
+          name?: string
+          questions?: Json | null
+        }
+        Relationships: []
+      }
+      states: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: number
+          name: string
+        }
+        Update: {
+          id?: number
           name?: string
         }
         Relationships: []
