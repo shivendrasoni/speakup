@@ -39,7 +39,21 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           .single();
 
         if (error) throw error;
-        setQuestions(data?.questions || []);
+        
+        // Properly type and validate the questions data
+        const questionsData = data?.questions as Question[] || [];
+        
+        // Validate that the data matches our Question interface
+        const validQuestions = questionsData.filter((q): q is Question => {
+          return (
+            typeof q.id === 'string' &&
+            typeof q.question === 'string' &&
+            ['text', 'select', 'radio', 'checkbox'].includes(q.type) &&
+            typeof q.required === 'boolean'
+          );
+        });
+
+        setQuestions(validQuestions);
       } catch (err: any) {
         setError(err.message);
         console.error('Error fetching sector questions:', err);
