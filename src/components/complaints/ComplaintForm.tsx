@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,6 @@ import { LocationSelector } from "./LocationSelector";
 import { FileUploadField } from "./FileUploadField";
 import { DescriptionField } from "./DescriptionField";
 import { SectorQuestions } from "./SectorQuestions";
-import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 
 const FEEDBACK_CATEGORIES = [
@@ -123,7 +123,7 @@ export function ComplaintForm({
   };
 
   // Update progress when form fields change
-  React.useEffect(() => {
+  useEffect(() => {
     calculateProgress();
   }, [
     title,
