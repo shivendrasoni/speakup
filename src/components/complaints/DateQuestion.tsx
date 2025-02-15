@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import type { SubmissionType } from "@/types/complaints";
 
 interface DateQuestionProps {
   label: string;
@@ -13,9 +14,17 @@ interface DateQuestionProps {
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   questionId: string;
+  submissionType?: SubmissionType;
 }
 
-export function DateQuestion({ label, required, value, onChange, questionId }: DateQuestionProps) {
+export function DateQuestion({ 
+  label, 
+  required, 
+  value, 
+  onChange, 
+  questionId,
+  submissionType 
+}: DateQuestionProps) {
   const today = new Date();
   today.setHours(23, 59, 59, 999); // Set to end of day to allow selecting today
 
@@ -43,9 +52,11 @@ export function DateQuestion({ label, required, value, onChange, questionId }: D
             selected={value}
             onSelect={onChange}
             disabled={(date) => {
-              // Disable dates after today
-              const disableDate = date > today;
-              return disableDate;
+              // Only restrict future dates for complaints
+              if (submissionType === 'complaint') {
+                return date > today;
+              }
+              return false;
             }}
             initialFocus
           />

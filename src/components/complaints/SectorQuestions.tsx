@@ -90,6 +90,7 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
         value={answers.incidentDate}
         onChange={(date) => handleAnswerChange('incidentDate', date)}
         questionId="incidentDate"
+        submissionType="complaint"
       />
 
       {subCategories.length > 0 && (
