@@ -372,18 +372,21 @@ export type Database = {
           id: string
           name: string
           questions: Json | null
+          sub_categories: Json | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
           questions?: Json | null
+          sub_categories?: Json | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
           questions?: Json | null
+          sub_categories?: Json | null
         }
         Relationships: []
       }
