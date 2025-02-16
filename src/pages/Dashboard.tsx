@@ -9,6 +9,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 type ComplaintStats = {
   sector_name: string;
@@ -19,6 +21,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<"public" | "private">("public");
+  const { language } = useLanguage();
 
   const { data: sectorStats = [], isLoading: isLoadingSectorStats } = useQuery({
     queryKey: ["complaint-stats", activeTab],
@@ -76,25 +79,31 @@ export const Dashboard = () => {
       <NavHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Complaint Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {TRANSLATIONS[language].title}
+          </h1>
           <Link to="/complaints/new">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Register Complaint
+              {TRANSLATIONS[language].complaint}
             </Button>
           </Link>
         </div>
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "public" | "private")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="public">Public Complaints</TabsTrigger>
-            <TabsTrigger value="private">Private Complaints</TabsTrigger>
+            <TabsTrigger value="public">
+              {TRANSLATIONS[language].viewDashboard}
+            </TabsTrigger>
+            <TabsTrigger value="private">
+              {TRANSLATIONS[language].sector}
+            </TabsTrigger>
           </TabsList>
           
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Complaints by Sector</CardTitle>
+                <CardTitle>{TRANSLATIONS[language].sector}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[400px] w-full">
@@ -124,7 +133,7 @@ export const Dashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Resolution Status</CardTitle>
+                <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[400px] w-full">

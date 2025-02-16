@@ -122,7 +122,7 @@ export const TRANSLATIONS = {
     viewDashboard: "পাবলিক ড্যাশবোর্ড দেখুন",
     changeLanguage: "ভাষা পরিবর্তন করুন",
      placeholders: {
-      title: "আপনার বিষয়ের সংক্ষিপ্ত শিরোনাম",
+      title: "আপনার বিষয়ের সংক্ষিপ্ত শিরোনাম",
       description: "বিস্তারিত বিবরণ",
       date: "তারিখ নির্বাচন করুন"
     },
