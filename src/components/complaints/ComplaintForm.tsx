@@ -214,6 +214,7 @@ export function ComplaintForm({
                 sectorId={sectorId}
                 answers={sectorAnswers}
                 setAnswers={setSectorAnswers}
+                language={language}
               />
             )}
           </>
