@@ -26,19 +26,19 @@ export function InfoCards({
             <div className="p-2 bg-blue-100 rounded-lg">
               <MegaphoneIcon className="w-6 h-6 text-blue-600" />
             </div>
-            {t.recordComplaint}
+            {t.complaint}
           </CardTitle>
           <CardDescription>
-            {t.descriptionLabel}
+            {t.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.helpStep1Content}
+              {t.required}
             </p>
             <Button className="w-full group">
-              {t.submitButton}
+              {t.submit}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -51,16 +51,16 @@ export function InfoCards({
             <div className="p-2 bg-purple-100 rounded-lg">
               <MessageSquare className="w-6 h-6 text-purple-600" />
             </div>
-            {t.peerSupport}
+            {t.feedback}
           </CardTitle>
           <CardDescription>
-            {t.helpTitle}
+            {t.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.helpStep2Content}
+              {t.success}
             </p>
             <Button onClick={() => navigate("/community")} className="w-full group">
               {t.submit}
@@ -76,19 +76,19 @@ export function InfoCards({
             <div className="p-2 bg-blue-100 rounded-lg">
               <Calendar className="w-6 h-6 text-blue-600" />
             </div>
-            {t.successStories}
+            {t.compliment}
           </CardTitle>
           <CardDescription>
-            {t.helpTipsTitle}
+            {t.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.helpStep3Content}
+              {t.required}
             </p>
             <Button variant="outline" className="w-full group">
-              {t.viewDashboard}
+              {t.submit}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -101,19 +101,19 @@ export function InfoCards({
             <div className="p-2 bg-green-100 rounded-lg">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            {t.resources}
+            {t.title}
           </CardTitle>
           <CardDescription>
-            {t.helpStep2Title}
+            {t.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.helpTipsItems[0]}
+              {t.required}
             </p>
             <Button variant="outline" className="w-full group">
-              {t.resources}
+              {t.submit}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
