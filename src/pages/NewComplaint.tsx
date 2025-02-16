@@ -1,3 +1,4 @@
+<lov-code>
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -598,7 +599,7 @@ export const TRANSLATIONS = {
       "ಸಲ್ಲಿಸುವ ಮೊದಲು ನಿಮ್ಮ ದೂರನ್ನು ಪ್ರೂಫ್‌ರೀಡ್ ಮಾಡಿ."
     ]
   }
-};
+} as const;
 
 const NewComplaint = () => {
   const navigate = useNavigate();
@@ -628,15 +629,16 @@ const NewComplaint = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  const { mutate: createComplaint } = useMutation(
-    async (complaintData: {
-      title: string;
-      description: string;
-      sector_id: string;
-      user_id: string;
-      submission_type: SubmissionType;
-      feedback_category?: string;
-      compliment_recipient?: string;
-      state?: string;
-      district?: string;
-      date?: Date;
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const userId = uuidv4();
+
+      const complaintData = {
+        title,
+        description,
+        sector_id: sectorId,
+        user_id: userId,
+        submission_type: submissionType,
+        feedback_category: feedbackCategory,
+        compliment_recipient: complimentRecipient
