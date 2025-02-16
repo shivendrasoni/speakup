@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { InfoCards } from "@/components/complaints/InfoCards";
@@ -13,20 +12,6 @@ import { HeroSection } from "@/components/complaints/HeroSection";
 import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-
-export const LANGUAGE_CODES = {
-  english: 'en',
-  hindi: 'hi',
-  bengali: 'bn',
-  telugu: 'te',
-  marathi: 'mr',
-  tamil: 'ta',
-  gujarati: 'gu',
-  kannada: 'kn',
-  odia: 'or',
-  punjabi: 'pa',
-  malayalam: 'ml'
-} as const;
 
 export const TRANSLATIONS = {
   english: {
@@ -47,7 +32,12 @@ export const TRANSLATIONS = {
       title: "Brief title of your submission",
       description: "Detailed description",
       date: "Pick a date"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   hindi: {
     title: "अपनी आवाज़ दर्ज करें",
@@ -67,7 +57,12 @@ export const TRANSLATIONS = {
       title: "अपने विषय का संक्षिप्त शीर्षक",
       description: "विस्तृत विवरण",
       date: "दिनांक चुनें"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   bengali: {
     title: "আপনার ভয়েস জমা দিন",
@@ -87,12 +82,17 @@ export const TRANSLATIONS = {
       title: "আপনার জমার সংক্ষিপ্ত শিরোনাম",
       description: "বিস্তারিত বি঵রণ",
       date: "দিনাংক চেয়ে চালু করুন"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
     languageSelect: "భ��ష ఎంచుకోండి",
-    complaint: "ఫిర్యాద�������� నమోదు చేయండి",
+    complaint: "ఫిర్య���ద�������� నమోదు చేయండి",
     feedback: "అభిప్రాయాన్న�� పం���ుకోండి",
     compliment: "ప్రశంస ఇవ్వండి",
     sector: "విభాగం/రంగం",
@@ -107,7 +107,12 @@ export const TRANSLATIONS = {
       title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షికె",
       description: "వివరణాత్మక వివరణ",
       date: "దినాంక చేయండి"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   tamil: {
     title: "உங்கள் குரலைச் சமர்ப்பிக்கவும்",
@@ -127,7 +132,12 @@ export const TRANSLATIONS = {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
       description: "விழான விளக்கம்",
       date: "திருமண்டி செய்யுங்கள்"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   gujarati: {
     title: "તમારો અવાજ સબમિટ કરો",
@@ -146,8 +156,13 @@ export const TRANSLATIONS = {
     placeholders: {
       title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
       description: "વિગતવાર વર્ણન",
-      date: "તિરુમાં ચેયો"
-    }
+      date: "તિરુમાં ചેയો"
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   kannada: {
     title: "ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಸಲ್ಲಿಸಿ",
@@ -167,7 +182,12 @@ export const TRANSLATIONS = {
       title: "ನಿಮ್ಮ ಸಲ್ಲಿ��ೆಯ ಸಂಕ���ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
       description: "ವಿವರವಾದ ವಿವರಣೆ",
       date: "ದಿನಾಂಕ ಚெய்யಿ"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   malayalam: {
     title: "നിങ്ങളുടെ ശബ്ദം സമർപ്പിക്കുക",
@@ -187,7 +207,12 @@ export const TRANSLATIONS = {
       title: "നിങ്ങളുടെ സമർപ്പണത്തിന്റെ ചുരുക്കമായ തലക്കെട്ട്",
       description: "വിശദമായ വിവരണം",
       date: "തിരുമാം ചെയ്യോ"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   marathi: {
     title: "तुमचा आवाज सबमिट करा",
@@ -207,7 +232,12 @@ export const TRANSLATIONS = {
       title: "तुमच्या सबमिशनचे संक्षिप्त शीर्षक",
       description: "सविस्तर वर्णन",
       date: "दिनांक चुनें"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   punjabi: {
     title: "ਆਪਣੀ ਆਵਾਜ਼ ਜਮ੍ਹਾਂ ਕਰੋ",
@@ -226,8 +256,13 @@ export const TRANSLATIONS = {
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
       description: "ਵਿਸਥਾਰਪੂਰਵਕ ਵੇਰਵਾ",
-      date: "दिनांक चुनें"
-    }
+      date: "दिनांक ଚେଯନ୍ତୁ"
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   },
   odia: {
     title: "ଆପଣଙ୍କର ସ୍ୱର ଦାଖଲ କରନ୍ତୁ",
@@ -247,7 +282,12 @@ export const TRANSLATIONS = {
       title: "ଆପଣଙ୍କ ଦାଖଲର ସଂକ୍ଷିପ୍ତ ଶୀର୍ଷକ",
       description: "ବିସ୍ତୃତ ଵିବରଣୀ",
       date: "ଦିନାଂକ ଚେଯନ୍ତୁ"
-    }
+    },
+    error: "Error",
+    required: "Please fill in all required fields",
+    success: "Success",
+    complaintSubmitted: "Your submission has been received successfully",
+    complaintFailed: "Failed to submit"
   }
 } as const;
 
@@ -283,7 +323,7 @@ const NewComplaint = () => {
       
       if (error) {
         toast({
-          title: "Error",
+          title: TRANSLATIONS[language].error,
           description: "Failed to load sectors. Please try again.",
           variant: "destructive",
         });
@@ -294,7 +334,7 @@ const NewComplaint = () => {
     };
 
     fetchSectors();
-  }, [toast]);
+  }, [toast, language]);
 
   const startRecording = async () => {
     try {
@@ -312,12 +352,12 @@ const NewComplaint = () => {
       mediaRecorder.start();
       setIsRecording(true);
       toast({
-        title: "Started Recording",
+        title: TRANSLATIONS[language].startRecording,
         description: TRANSLATIONS[language].recording,
       });
     } catch (error) {
       toast({
-        title: "Error",
+        title: TRANSLATIONS[language].error,
         description: "Failed to start recording",
         variant: "destructive",
       });
@@ -353,7 +393,7 @@ const NewComplaint = () => {
           reader.readAsDataURL(audioBlob);
         } catch (error) {
           toast({
-            title: "Error",
+            title: TRANSLATIONS[language].error,
             description: "Failed to process audio",
             variant: "destructive",
           });
@@ -372,17 +412,8 @@ const NewComplaint = () => {
     
     if (!title.trim() || !description.trim() || (submissionType === "complaint" && !sectorId)) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (submissionType === "complaint" && (!selectedState || !selectedDistrict || !selectedDate)) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields including state, district, and date",
+        title: TRANSLATIONS[language].error,
+        description: TRANSLATIONS[language].required,
         variant: "destructive",
       });
       return;
@@ -428,7 +459,7 @@ const NewComplaint = () => {
         user_id: user?.id || null,
         date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
         ...(submissionType === "feedback" && {
-          feedback_category: feedbackCategory as Database["public"]["Enums"]["feedback_category"],
+          feedback_category: feedbackCategory,
           user_name: userName || null,
           email: userEmail || null,
         }),
@@ -450,8 +481,8 @@ const NewComplaint = () => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Your submission has been received successfully",
+        title: TRANSLATIONS[language].success,
+        description: TRANSLATIONS[language].complaintSubmitted,
       });
       
       setTitle("");
@@ -468,8 +499,8 @@ const NewComplaint = () => {
       setShowComplaintForm(false);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit",
+        title: TRANSLATIONS[language].error,
+        description: error.message || TRANSLATIONS[language].complaintFailed,
         variant: "destructive",
       });
       console.error('Submission error:', error);
