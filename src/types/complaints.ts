@@ -8,3 +8,6 @@ export type SubmissionType = Database["public"]["Enums"]["submission_type"];
 export type Sector = Database["public"]["Tables"]["sectors"]["Row"];
 
 export type FeedbackCategory = Database["public"]["Enums"]["feedback_category"];
+
+export type ComplaintInsert = Database["public"]["Tables"]["complaints"]["Insert"];
+

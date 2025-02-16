@@ -9,7 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
 import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
 import { HeroSection } from "@/components/complaints/HeroSection";
-import type { Sector, SubmissionType, LanguageCode } from "@/types/complaints";
+import type { Sector, SubmissionType, LanguageCode, FeedbackCategory, ComplaintInsert } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
@@ -156,7 +156,7 @@ export const TRANSLATIONS = {
     placeholders: {
       title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
       description: "વિગતવાર વર્ણન",
-      date: "તિરુમાં ചેയો"
+      date: "તિરુમાં ചെയ്യി"
     },
     error: "Error",
     required: "Please fill in all required fields",
@@ -226,7 +226,7 @@ export const TRANSLATIONS = {
     recording: "रेकॉर्डिंग...",
     startRecording: "व्हॉइस इनपुट सुरू करा",
     stopRecording: "रेकॉर्डिंग थांबवा",
-    viewDashboard: "पब्लिक डॅशबॉर्ड पहा",
+    viewDashboard: "पब्लिक डॅ���बॉर्ड पहा",
     changeLanguage: "भाषा बदला",
     placeholders: {
       title: "तुमच्या सबमिशनचे संक्षिप्त शीर्षक",
@@ -251,7 +251,7 @@ export const TRANSLATIONS = {
     recording: "ਰਿਕਾਰਡਿੰਗ...",
     startRecording: "ਵੌਇਸ ਇਨਪੁੱਟ ਸ਼ੁਰੂ ਕਰੋ",
     stopRecording: "ਰਿਕਾਰਡਿੰग ਰੋਕੋ",
-    viewDashboard: "ਪਬਲਿਕ ࡭ാസ്‌ബോର୍ଡ ଦେଖନ୍ତୁ",
+    viewDashboard: "ਪब्लਿਕ ࡭ാസ്‌ബോର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
@@ -446,7 +446,7 @@ const NewComplaint = () => {
 
       const { data: { user } } = await supabase.auth.getUser();
       
-      const formData = {
+      const formData: ComplaintInsert = {
         title,
         description,
         sector_id: sectorId,
@@ -459,7 +459,7 @@ const NewComplaint = () => {
         user_id: user?.id || null,
         date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
         ...(submissionType === "feedback" && {
-          feedback_category: feedbackCategory,
+          feedback_category: feedbackCategory as FeedbackCategory,
           user_name: userName || null,
           email: userEmail || null,
         }),
