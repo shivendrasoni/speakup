@@ -6,7 +6,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { SubmissionType } from "@/types/complaints";
+import type { SubmissionType, LanguageCode } from "@/types/complaints";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 interface DateQuestionProps {
   label: string;
@@ -15,6 +16,7 @@ interface DateQuestionProps {
   onChange: (date: Date | undefined) => void;
   questionId: string;
   submissionType?: SubmissionType;
+  language: LanguageCode;
 }
 
 export function DateQuestion({ 
@@ -23,7 +25,8 @@ export function DateQuestion({
   value, 
   onChange, 
   questionId,
-  submissionType 
+  submissionType,
+  language = "english"
 }: DateQuestionProps) {
   const today = new Date();
   today.setHours(23, 59, 59, 999); // Set to end of day to allow selecting today
@@ -56,7 +59,7 @@ export function DateQuestion({
             type="button"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value ? format(value, "PPP") : "Pick a date"}
+            {value ? format(value, "PPP") : TRANSLATIONS[language].placeholders?.date || "Pick a date"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

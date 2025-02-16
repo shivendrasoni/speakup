@@ -95,12 +95,10 @@ export function ComplaintForm({
   const [formProgress, setFormProgress] = useState(0);
   const [sectorAnswers, setSectorAnswers] = useState<Record<string, any>>({});
 
-  // Calculate form progress
   const calculateProgress = () => {
     let totalFields = 0;
     let filledFields = 0;
 
-    // Common fields
     totalFields += 2; // title and description
     if (title) filledFields++;
     if (description) filledFields++;
@@ -127,7 +125,6 @@ export function ComplaintForm({
     setFormProgress((filledFields / totalFields) * 100);
   };
 
-  // Update progress when form fields change
   useEffect(() => {
     calculateProgress();
   }, [
@@ -177,9 +174,10 @@ export function ComplaintForm({
               label="Date of Incident"
               required
               value={selectedDate}
-              onChange={handleDateChange}
+              onChange={setSelectedDate}
               questionId="date"
               submissionType="complaint"
+              language={language}
             />
 
             <div className="space-y-2">

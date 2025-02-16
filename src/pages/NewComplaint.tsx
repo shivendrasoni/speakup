@@ -45,7 +45,8 @@ export const TRANSLATIONS = {
     changeLanguage: "Change Language",
     placeholders: {
       title: "Brief title of your submission",
-      description: "Detailed description"
+      description: "Detailed description",
+      date: "Pick a date"
     }
   },
   hindi: {
@@ -64,7 +65,8 @@ export const TRANSLATIONS = {
     changeLanguage: "भाषा बदलें",
     placeholders: {
       title: "अपने विषय का संक्षिप्त शीर्षक",
-      description: "विस्तृत विवरण"
+      description: "विस्तृत विवरण",
+      date: "दिनांक चुनें"
     }
   },
   bengali: {
@@ -83,7 +85,8 @@ export const TRANSLATIONS = {
     changeLanguage: "ভাষা পরিবর্তন করুন",
     placeholders: {
       title: "আপনার জমার সংক্ষিপ্ত শিরোনাম",
-      description: "বিস্তারিত বি঵রণ"
+      description: "বিস্তারিত বি঵রণ",
+      date: "দিনাংক চেয়ে চালু করুন"
     }
   },
   telugu: {
@@ -102,7 +105,8 @@ export const TRANSLATIONS = {
     changeLanguage: "భాష మార్చండి",
     placeholders: {
       title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షికె",
-      description: "వివరణాత్మక వివరణ"
+      description: "వివరణాత్మక వివరణ",
+      date: "దినాంక చేయండి"
     }
   },
   tamil: {
@@ -121,7 +125,8 @@ export const TRANSLATIONS = {
     changeLanguage: "மொழியை மாற்றவும்",
     placeholders: {
       title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
-      description: "விழான விளக்கம்"
+      description: "விழான விளக்கம்",
+      date: "திருமண்டி செய்யுங்கள்"
     }
   },
   gujarati: {
@@ -140,7 +145,8 @@ export const TRANSLATIONS = {
     changeLanguage: "ભાષા બદલો",
     placeholders: {
       title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
-      description: "વિગતવાર વર્ણન"
+      description: "વિગતવાર વર્ણન",
+      date: "તિરુમાં ચેયો"
     }
   },
   kannada: {
@@ -158,8 +164,9 @@ export const TRANSLATIONS = {
     viewDashboard: "ಸ���ರ���ವಜನಿಕ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
     changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
     placeholders: {
-      title: "ನಿಮ್ಮ ಸಲ್ಲಿ��ೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
-      description: "ವಿವರವಾದ ವಿವರಣೆ"
+      title: "ನಿಮ್ಮ ಸಲ್ಲಿ��ೆಯ ಸಂಕ���ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
+      description: "ವಿವರವಾದ ವಿವರಣೆ",
+      date: "ದಿನಾಂಕ ಚெய்யಿ"
     }
   },
   malayalam: {
@@ -178,7 +185,8 @@ export const TRANSLATIONS = {
     changeLanguage: "ഭാഷ മാറ്റുക",
     placeholders: {
       title: "നിങ്ങളുടെ സമർപ്പണത്തിന്റെ ചുരുക്കമായ തലക്കെട്ട്",
-      description: "വിശദമായ വിവരണം"
+      description: "വിശദമായ വിവരണം",
+      date: "തിരുമാം ചെയ്യോ"
     }
   },
   marathi: {
@@ -197,7 +205,8 @@ export const TRANSLATIONS = {
     changeLanguage: "भाषा बदला",
     placeholders: {
       title: "तुमच्या सबमिशनचे संक्षिप्त शीर्षक",
-      description: "सविस्तर वर्णन"
+      description: "सविस्तर वर्णन",
+      date: "दिनांक चुनें"
     }
   },
   punjabi: {
@@ -216,7 +225,8 @@ export const TRANSLATIONS = {
     changeLanguage: "ਭਾਸ਼ਾ ਬਦਲੋ",
     placeholders: {
       title: "ਆਪਣੀ ਸਬਮਿਸ਼ਨ ਦਾ ਸੰਖੇਪ ਸਿਰਲੇਖ",
-      description: "ਵਿਸਥਾਰਪੂਰਵਕ ਵੇਰਵਾ"
+      description: "ਵਿਸਥਾਰਪੂਰਵਕ ਵੇਰਵਾ",
+      date: "दिनांक चुनें"
     }
   },
   odia: {
@@ -230,12 +240,13 @@ export const TRANSLATIONS = {
     submit: "ଦାଖଲ କରନ୍ତୁ",
     recording: "ରେକର୍ଡ���ଂ...",
     startRecording: "ଭ��ସ��� ଇନପୁଟ୍ ଆରମ୍ଭ କରନ୍ତୁ",
-    stopRecording: "ରେକର୍���ିଂ ବନ୍ଦ କରନ୍ତୁ",
+    stopRecording: "ର��କର୍���ିଂ ବନ୍ଦ କରନ୍ତୁ",
     viewDashboard: "ପବ୍ଲିକ୍ ଡ୍ୟାସବୋର୍ଡ ଦେଖନ୍ତୁ",
     changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ",
     placeholders: {
       title: "ଆପଣଙ୍କ ଦାଖଲର ସଂକ୍ଷିପ୍ତ ଶୀର୍ଷକ",
-      description: "ବିସ୍ତୃତ ଵିବରଣୀ"
+      description: "ବିସ୍ତୃତ ଵିବରଣୀ",
+      date: "ଦିନାଂକ ଚେଯନ୍ତୁ"
     }
   }
 } as const;
@@ -402,7 +413,6 @@ const NewComplaint = () => {
         }
       }
 
-      // Get the current authenticated user if any
       const { data: { user } } = await supabase.auth.getUser();
       
       const formData = {
@@ -444,7 +454,6 @@ const NewComplaint = () => {
         description: "Your submission has been received successfully",
       });
       
-      // Reset form
       setTitle("");
       setDescription("");
       setSectorId("");
