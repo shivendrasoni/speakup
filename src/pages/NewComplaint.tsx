@@ -1,641 +1,544 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { useDropzone } from "react-dropzone";
-import { v4 as uuidv4 } from 'uuid';
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Languages } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { LanguageSelectionDialog } from "@/components/complaints/LanguageSelectionDialog";
 import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
+import type { Database } from "@/integrations/supabase/types";
+import type { LanguageCode, SubmissionType } from "@/types/complaints";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/components/ui/use-toast";
-import type { Sector } from "@/types/complaints";
-import type { SubmissionType, LanguageCode } from "@/types/complaints";
-import { AudioRecorder } from "@/components/AudioRecorder";
 
 export const TRANSLATIONS = {
   english: {
-    newComplaint: "New Complaint",
-    complaintForm: "Complaint Form",
-    success: "Success",
-    complaintSubmitted: "Complaint submitted successfully!",
-    error: "Error",
-    complaintFailed: "Failed to submit complaint",
-    titleLabel: "Title",
-    descriptionLabel: "Description",
-    sectorLabel: "Sector",
-    submitButton: "Submit",
-    uploadFiles: "Upload Files",
-    dropFilesHere: "Drop files here, or click to select files",
-    audioRecording: "Audio Recording",
-    startRecording: "Start Recording",
+    title: "Submit Your Voice",
+    languageSelect: "Select Language",
+    complaint: "Report a Complaint",
+    feedback: "Share Feedback",
+    compliment: "Give Compliment",
+    sector: "Department/Sector",
+    description: "Description",
+    submit: "Submit",
+    recording: "Recording...",
+    startRecording: "Start Voice Input",
     stopRecording: "Stop Recording",
-    recordComplaint: "Record your complaint",
-    platformExperience: "Platform Experience",
-    responseTime: "Response Time",
-    accessibility: "Accessibility",
-    other: "Other",
-    feedbackCategory: "Feedback Category",
-    name: "Name",
-    email: "Email",
-    optional: "Optional",
-    required: "Required",
-    selectState: "Select State",
-    selectDistrict: "Select District",
-    dateOfIncident: "Date of Incident",
-    languageSelect: "English",
+    viewDashboard: "View Public Dashboard",
+    changeLanguage: "Change Language",
+    placeholders: {
+      title: "Brief title of your submission",
+      description: "Detailed description",
+      date: "Pick a date"
+    },
+    // Navigation
     successStories: "Success Stories",
     resources: "Resources",
     peerSupport: "Peer Support",
     liveQA: "Live Q&A",
     aiHelp: "AI Help",
-    changeLanguage: "Change Language",
-    viewDashboard: "View Dashboard",
-    loading: "Loading...",
-    complaintNotFound: "Complaint not found",
-    backToComplaints: "Back to Complaints",
-    by: "By",
-    anonymous: "Anonymous",
-    submittedOn: "Submitted on",
-    updateStatus: "Update status",
-    updates: "Updates",
-    addUpdate: "Add an update...",
-    adding: "Adding...",
-    status: {
-      pending: "Pending",
-      in_progress: "In Progress",
-      resolved: "Resolved",
-      rejected: "Rejected"
-    },
-    helpTitle: "How can we help?",
-    helpStep1Title: "Step 1: Describe your issue",
-    helpStep1Content: "Clearly and concisely describe the issue you are facing. Provide as much detail as possible, including dates, times, locations, and people involved.",
-    helpStep2Title: "Step 2: Gather supporting evidence",
+    // Help page
+    helpTitle: "How to Report a Complaint",
+    helpStep1Title: "Step 1: Choose Your Reporting Method",
+    helpStep1Content: "You can report complaints either by creating an account or without logging in. Creating an account gives you additional features like tracking your complaints and receiving updates.",
+    helpStep2Title: "Step 2: Provide Clear Information",
     helpStep2Items: [
-      "Collect any documents, photos, videos, or other evidence that supports your claim.",
-      "Make sure your evidence is relevant and clearly labeled.",
-      "If you have witnesses, ask them to provide a written statement."
+      "Choose the relevant sector for your complaint",
+      "Write a clear and concise title",
+      "Provide detailed description of the issue",
+      "Provide detailed description of the issue",
+      "Include specific dates and locations if applicable"
     ],
-    helpStep3Title: "Step 3: Submit your complaint",
-    helpStep3Content: "Once you have gathered all the necessary information, submit your complaint through our online form. Be sure to fill out all required fields and attach any supporting evidence.",
-    helpTipsTitle: "Tips for writing an effective complaint",
+    helpStep3Title: "Step 3: Submit and Track",
+    helpStep3Content: "After submission, you'll receive a unique complaint ID. Keep this ID safe to track your complaint's status. Registered users can track their complaints directly from their dashboard.",
+    helpTipsTitle: "Tips for Effective Reporting",
     helpTipsItems: [
-      "Be clear and concise.",
-      "Be specific and provide as much detail as possible.",
-      "Be objective and avoid emotional language.",
-      "Be respectful and avoid personal attacks.",
-      "Proofread your complaint before submitting it."
+      "Be specific and factual in your description",
+      "Avoid using all caps or excessive punctuation",
+      "Include relevant documentation if available",
+      "Keep your complaint professional and objective"
     ]
   },
   hindi: {
-    newComplaint: "नई शिकायत",
-    complaintForm: "शिकायत प्रपत्र",
-    success: "सफलता",
-    complaintSubmitted: "शिकायत सफलतापूर्वक जमा की गई!",
-    error: "त्रुटि",
-    complaintFailed: "शिकायत जमा करने में विफल",
-    titleLabel: "शीर्षक",
-    descriptionLabel: "विवरण",
-    sectorLabel: "सेक्टर",
-    submitButton: "जमा करें",
-    uploadFiles: "फ़ाइलें अपलोड करें",
-    dropFilesHere: "फ़ाइलें यहां छोड़ें, या फ़ाइलें चुनने के लिए क्लिक करें",
-    audioRecording: "ऑडियो रिकॉर्डिंग",
-    startRecording: "रिकॉर्डिंग शुरू करें",
+    title: "अपनी आवाज़ दर्ज करें",
+    languageSelect: "भाषा चुनें",
+    complaint: "शिकायत दर्ज करें",
+    feedback: "प्रतिक्रिया साझा करें",
+    compliment: "प्रशंसा करें",
+    sector: "विभाग/क्षेत्र",
+    description: "विवरण",
+    submit: "जमा करें",
+    recording: "रिकॉर्डिंग जारी है...",
+    startRecording: "आवाज़ से टाइप करें",
     stopRecording: "रिकॉर्डिंग बंद करें",
-    recordComplaint: "अपनी शिकायत रिकॉर्ड करें",
-    platformExperience: "प्लेटफ़ॉर्म अनुभव",
-    responseTime: "प्रतिक्रिया समय",
-    accessibility: "अभिगम्यता",
-    other: "अन्य",
-    feedbackCategory: "प्रतिक्रिया श्रेणी",
-    name: "नाम",
-    email: "ईमेल",
-    optional: "वैकल्पिक",
-    required: "आवश्यक",
-    selectState: "राज्य चुनें",
-    selectDistrict: "जिला चुनें",
-    dateOfIncident: "घटना की तिथि",
-    languageSelect: "हिंदी",
+    viewDashboard: "सार्वजनिक डैशबोर्ड देखें",
+    changeLanguage: "भाषा बदलें",
+    placeholders: {
+      title: "अपने विषय का संक्षिप्त शीर्षक",
+      description: "विस्तृत विवरण",
+      date: "दिनांक चुनें"
+    },
+    // Navigation
     successStories: "सफलता की कहानियाँ",
     resources: "संसाधन",
-    peerSupport: "पीयर सपोर्ट",
+    peerSupport: "साथी सहायता",
     liveQA: "लाइव प्रश्नोत्तर",
-    aiHelp: "एआई हेल्प",
-    changeLanguage: "भाषा बदलें",
-    viewDashboard: "डैशबोर्ड देखें",
-    loading: "लोड हो रहा है...",
-    complaintNotFound: "शिकायत नहीं मिली",
-    backToComplaints: "शिकायतों पर वापस जाएं",
-    by: "द्वारा",
-    anonymous: "अनाम",
-    submittedOn: "जमा करने की तिथि",
-    updateStatus: "स्थिति अपडेट करें",
-    updates: "अपडेट्स",
-    addUpdate: "अपडेट जोड़ें...",
-    adding: "जोड़ा जा रहा है...",
-    status: {
-      pending: "लंबित",
-      in_progress: "प्रगति में",
-      resolved: "हल किया गया",
-      rejected: "अस्वीकृत"
-    },
-    helpTitle: "हम आपकी मदद कैसे कर सकते हैं?",
-    helpStep1Title: "चरण 1: अपनी समस्या का वर्णन करें",
-    helpStep1Content: "जिस समस्या का आप सामना कर रहे हैं, उसका स्पष्ट और संक्षिप्त वर्णन करें। तिथियों, समयों, स्थानों और शामिल लोगों सहित जितना संभव हो उतना विवरण प्रदान करें।",
-    helpStep2Title: "चरण 2: सहायक साक्ष्य एकत्र करें",
+    aiHelp: "एआई सहायता",
+    // Help page
+    helpTitle: "शिकायत कैसे दर्ज करें",
+    helpStep1Title: "चरण 1: अपनी रिपोर्टिंग विधि चुनें",
+    helpStep1Content: "आप खाता बनाकर या बिना लॉगिन किए शिकायतें दर्ज कर सकते हैं। खाता बनाने से आपको अपनी शिकायतों को ट्रैक करने और अपडेट प्राप्त करने जैसी अतिरिक्त सुविधाएं मिलती हैं।",
+    helpStep2Title: "चरण 2: स्पष्ट जानकारी प्रदान करें",
     helpStep2Items: [
-      "कोई भी दस्तावेज़, फ़ोटो, वीडियो या अन्य साक्ष्य एकत्र करें जो आपके दावे का समर्थन करते हैं।",
-      "सुनिश्चित करें कि आपका साक्ष्य प्रासंगिक है और स्पष्ट रूप से लेबल किया गया है।",
-      "यदि आपके पास गवाह हैं, तो उनसे लिखित बयान देने के लिए कहें।"
+      "अपनी शिकायत के लिए प्रासंगिक क्षेत्र चुनें",
+      "स्पष्ट और संक्षिप्त शीर्षक लिखें",
+      "समस्या का विस्तृत विवरण प्रदान करें",
+      "यदि लागू हो तो विशिष्ट तिथियां और स्थान शामिल करें"
     ],
-    helpStep3Title: "चरण 3: अपनी शिकायत जमा करें",
-    helpStep3Content: "एक बार जब आप सभी आवश्यक जानकारी एकत्र कर लेते हैं, तो हमारे ऑनलाइन फॉर्म के माध्यम से अपनी शिकायत जमा करें। सभी आवश्यक फ़ील्ड भरना और कोई भी सहायक साक्ष्य संलग्न करना सुनिश्चित करें।",
-    helpTipsTitle: "एक प्रभावी शिकायत लिखने के लिए युक्तियाँ",
+    helpStep3Title: "चरण 3: जमा करें और ट्रैक करें",
+    helpStep3Content: "जमा करने के बाद, आपको एक विशिष्ट शिकायत आईडी मिलेगी। अपनी शिकायत की स्थिति को ट्रैक करने के लिए इस आईडी को सुरक्षित रखें। पंजीकृत उपयोगकर्ता अपने डैशबोर्ड से सीधे अपनी शिकायतों को ट्रैक कर सकते हैं।",
+    helpTipsTitle: "प्रभावी रिपोर्टिंग के लिए सुझाव",
     helpTipsItems: [
-      "स्पष्ट और संक्षिप्त रहें।",
-      "विशिष्ट रहें और जितना संभव हो उतना विवरण प्रदान करें।",
-      "वस्तुनिष्ठ रहें और भावनात्मक भाषा से बचें।",
-      "सम्मानजनक रहें और व्यक्तिगत हमलों से बचें।",
-      "जमा करने से पहले अपनी शिकायत को प्रूफरीड करें।"
+      "अपने विवरण में विशिष्ट और तथ्यात्मक रहें",
+      "सभी कैप्स या अत्यधिक विराम चिह्नों का उपयोग न करें",
+      "यदि उपलब्ध हो तो प्रासंगिक दस्तावेज़ शामिल करें",
+      "अपनी शिकायत को पेशेवर और वस्तुनिष्ठ रखें"
     ]
   },
   bengali: {
-    newComplaint: "নতুন অভিযোগ",
-    complaintForm: "অভিযোগ ফর্ম",
-    success: "সাফল্য",
-    complaintSubmitted: "অভিযোগ সফলভাবে জমা দেওয়া হয়েছে!",
-    error: "ত্রুটি",
-    complaintFailed: "অভিযোগ জমা দিতে ব্যর্থ",
-    titleLabel: "শিরোনাম",
-    descriptionLabel: "বর্ণনা",
-    sectorLabel: "খাত",
-    submitButton: "জমা দিন",
-    uploadFiles: "ফাইল আপলোড করুন",
-    dropFilesHere: "এখানে ফাইল ড্রপ করুন, অথবা ফাইল নির্বাচন করতে ক্লিক করুন",
-    audioRecording: "অডিও রেকর্ডিং",
-    startRecording: "রেকর্ডিং শুরু করুন",
+    title: "আপনার মতামত পেশ করুন",
+    languageSelect: "ভাষা নির্বাচন করুন",
+    complaint: "অভিযোগ জানান",
+    feedback: "মতামত দিন",
+    compliment: "প্রশংসা করুন",
+    sector: "বিভাগ/ক্ষেত্র",
+    description: "বর্ণনা",
+    submit: "জমা দিন",
+    recording: "রেকর্ডিং চলছে...",
+    startRecording: "ভয়েস ইনপুট শুরু করুন",
     stopRecording: "রেকর্ডিং বন্ধ করুন",
-    recordComplaint: "আপনার অভিযোগ রেকর্ড করুন",
-    platformExperience: "প্ল্যাটফর্ম অভিজ্ঞতা",
-    responseTime: "প্রতিক্রিয়া সময়",
-    accessibility: "অ্যাক্সেসযোগ্যতা",
-    other: "অন্যান্য",
-    feedbackCategory: "ফিডব্যাক বিভাগ",
-    name: "নাম",
-    email: "ইমেইল",
-    optional: "ঐচ্ছিক",
-    required: "আবশ্যক",
-    selectState: "রাজ্য নির্বাচন করুন",
-    selectDistrict: "জেলা নির্বাচন করুন",
-    dateOfIncident: "ঘটনার তারিখ",
-    languageSelect: "বাংলা",
-    successStories: "সাফল্যের গল্প",
-    resources: "সম্পদ",
-    peerSupport: "পিয়ার সাপোর্ট",
-    liveQA: "লাইভ প্রশ্নোত্তর",
-    aiHelp: "এআই সাহায্য",
+    viewDashboard: "পাবলিক ড্যাশবোর্ড দেখুন",
     changeLanguage: "ভাষা পরিবর্তন করুন",
-    viewDashboard: "ড্যাশবোর্ড দেখুন",
-    loading: "লোড হচ্ছে...",
-    complaintNotFound: "অভিযোগ পাওয়া যায়নি",
-    backToComplaints: "অভিযোগে ফিরে যান",
-    by: "দ্বারা",
-    anonymous: "বেনামী",
-    submittedOn: "জমা দেওয়ার তারিখ",
-    updateStatus: "স্থিতি আপডেট করুন",
-    updates: "আপডেট",
-    addUpdate: "আপডেট যোগ করুন...",
-    adding: "যোগ করা হচ্ছে...",
-    status: {
-      pending: "বিচারাধীন",
-      in_progress: "প্রক্রিয়াধীন",
-      resolved: "সমাধান করা হয়েছে",
-      rejected: "প্রত্যাখ্যান করা হয়েছে"
+     placeholders: {
+      title: "আপনার বিষয়ের সংক্ষিপ্ত শিরোনাম",
+      description: "বিস্তারিত বিবরণ",
+      date: "তারিখ নির্বাচন করুন"
     },
-    helpTitle: "আমরা কিভাবে আপনাকে সাহায্য করতে পারি?",
-    helpStep1Title: "ধাপ 1: আপনার সমস্যা বর্ণনা করুন",
-    helpStep1Content: "আপনি যে সমস্যার সম্মুখীন হচ্ছেন তার একটি স্পষ্ট এবং সংক্ষিপ্ত বিবরণ দিন। তারিখ, সময়, স্থান এবং জড়িত ব্যক্তি সহ যতটা সম্ভব বিস্তারিত তথ্য প্রদান করুন।",
-    helpStep2Title: "ধাপ 2: সহায়ক প্রমাণ সংগ্রহ করুন",
+    // Navigation
+    successStories: "সাফল্যের গল্প",
+    resources: "সংস্থান",
+    peerSupport: "সমকক্ষ সহায়তা",
+    liveQA: "সরাসরি প্রশ্নোত্তর",
+    aiHelp: "এআই সহায়তা",
+    // Help page
+    helpTitle: "কীভাবে অভিযোগ জানাবেন",
+    helpStep1Title: "ধাপ 1: আপনার রিপোর্টিং পদ্ধতি নির্বাচন করুন",
+    helpStep1Content: "আপনি একটি অ্যাকাউন্ট তৈরি করে বা লগইন না করেও অভিযোগ জানাতে পারেন। একটি অ্যাকাউন্ট তৈরি করলে আপনি আপনার অভিযোগগুলি ট্র্যাক করতে এবং আপডেট পেতে অতিরিক্ত সুবিধা পাবেন।",
+    helpStep2Title: "ধাপ ২: স্পষ্ট তথ্য প্রদান করুন",
     helpStep2Items: [
-      "যেকোনো নথি, ছবি, ভিডিও বা অন্যান্য প্রমাণ সংগ্রহ করুন যা আপনার দাবি সমর্থন করে।",
-      "নিশ্চিত করুন যে আপনার প্রমাণ প্রাসঙ্গিক এবং স্পষ্টভাবে লেবেল করা হয়েছে।",
-      "যদি আপনার সাক্ষী থাকে, তাহলে তাদের একটি লিখিত বিবৃতি প্রদান করতে বলুন।"
+      "আপনার অভিযোগের জন্য প্রাসঙ্গিক ক্ষেত্র নির্বাচন করুন",
+      "একটি স্পষ্ট এবং সংক্ষিপ্ত শিরোনাম লিখুন",
+      "বিষয়টির বিস্তারিত বিবরণ দিন",
+      "প্রযোজ্য হলে নির্দিষ্ট তারিখ এবং স্থান অন্তর্ভুক্ত করুন"
     ],
-    helpStep3Title: "ধাপ 3: আপনার অভিযোগ জমা দিন",
-    helpStep3Content: "একবার আপনি সমস্ত প্রয়োজনীয় তথ্য সংগ্রহ করার পরে, আমাদের অনলাইন ফর্মের মাধ্যমে আপনার অভিযোগ জমা দিন। সমস্ত প্রয়োজনীয় ক্ষেত্র পূরণ করতে এবং কোনো সহায়ক প্রমাণ সংযুক্ত করতে ভুলবেন না।",
-    helpTipsTitle: "একটি কার্যকর অভিযোগ লেখার জন্য টিপস",
+    helpStep3Title: "ধাপ 3: জমা দিন এবং ট্র্যাক করুন",
+    helpStep3Content: "জমা দেওয়ার পরে, আপনি একটি অনন্য অভিযোগ আইডি পাবেন। আপনার অভিযোগের স্থিতি ট্র্যাক করতে এই আইডিটি নিরাপদে রাখুন। নিবন্ধিত ব্যবহারকারীরা তাদের ড্যাশবোর্ড থেকে সরাসরি তাদের অভিযোগগুলি ট্র্যাক করতে পারেন।",
+    helpTipsTitle: "কার্যকর রিপোর্টিংয়ের জন্য টিপস",
     helpTipsItems: [
-      "স্পষ্ট এবং সংক্ষিপ্ত হন।",
-      "নির্দিষ্ট হন এবং যতটা সম্ভব বিস্তারিত তথ্য প্রদান করুন।",
-      "বস্তুনিষ্ঠ হন এবং আবেগপূর্ণ ভাষা এড়িয়ে চলুন।",
-      "সম্মানজনক হন এবং ব্যক্তিগত আক্রমণ এড়িয়ে চলুন।",
-      "জমা দেওয়ার আগে আপনার অভিযোগটি প্রুফরিড করুন।"
+      "আপনার বর্ণনায় নির্দিষ্ট এবং তথ্যপূর্ণ হন",
+      "সমস্ত ক্যাপস বা অতিরিক্ত বিরাম চিহ্ন ব্যবহার করা এড়িয়ে চলুন",
+      "যদি পাওয়া যায় তবে প্রাসঙ্গিক ডকুমেন্টেশন অন্তর্ভুক্ত করুন",
+      "আপনার অভিযোগ পেশাদার এবং উদ্দেশ্যমূলক রাখুন"
     ]
   },
   telugu: {
-    newComplaint: "కొత్త ఫిర్యాదు",
-    complaintForm: "ఫిర్యాదు ఫారం",
-    success: "విజయం",
-    complaintSubmitted: "ఫిర్యాదు విజయవంతంగా సమర్పించబడింది!",
-    error: "లోపం",
-    complaintFailed: "ఫిర్యాదును సమర్పించడంలో విఫలం",
-    titleLabel: "శీర్షిక",
-    descriptionLabel: "వివరణ",
-    sectorLabel: "రంగం",
-    submitButton: "సమర్పించు",
-    uploadFiles: "ఫైళ్ళను అప్లోడ్ చేయండి",
-    dropFilesHere: "ఇక్కడ ఫైళ్ళను డ్రాప్ చేయండి లేదా ఫైళ్ళను ఎంచుకోవడానికి క్లిక్ చేయండి",
-    audioRecording: "ఆడియో రికార్డింగ్",
-    startRecording: "రికార్డింగ్ ప్రారంభించండి",
+    title: "మీ స్వరాన్ని సమర్పించండి",
+    languageSelect: "భాషను ఎంచుకోండి",
+    complaint: "ఫిర్యాదును నివేదించండి",
+    feedback: "అభిప్రాయాన్ని పంచుకోండి",
+    compliment: "అభినందించండి",
+    sector: "విభాగం/రంగం",
+    description: "వివరణ",
+    submit: "సమర్పించండి",
+    recording: "రికార్డింగ్...",
+    startRecording: "వాయిస్ ఇన్పుట్ ప్రారంభించండి",
     stopRecording: "రికార్డింగ్ ఆపండి",
-    recordComplaint: "మీ ఫిర్యాదును రికార్డ్ చేయండి",
-    platformExperience: "ప్లాట్‌ఫాం అనుభవం",
-    responseTime: "స్పందన సమయం",
-    accessibility: "ప్రాప్యత",
-    other: "ఇతర",
-    feedbackCategory: "అభిప్రాయ వర్గం",
-    name: "పేరు",
-    email: "ఇమెయిల్",
-    optional: "ఐచ్ఛికం",
-    required: "అవసరం",
-    selectState: "రాష్ట్రాన్ని ఎంచుకోండి",
-    selectDistrict: "జిల్లాను ఎంచుకోండి",
-    dateOfIncident: "సంఘటన జరిగిన తేదీ",
-    languageSelect: "తెలుగు",
+    viewDashboard: "ప్రజా డాష్‌బోర్డ్‌ను చూడండి",
+    changeLanguage: "భాష మార్చండి",
+     placeholders: {
+      title: "మీ సమర్పణ యొక్క సంక్షిప్త శీర్షిక",
+      description: "వివరణాత్మక వివరణ",
+      date: "తేదీని ఎంచుకోండి"
+    },
+    // Navigation
     successStories: "విజయ గాథలు",
     resources: "వనరులు",
-    peerSupport: "సహాయ సహకారాలు",
-    liveQA: "లైవ్ ప్రశ్నలు & సమాధానాలు",
+    peerSupport: "సహచరుల మద్దతు",
+    liveQA: "ప్రత్యక్ష ప్రశ్నలు & సమాధానాలు",
     aiHelp: "AI సహాయం",
-    changeLanguage: "భాష మార్చండి",
-    viewDashboard: "డాష్‌బోర్డ్‌ను చూడండి",
-    loading: "లోడ్ అవుతోంది...",
-    complaintNotFound: "ఫిర్యాదు కనుగొనబడలేదు",
-    backToComplaints: "ఫిర్యాదులకు తిరిగి వెళ్ళండి",
-    by: "ద్వారా",
-    anonymous: "అజ్ఞాత",
-    submittedOn: "సమర్పించిన తేదీ",
-    updateStatus: "స్థితిని నవీకరించండి",
-    updates: "నవీకరణలు",
-    addUpdate: "నవీకరణను జోడించండి...",
-    adding: "జోడిస్తోంది...",
-    status: {
-      pending: "పెండింగ్",
-      in_progress: "ప్రగతిలో ఉంది",
-      resolved: "పరిష్కరించబడింది",
-      rejected: "తిరస్కరించబడింది"
-    },
-    helpTitle: "మేము మీకు ఎలా సహాయం చేయగలము?",
-    helpStep1Title: "దశ 1: మీ సమస్యను వివరించండి",
-    helpStep1Content: "మీరు ఎదుర్కొంటున్న సమస్యను స్పష్టంగా మరియు సంక్షిప్తంగా వివరించండి. తేదీలు, సమయాలు, స్థానాలు మరియు పాల్గొన్న వ్యక్తులతో సహా వీలైనంత ఎక్కువ వివరాలను అందించండి.",
-    helpStep2Title: "దశ 2: సహాయక సాక్ష్యాలను సేకరించండి",
+    // Help page
+    helpTitle: "ఫిర్యాదును ఎలా నివేదించాలి",
+    helpStep1Title: "దశ 1: మీ రిపోర్టింగ్ పద్ధతిని ఎంచుకోండి",
+    helpStep1Content: "మీరు ఖాతాను సృష్టించడం ద్వారా లేదా లాగిన్ చేయకుండా ఫిర్యాదులను నివేదించవచ్చు. ఖాతాను సృష్టించడం వలన మీ ఫిర్యాదులను ట్రాక్ చేయడం మరియు నవీకరణలను స్వీకరించడం వంటి అదనపు ఫీచర్లు మీకు లభిస్తాయి.",
+    helpStep2Title: "దశ 2: స్పష్టమైన సమాచారాన్ని అందించండి",
     helpStep2Items: [
-      "మీ దావాకు మద్దతు ఇచ్చే ఏదైనా పత్రాలు, ఫోటోలు, వీడియోలు లేదా ఇతర సాక్ష్యాలను సేకరించండి.",
-      "మీ సాక్ష్యం సంబంధితంగా ఉందని మరియు స్పష్టంగా లేబుల్ చేయబడిందని నిర్ధారించుకోండి.",
-      "మీకు సాక్షులు ఉంటే, వారిని వ్రాతపూర్వక ప్రకటనను అందించమని అడగండి."
+      "మీ ఫిర్యాదుకు సంబంధించిన రంగాన్ని ఎంచుకోండి",
+      "స్పష్టమైన మరియు సంక్షిప్త శీర్షికను వ్రాయండి",
+      "సమస్య యొక్క వివరణాత్మక వివరణను అందించండి",
+      "వర్తించే చోట నిర్దిష్ట తేదీలు మరియు స్థానాలను చేర్చండి"
     ],
-    helpStep3Title: "దశ 3: మీ ఫిర్యాదును సమర్పించండి",
-    helpStep3Content: "మీరు అవసరమైన మొత్తం సమాచారాన్ని సేకరించిన తర్వాత, మా ఆన్‌లైన్ ఫారమ్ ద్వారా మీ ఫిర్యాదును సమర్పించండి. అవసరమైన అన్ని ఫీల్డ్‌లను పూరించండి మరియు ఏదైనా సహాయక సాక్ష్యాలను జతచేయండి.",
-    helpTipsTitle: "సమర్థవంతమైన ఫిర్యాదును వ్రాయడానికి చిట్కాలు",
+    helpStep3Title: "దశ 3: సమర్పించండి మరియు ట్రాక్ చేయండి",
+    helpStep3Content: "సమర్పించిన తర్వాత, మీరు ఒక ప్రత్యేకమైన ఫిర్యాదు IDని అందుకుంటారు. మీ ఫిర్యాదు యొక్క స్థితిని ట్రాక్ చేయడానికి ఈ IDని సురక్షితంగా ఉంచుకోండి. నమోదు చేసుకున్న వినియోగదారులు వారి డాష్‌బోర్డ్ నుండి నేరుగా వారి ఫిర్యాదులను ట్రాక్ చేయవచ్చు.",
+    helpTipsTitle: "సమర్థవంతమైన రిపోర్టింగ్ కోసం చిట్కాలు",
     helpTipsItems: [
-      "స్పష్టంగా మరియు సంక్షిప్తంగా ఉండండి.",
-      "నిర్దిష్టంగా ఉండండి మరియు వీలైనంత ఎక్కువ వివరాలను అందించండి.",
-      "నిష్పాక్షికంగా ఉండండి మరియు భావోద్వేగ భాషను నివారించండి.",
-      "గౌరవంగా ఉండండి మరియు వ్యక్తిగత దాడులను నివారించండి.",
-      "సమర్పించే ముందు మీ ఫిర్యాదును ప్రూఫ్‌రీడ్ చేయండి."
+      "మీ వివరణలో నిర్దిష్టంగా మరియు వాస్తవికంగా ఉండండి",
+      "అన్ని క్యాప్స్ లేదా అధిక విరామ చిహ్నాలను ఉపయోగించడం మానుకోండి",
+      "అందుబాటులో ఉంటే సంబంధిత డాక్యుమెంటేషన్‌ను చేర్చండి",
+      "మీ ఫిర్యాదును వృత్తిపరంగా మరియు లక్ష్యంగా ఉంచండి"
     ]
   },
   marathi: {
-    newComplaint: "नवीन तक्रार",
-    complaintForm: "तक्रार अर्ज",
-    success: "यश",
-    complaintSubmitted: "तक्रार यशस्वीरित्या सबमिट केली!",
-    error: "त्रुटी",
-    complaintFailed: "तक्रार सबमिट करण्यात अयशस्वी",
-    titleLabel: "शीर्षक",
-    descriptionLabel: "वर्णन",
-    sectorLabel: "क्षेत्र",
-    submitButton: "सबमिट करा",
-    uploadFiles: "फाइल अपलोड करा",
-    dropFilesHere: "फाइल येथे ड्रॉप करा, किंवा फाइल निवडण्यासाठी क्लिक करा",
-    audioRecording: "ऑडिओ रेकॉर्डिंग",
-    startRecording: "रेकॉर्डिंग सुरू करा",
+    title: "आपली तक्रार नोंदवा",
+    languageSelect: "भाषा निवडा",
+    complaint: "तक्रार नोंदवा",
+    feedback: "अभिप्राय द्या",
+    compliment: "कौतुक करा",
+    sector: "विभाग/क्षेत्र",
+    description: "वर्णन",
+    submit: "सबमिट करा",
+    recording: "रेकॉर्डिंग...",
+    startRecording: "व्हॉइस इनपुट सुरू करा",
     stopRecording: "रेकॉर्डिंग थांबवा",
-    recordComplaint: "तुमची तक्रार रेकॉर्ड करा",
-    platformExperience: "प्लॅटफॉर्म अनुभव",
-    responseTime: "प्रतिक्रिया वेळ",
-    accessibility: "प्रवेशयोग्यता",
-    other: "इतर",
-    feedbackCategory: "अभिप्राय श्रेणी",
-    name: "नाव",
-    email: "ईमेल",
-    optional: "वैकल्पिक",
-    required: "आवश्यक",
-    selectState: "राज्य निवडा",
-    selectDistrict: "जिल्हा निवडा",
-    dateOfIncident: "घटनेची तारीख",
-    languageSelect: "मराठी",
-    successStories: "यशस्वी कथा",
-    resources: "संसाधने",
-    peerSupport: "समवयस्क समर्थन",
-    liveQA: "लाइव्ह प्रश्नोत्तर",
-    aiHelp: "एआय मदत",
+    viewDashboard: "सार्वजनिक डॅशबोर्ड पहा",
     changeLanguage: "भाषा बदला",
-    viewDashboard: "डॅशबोर्ड पहा",
-    loading: "लोड होत आहे...",
-    complaintNotFound: "तक्रार आढळली नाही",
-    backToComplaints: "तक्रारींवर परत जा",
-    by: "द्वारे",
-    anonymous: "अनामित",
-    submittedOn: "सादर करण्याची तारीख",
-    updateStatus: "स्थिती अद्यतनित करा",
-    updates: "अद्यतने",
-    addUpdate: "अद्यतन जोडा...",
-    adding: "जोडत आहे...",
-    status: {
-      pending: "प्रलंबित",
-      in_progress: "प्रगतीपथावर",
-      resolved: "निराकरण झाले",
-      rejected: "नाकारले"
+    placeholders: {
+      title: "आपल्या सबमिशनचे संक्षिप्त शीर्षक",
+      description: "तपशीलवार वर्णन",
+      date: "तारीख निवडा"
     },
-    helpTitle: "आम्ही तुम्हाला कशी मदत करू शकतो?",
-    helpStep1Title: "चरण 1: तुमची समस्या सांगा",
-    helpStep1Content: "तुम्ही ज्या समस्येचा सामना करत आहात त्याचे स्पष्ट आणि संक्षिप्त वर्णन करा. तारखा, वेळा, स्थाने आणि सहभागी लोकांसह शक्य तितकी माहिती द्या.",
-    helpStep2Title: "चरण 2: सहाय्यक पुरावे गोळा करा",
+    successStories: "यशोगाथा",
+    resources: "संसाधने",
+    peerSupport: "समकक्ष सहाय्य",
+    liveQA: "थेट प्रश्नोत्तरे",
+    aiHelp: "AI मदत",
+    helpTitle: "तक्रार कशी नोंदवावी",
+    helpStep1Title: "पहिले पाऊल: आपली नोंदणी पद्धत निवडा",
+    helpStep1Content: "आपण खाते तयार करून किंवा लॉगिन न करता तक्रारी नोंदवू शकता. खाते तयार केल्याने आपल्याला आपल्या तक्रारींचा मागोवा घेणे आणि अपडेट्स प्राप्त करणे यासारख्या अतिरिक्त सुविधा मिळतील.",
+    helpStep2Title: "दुसरे पाऊल: स्पष्ट माहिती द्या",
     helpStep2Items: [
-      "तुमच्या दाव्याला समर्थन देणारी कोणतीही कागदपत्रे, फोटो, व्हिडिओ किंवा इतर पुरावे गोळा करा.",
-      "खात्री करा की तुमचा पुरावा संबंधित आहे आणि स्पष्टपणे लेबल केलेला आहे.",
-      "जर तुमच्याकडे साक्षीदार असतील, तर त्यांना लेखी निवेदन देण्यास सांगा."
+      "आपल्या तक्रारीसाठी संबंधित क्षेत्र निवडा",
+      "स्पष्ट आणि संक्षिप्त शीर्षक लिहा",
+      "समस्येचे तपशीलवार वर्णन द्या",
+      "लागू असल्यास विशिष्ट तारखा आणि स्थाने समाविष्ट करा"
     ],
-    helpStep3Title: "चरण 3: तुमची तक्रार सबमिट करा",
-    helpStep3Content: "एकदा तुम्ही सर्व आवश्यक माहिती गोळा केल्यानंतर, आमच्‍या ऑनलाइन फॉर्मद्वारे तुमची तक्रार सबमिट करा. सर्व आवश्यक फील्ड भरणे आणि कोणताही सहाय्यक पुरावा जोडणे सुनिश्चित करा.",
-    helpTipsTitle: "एक प्रभावी तक्रार लिहिण्‍यासाठी टिप्‍स",
+    helpStep3Title: "तिसरे पाऊल: सबमिट करा आणि मागोवा घ्या",
+    helpStep3Content: "सबमिट केल्यानंतर, आपल्याला एक अद्वितीय तक्रार ID मिळेल. आपल्या तक्रारीची स्थिती ट्रॅक करण्यासाठी ही ID सुरक्षित ठेवा. नोंदणीकृत वापरकर्ते त्यांच्या डॅशबोर्डवरून थेट त्यांच्या तक्रारींचा मागोवा घेऊ शकतात.",
+    helpTipsTitle: "प्रभावी नोंदणीसाठी टिप्स",
     helpTipsItems: [
-      "स्पष्ट आणि संक्षिप्त रहा.",
-      "विशिष्ट रहा आणि शक्य तितकी माहिती द्या.",
-      "वस्तुनिष्ठ रहा आणि भावनिक भाषा टाळा.",
-      "आदरणीय रहा आणि वैयक्तिक हल्ले टाळा.",
-      "सबमिट करण्यापूर्वी तुमच्या तक्रारीची प्रूफरीड करा."
+      "आपल्या वर्णनात विशिष्ट आणि तथ्यात्मक रहा",
+      "सर्व कॅप्स किंवा अतिरिक्त विरामचिन्हांचा वापर टाळा",
+      "उपलब्ध असल्यास संबंधित कागदपत्रे समाविष्ट करा",
+      "आपली तक्रार व्यावसायिक आणि उद्देशपूर्ण ठेवा"
     ]
   },
   tamil: {
-    newComplaint: "புதிய புகார்",
-    complaintForm: "புகார் படிவம்",
-    success: "வெற்றி",
-    complaintSubmitted: "புகார் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!",
-    error: "பிழை",
-    complaintFailed: "புகாரை சமர்ப்பிக்க முடியவில்லை",
-    titleLabel: "தலைப்பு",
-    descriptionLabel: "விளக்கம்",
-    sectorLabel: "துறை",
-    submitButton: "சமர்ப்பிக்கவும்",
-    uploadFiles: "கோப்புகளை பதிவேற்றுக",
-    dropFilesHere: "கோப்புகளை இங்கே விடுங்கள், அல்லது கோப்புகளைத் தேர்ந்தெடுக்க கிளிக் செய்க",
-    audioRecording: "ஆடியோ பதிவு",
-    startRecording: "பதிவை தொடங்குக",
-    stopRecording: "பதிவை நிறுத்து",
-    recordComplaint: "உங்கள் புகாரை பதிவு செய்க",
-    platformExperience: "தளம் அனுபவம்",
-    responseTime: "பதில் நேரம்",
-    accessibility: "அணுகல்தன்மை",
-    other: "மற்றவை",
-    feedbackCategory: "கருத்து வகை",
-    name: "பெயர்",
-    email: "மின்னஞ்சல்",
-    optional: "விருப்பம்",
-    required: "தேவை",
-    selectState: "மாநிலத்தைத் தேர்ந்தெடுக்கவும்",
-    selectDistrict: "மாவட்டத்தைத் தேர்ந்தெடுக்கவும்",
-    dateOfIncident: "சம்பவத்தின் தேதி",
-    languageSelect: "தமிழ்",
-    successStories: "வெற்றிக் கதைகள்",
-    resources: "ஆதாரங்கள்",
-    peerSupport: "சக ஆதரவு",
-    liveQA: "நேரடி கேள்வி பதில்",
-    aiHelp: "AI உதவி",
-    changeLanguage: "மொழியை மாற்றுக",
-    viewDashboard: "டாஷ்போர்டைக் காண்க",
-    loading: "ஏற்றுகிறது...",
-    complaintNotFound: "புகார் காணப்படவில்லை",
-    backToComplaints: "புகார்களுக்குத் திரும்பு",
-    by: "மூலம்",
-    anonymous: "அநாமதேய",
-    submittedOn: "சமர்ப்பித்த தேதி",
-    updateStatus: "நிலையை புதுப்பிக்கவும்",
-    updates: "புதுப்பிப்புகள்",
-    addUpdate: "புதுப்பிப்பைச் சேர்க்கவும்...",
-    adding: "சேர்க்கிறது...",
-    status: {
-      pending: "நிலுவையில் உள்ளது",
-      in_progress: "நடந்து கொண்டிருக்கிறது",
-      resolved: "தீர்க்கப்பட்டது",
-      rejected: "நிராகரிக்கப்பட்டது"
+    title: "உங்கள் குரலைப் பதிவு செய்யுங்கள்",
+    languageSelect: "மொழியைத் தேர்ந்தெடுக்கவும்",
+    complaint: "புகார் அளிக்கவும்",
+    feedback: "கருத்து தெரிவிக்கவும்",
+    compliment: "பாராட்டு தெரிவிக்கவும்",
+    sector: "துறை/பிரிவு",
+    description: "விவரம்",
+    submit: "சமர்ப்பிக்கவும்",
+    recording: "பதிவு செய்கிறது...",
+    startRecording: "குரல் உள்ளீடு தொடங்கவும்",
+    stopRecording: "பதிவை நிறுத்தவும்",
+    viewDashboard: "பொது டாஷ்போர்டைக் காண்க",
+    changeLanguage: "மொழியை மாற்றவும்",
+    placeholders: {
+      title: "உங்கள் சமர்ப்பிப்பின் சுருக்கமான தலைப்பு",
+      description: "விரிவான விளக்கம்",
+      date: "தேதியைத் தேர்ந்தெடுக்கவும்"
     },
-    helpTitle: "நாங்கள் உங்களுக்கு எப்படி உதவ முடியும்?",
-    helpStep1Title: "படி 1: உங்கள் சிக்கலை விவரிக்கவும்",
-    helpStep1Content: "நீங்கள் எதிர்கொள்ளும் சிக்கலை தெளிவாகவும் சுருக்கமாகவும் விவரிக்கவும். தேதிகள், நேரங்கள், இடங்கள் மற்றும் சம்பந்தப்பட்ட நபர்கள் உட்பட முடிந்தவரை விவரங்களை வழங்கவும்.",
-    helpStep2Title: "படி 2: துணை ஆதாரங்களை சேகரிக்கவும்",
+    successStories: "வெற்றிக் கதைகள்",
+    resources: "வளங்கள்",
+    peerSupport: "சக ஆதரவு",
+    liveQA: "நேரடி கேள்வி & பதில்",
+    aiHelp: "AI உதவி",
+    helpTitle: "புகார் எப்படி அளிப்பது",
+    helpStep1Title: "படி 1: உங்கள் அறிக்கை முறையைத் தேர்ந்தெடுக்கவும்",
+    helpStep1Content: "கணக்கை உருவாக்குவதன் மூலமோ அல்லது உள்நுழையாமலோ புகார்களை அளிக்கலாம். கணக்கை உருவாக்குவதால் உங்கள் புகார்களைக் கண்காணித்தல் மற்றும் புதுப்பிப்புகளைப் பெறுதல் போன்ற கூடுதல் அம்சங்கள் கிடைக்கும்.",
+    helpStep2Title: "படி 2: தெளிவான தகவலை வழங்கவும்",
     helpStep2Items: [
-      "உங்கள் கூற்றை ஆதரிக்கும் எந்த ஆவணங்கள், புகைப்படங்கள், வீடியோக்கள் அல்லது பிற ஆதாரங்களை சேகரிக்கவும்.",
-      "உங்கள் ஆதாரம் பொருத்தமானதாகவும் தெளிவாக லேபிளிடப்பட்டதாகவும் இருப்பதை உறுதிப்படுத்திக் கொள்ளுங்கள்.",
-      "உங்களிடம் சாட்சிகள் இருந்தால், அவர்களிடம் எழுத்துப்பூர்வ அறிக்கையை வழங்கும்படி கேளுங்கள்."
+      "உங்கள் புகாருக்கான தொடர்புடைய துறையைத் தேர்ந்தெடுக்கவும்",
+      "தெளிவான மற்றும் சுருக்கமான தலைப்பை எழுதவும்",
+      "பிரச்சனையின் விரிவான விளக்கத்தை வழங்கவும்",
+      "பொருந்தக்கூடிய தேதிகள் மற்றும் இடங்களை சேர்க்கவும்"
     ],
-    helpStep3Title: "படி 3: உங்கள் புகாரை சமர்ப்பிக்கவும்",
-    helpStep3Content: "தேவையான அனைத்து தகவல்களையும் நீங்கள் சேகரித்தவுடன், எங்கள் ஆன்லைன் படிவம் மூலம் உங்கள் புகாரை சமர்ப்பிக்கவும். தேவையான அனைத்து புலங்களையும் பூர்த்தி செய்து, ஏதேனும் துணை ஆதாரங்களை இணைக்க மறக்காதீர்கள்.",
-    helpTipsTitle: "ஒரு பயனுள்ள புகாரை எழுதுவதற்கான உதவிக்குறிப்புகள்",
+    helpStep3Title: "படி 3: சமர்ப்பித்து கண்காணிக்கவும்",
+    helpStep3Content: "சமர்ப்பித்த பிறகு, நீங்கள் ஒரு தனித்துவமான புகார் IDஐப் பெறுவீர்கள். உங்கள் புகாரின் நிலையைக் கண்காணிக்க இந்த IDஐப் பாதுகாப்பாக வைத்திருக்கவும். பதிவுசெய்த பயனர்கள் தங்கள் டாஷ்போர்டில் இருந்து நேரடியாக தங்கள் புகார்களைக் கண்காணிக்கலாம்.",
+    helpTipsTitle: "சிறந்த அறிக்கைக்கான உதவிக்குறிப்புகள்",
     helpTipsItems: [
-      "தெளிவாகவும் சுருக்கமாகவும் இருங்கள்.",
-      "குறிப்பாக இருங்கள் மற்றும் முடிந்தவரை விவரங்களை வழங்கவும்.",
-      "புறநிலையாக இருங்கள் மற்றும் உணர்ச்சிவசப்பட்ட மொழியைத் தவிர்க்கவும்.",
-      "மரியாதையாக இருங்கள் மற்றும் தனிப்பட்ட தாக்குதல்களைத் தவிர்க்கவும்.",
-      "சமர்ப்பிக்கும் முன் உங்கள் புகாரை சரிபார்க்கவும்."
+      "உங்கள் விளக்கத்தில் குறிப்பிட்டதாகவும் உண்மையாகவும் இருக்கவும்",
+      "அனைத்து கேப்ஸ் அல்லது அதிக நிறுத்தற்குறிகளைப் பயன்படுத்துவதைத் தவிர்க்கவும்",
+      "கிடைக்கும் தொடர்புடைய ஆவணங்களை சேர்க்கவும்",
+      "உங்கள் புகாரை தொழில்முறையாகவும் நோக்கம் கொண்டதாகவும் வைத்திருக்கவும்"
     ]
   },
   gujarati: {
-    newComplaint: "નવી ફરિયાદ",
-    complaintForm: "ફરિયાદ ફોર્મ",
-    success: "સફળતા",
-    complaintSubmitted: "ફરિયાદ સફળતાપૂર્વક સબમિટ થઈ!",
-    error: "ભૂલ",
-    complaintFailed: "ફરિયાદ સબમિટ કરવામાં નિષ્ફળ",
-    titleLabel: "શીર્ષક",
-    descriptionLabel: "વર્ણન",
-    sectorLabel: "ક્ષેત્ર",
-    submitButton: "સબમિટ કરો",
-    uploadFiles: "ફાઇલો અપલોડ કરો",
-    dropFilesHere: "ફાઇલો અહીં મૂકો, અથવા ફાઇલો પસંદ કરવા માટે ક્લિક કરો",
-    audioRecording: "ઓડિયો રેકોર્ડિંગ",
-    startRecording: "રેકોર્ડિંગ શરૂ કરો",
+    title: "તમારો અવાજ રજૂ કરો",
+    languageSelect: "ભાષા પસંદ કરો",
+    complaint: "ફરિયાદ નોંધાવો",
+    feedback: "પ્રતિસાદ આપો",
+    compliment: "વખાણ કરો",
+    sector: "વિભાગ/ક્ષેત્ર",
+    description: "વર્ણન",
+    submit: "સબમિટ કરો",
+    recording: "રેકોર્ડિંગ...",
+    startRecording: "વૉઇસ ઇનપુટ શરૂ કરો",
     stopRecording: "રેકોર્ડિંગ બંધ કરો",
-    recordComplaint: "તમારી ફરિયાદ રેકોર્ડ કરો",
-    platformExperience: "પ્લેટફોર્મ અનુભવ",
-    responseTime: "પ્રતિભાવ સમય",
-    accessibility: "સુલભતા",
-    other: "અન્ય",
-    feedbackCategory: "પ્રતિસાદ શ્રેણી",
-    name: "નામ",
-    email: "ઇમેઇલ",
-    optional: "વૈકલ્પિક",
-    required: "જરૂરી",
-    selectState: "રાજ્ય પસંદ કરો",
-    selectDistrict: "જિલ્લો પસંદ કરો",
-    dateOfIncident: "ઘટનાની તારીખ",
-    languageSelect: "ગુજરાતી",
-    successStories: "સફળતાની વાર્તાઓ",
-    resources: "સંસાધનો",
-    peerSupport: "પીઅર સપોર્ટ",
-    liveQA: "લાઇવ પ્રશ્નો અને જવાબો",
-    aiHelp: "એઆઇ મદદ",
+    viewDashboard: "પબ્લિક ડેશબોર્ડ જુઓ",
     changeLanguage: "ભાષા બદલો",
-    viewDashboard: "ડેશબોર્ડ જુઓ",
-    loading: "લોડ થઈ રહ્યું છે...",
-    complaintNotFound: "ફરિયાદ મળી નથી",
-    backToComplaints: "ફરિયાદો પર પાછા જાઓ",
-    by: "દ્વારા",
-    anonymous: "અનામી",
-    submittedOn: "સબમિટ કરવાની તારીખ",
-    updateStatus: "સ્થિતિ અપડેટ કરો",
-    updates: "અપડેટ્સ",
-    addUpdate: "અપડેટ ઉમેરો...",
-    adding: "ઉમેરી રહ્યા છે...",
-    status: {
-      pending: "બાકી",
-      in_progress: "ચાલુ છે",
-      resolved: "ઉકેલાઈ ગયું",
-      rejected: "નકારવામાં આવ્યું"
+    placeholders: {
+      title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
+      description: "વિગતવાર વર્ણન",
+      date: "તારીખ પસંદ કરો"
     },
-    helpTitle: "અમે તમને કેવી રીતે મદદ કરી શકીએ?",
-    helpStep1Title: "પગલું 1: તમારી સમસ્યાનું વર્ણન કરો",
-    helpStep1Content: "તમે જે સમસ્યાનો સામનો કરી રહ્યા છો તેનું સ્પષ્ટ અને સંક્ષિપ્ત વર્ણન કરો. તારીખો, સમય, સ્થાનો અને સંડોવાયેલા લોકો સહિત શક્ય તેટલી વધુ વિગતો પ્રદાન કરો.",
-    helpStep2Title: "પગલું 2: સહાયક પુરાવા એકત્રિત કરો",
+    successStories: "સફળતાની વાતો",
+    resources: "સંસાધનો",
+    peerSupport: "સાથી સહાય",
+    liveQA: "લાઇવ પ્રશ્નોત્તરી",
+    aiHelp: "AI મદદ",
+    helpTitle: "ફરિયાદ કેવી રીતે નોંધાવવી",
+    helpStep1Title: "પગલું 1: તમારી રિપોર્ટિંગ પદ્ધતિ પસંદ કરો",
+    helpStep1Content: "તમે એકાઉન્ટ બનાવીને અથવા લૉગિન કર્યા વિના ફરિયાદો નોંધાવી શકો છો. એકાઉન્ટ બનાવવાથી તમને તમારી ફરિયાદોને ટ્રૅક કરવી અને અપડેટ્સ મેળવવા જેવી વધારાની સુવિધાઓ મળે છે.",
+    helpStep2Title: "પગલું 2: સ્પષ્ટ માહિતી આપો",
     helpStep2Items: [
-      "કોઈપણ દસ્તાવેજો, ફોટા, વિડિયો અથવા અન્ય પુરાવા એકત્રિત કરો જે તમારા દાવાને સમર્થન આપે છે.",
-      "ખાતરી કરો કે તમારો પુરાવો સુસંગત છે અને સ્પષ્ટ રીતે લેબલ થયેલ છે.",
-      "જો તમારી પાસે સાક્ષીઓ હોય, તો તેમને લેખિત નિવેદન આપવા માટે કહો."
+      "તમારી ફરિયાદ માટે સંબંધિત ક્ષેત્ર પસંદ કરો",
+      "સ્પષ્ટ અને ટૂંકું શીર્ષક લખો",
+      "સમસ્યાનું વિગતવાર વર્ણન આપો",
+      "લાગુ પડતી તારીખો અને સ્થળો શામેલ કરો"
     ],
-    helpStep3Title: "પગલું 3: તમારી ફરિયાદ સબમિટ કરો",
-    helpStep3Content: "એકવાર તમે બધી જરૂરી માહિતી એકત્રિત કરી લો, પછી અમારા ઓનલાઈન ફોર્મ દ્વારા તમારી ફરિયાદ સબમિટ કરો. બધા જરૂરી ફીલ્ડ્સ ભરવા અને કોઈપણ સહાયક પુરાવા જોડવાનું સુનિશ્ચિત કરો.",
-    helpTipsTitle: "એક અસરકારક ફરિયાદ લખવા માટે ટિપ્સ",
+    helpStep3Title: "પગલું 3: સબમિટ કરો અને ટ્રૅક કરો",
+    helpStep3Content: "સબમિટ કર્યા પછી, તમને એક વિશિષ્ટ ફરિયાદ ID મળશે. તમારી ફરિયાદની સ્થિતિને ટ્રૅક કરવા માટે આ ID સુરક્ષિત રાખો. નોંધાયેલા વપરાશકર્તાઓ તેમના ડેશબોર્ડમાંથી સીધી જ તેમની ફરિયાદોને ટ્રૅક કરી શકે છે.",
+    helpTipsTitle: "અસરકારક રિપોર્ટિંગ માટેની ટિપ્સ",
     helpTipsItems: [
-      "સ્પષ્ટ અને સંક્ષિપ્ત રહો.",
-      "ચોક્કસ રહો અને શક્ય તેટલી વધુ વિગતો પ્રદાન કરો.",
-      "નિષ્પક્ષ બનો અને ભાવનાત્મક ભાષા ટાળો.",
-      "આદરણીય બનો અને વ્યક્તિગત હુમલા ટાળો.",
-      "સબમિટ કરતા પહેલા તમારી ફરિયાદને પ્રૂફરીડ કરો."
+      "તમારા વર્ણનમાં ચોક્કસ અને હકીકતલક્ષી રહો",
+      "બધા કેપ્સ અથવા વધારે પડતા વિરામચિહ્નોનો ઉપયોગ ટાળો",
+      "જો ઉપલબ્ધ હોય તો સંબંધિત દસ્તાવેજીકરણ શામેલ કરો",
+      "તમારી ફરિયાદને વ્યાવસાયિક અને હેતુલક્ષી રાખો"
     ]
   },
   kannada: {
-    newComplaint: "ಹೊಸ ದೂರು",
-    complaintForm: "ದೂರು ನಮೂನೆ",
-    success: "ಯಶಸ್ಸು",
-    complaintSubmitted: "ದೂರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
-    error: "ದೋಷ",
-    complaintFailed: "ದೂರು ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ",
-    titleLabel: "ಶೀರ್ಷಿಕೆ",
-    descriptionLabel: "ವಿವರಣೆ",
-    sectorLabel: "ಕ್ಷೇತ್ರ",
-    submitButton: "ಸಲ್ಲಿಸು",
-    uploadFiles: "ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
-    dropFilesHere: "ಫೈಲ್‌ಗಳನ್ನು ಇಲ್ಲಿ ಬಿಡಿ, ಅಥವಾ ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ",
-    audioRecording: "ಆಡಿಯೋ ರೆಕಾರ್ಡಿಂಗ್",
-    startRecording: "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ",
+    title: "ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಸಲ್ಲಿಸಿ",
+    languageSelect: "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    complaint: "ದೂರು ದಾಖಲಿಸಿ",
+    feedback: "ಪ್ರತಿಕ್ರಿಯೆ ನೀಡಿ",
+    compliment: "ಹೊಗಳಿಕೆ ನೀಡಿ",
+    sector: "ವಿಭಾಗ/ಕ್ಷೇತ್ರ",
+    description: "ವಿವರಣೆ",
+    submit: "ಸಲ್ಲಿಸಿ",
+    recording: "ರೆಕಾರ್ಡಿಂಗ್...",
+    startRecording: "ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಪ್ರಾರಂಭಿಸಿ",
     stopRecording: "ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ",
-    recordComplaint: "ನಿಮ್ಮ ದೂರನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ",
-    platformExperience: "ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಅನುಭವ",
-    responseTime: "ಪ್ರತಿಕ್ರಿಯೆ ಸಮಯ",
-    accessibility: "ಪ್ರವೇಶಿಸುವಿಕೆ",
-    other: "ಇತರೆ",
-    feedbackCategory: "ಪ್ರತಿಕ್ರಿಯೆ ವರ್ಗ",
-    name: "ಹೆಸರು",
-    email: "ಇಮೇಲ್",
-    optional: "ಐಚ್ಛಿಕ",
-    required: "ಅಗತ್ಯವಿದೆ",
-    selectState: "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ",
-    selectDistrict: "ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ",
-    dateOfIncident: "ಘಟನೆಯ ದಿನಾಂಕ",
-    languageSelect: "ಕನ್ನಡ",
+    viewDashboard: "ಸಾರ್ವಜನಿಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
+    changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
+    placeholders: {
+      title: "ನಿಮ್ಮ ಸಲ್ಲಿಕೆಯ ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆ",
+      description: "ವಿವರವಾದ ವಿವರಣೆ",
+      date: "ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ"
+    },
     successStories: "ಯಶಸ್ಸಿನ ಕಥೆಗಳು",
     resources: "ಸಂಪನ್ಮೂಲಗಳು",
-    peerSupport: "ಪೀರ್ ಬೆಂಬಲ",
-    liveQA: "ಲೈವ್ ಪ್ರಶ್ನೋತ್ತರ",
+    peerSupport: "ಸಹವರ್ತಿ ಬೆಂಬಲ",
+    liveQA: "ನೇರ ಪ್ರಶ್ನೆ & ಉತ್ತರ",
     aiHelp: "AI ಸಹಾಯ",
-    changeLanguage: "ಭಾಷೆ ಬದಲಾಯಿಸಿ",
-    viewDashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ವೀಕ್ಷಿಸಿ",
-    loading: "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
-    complaintNotFound: "ದೂರು ಕಂಡುಬಂದಿಲ್ಲ",
-    backToComplaints: "ದೂರುಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
-    by: "ಮೂಲಕ",
-    anonymous: "ಅನಾಮಧೇಯ",
-    submittedOn: "ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ",
-    updateStatus: "ಸ್ಥಿತಿಯನ್ನು ನವೀಕರಿಸಿ",
-    updates: "ನವೀಕರಣಗಳು",
-    addUpdate: "ನವೀಕರಣವನ್ನು ಸೇರಿಸಿ...",
-    adding: "ಸೇರಿಸಲಾಗುತ್ತಿದೆ...",
-    status: {
-      pending: " ಬಾಕಿ ಉಳಿದಿದೆ",
-      in_progress: "ಪ್ರಗತಿಯಲ್ಲಿದೆ",
-      resolved: "ಪರಿಹರಿಸಲಾಗಿದೆ",
-      rejected: "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ"
-    },
-    helpTitle: "ನಾವು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
-    helpStep1Title: "ಹಂತ 1: ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ",
-    helpStep1Content: "ನೀವು ಎದುರಿಸುತ್ತಿರುವ ಸಮಸ್ಯೆಯನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ಮತ್ತು ಸಂಕ್ಷಿಪ್ತವಾಗಿ ವಿವರಿಸಿ. ದಿನಾಂಕಗಳು, ಸಮಯಗಳು, ಸ್ಥಳಗಳು ಮತ್ತು ಒಳಗೊಂಡಿರುವ ಜನರು ಸೇರಿದಂತೆ ಸಾಧ್ಯವಾದಷ್ಟು ವಿವರಗಳನ್ನು ಒದಗಿಸಿ.",
-    helpStep2Title: "ಹಂತ 2: ಬೆಂಬಲ ಪುರಾವೆಗಳನ್ನು ಸಂಗ್ರಹಿಸಿ",
+    helpTitle: "ದೂರು ಹೇಗೆ ದಾಖಲಿಸಬೇಕು",
+    helpStep1Title: "ಹಂತ 1: ನಿಮ್ಮ ವರದಿ ವಿಧಾನವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    helpStep1Content: "ಖಾತೆಯನ್ನು ರಚಿಸುವ ಮೂಲಕ ಅಥವಾ ಲಾಗಿನ್ ಮಾಡದೆ ನೀವು ದೂರುಗಳನ್ನು ದಾಖಲಿಸಬಹುದು. ಖಾತೆಯನ್ನು ರಚಿಸುವುದರಿಂದ ನಿಮ್ಮ ದೂರುಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು ಮತ್ತು ನವೀಕರಣಗಳನ್ನು ಸ್ವೀಕರಿಸುವಂತಹ ಹೆಚ್ಚುವರಿ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನೀವು ಪಡೆಯುತ್ತೀರಿ.",
+    helpStep2Title: "ಹಂತ 2: ಸ್ಪಷ್ಟ ಮಾಹಿತಿಯನ್ನು ಒದಗಿಸಿ",
     helpStep2Items: [
-      "ನಿಮ್ಮ ಹಕ್ಕನ್ನು ಬೆಂಬಲಿಸುವ ಯಾವುದೇ ದಾಖಲೆಗಳು, ಫೋಟೋಗಳು, ವೀಡಿಯೊಗಳು ಅಥವಾ ಇತರ ಪುರಾವೆಗಳನ್ನು ಸಂಗ್ರಹಿಸಿ.",
-      "ನಿಮ್ಮ ಪುರಾವೆ ಪ್ರಸ್ತುತವಾಗಿದೆ ಮತ್ತು ಸ್ಪಷ್ಟವಾಗಿ ಲೇಬಲ್ ಮಾಡಲ್ಪಟ್ಟಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.",
-      "ನೀವು ಸಾಕ್ಷಿಗಳನ್ನು ಹೊಂದಿದ್ದರೆ, ಲಿಖಿತ ಹೇಳಿಕೆಯನ್ನು ನೀಡಲು ಅವರನ್ನು ಕೇಳಿ."
+      "ನಿಮ್ಮ ದೂರಿಗೆ ಸಂಬಂಧಿಸಿದ ಕ್ಷೇತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      "ಸ್ಪಷ್ಟ ಮತ್ತು ಸಂಕ್ಷಿಪ್ತ ಶೀರ್ಷಿಕೆಯನ್ನು ಬರೆಯಿರಿ",
+      "ಸಮಸ್ಯೆಯ ವಿವರವಾದ ವಿವರಣೆಯನ್ನು ನೀಡಿ",
+      "ಅನ್ವಯಿಸುವ ದಿನಾಂಕಗಳು ಮತ್ತು ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸಿ"
     ],
-    helpStep3Title: "ಹಂತ 3: ನಿಮ್ಮ ದೂರನ್ನು ಸಲ್ಲಿಸಿ",
-    helpStep3Content: "ನೀವು ಅಗತ್ಯವಿರುವ ಎಲ್ಲಾ ಮಾಹಿತಿಯನ್ನು ಸಂಗ್ರಹಿಸಿದ ನಂತರ, ನಮ್ಮ ಆನ್‌ಲೈನ್ ಫಾರ್ಮ್ ಮೂಲಕ ನಿಮ್ಮ ದೂರನ್ನು ಸಲ್ಲಿಸಿ. ಅಗತ್ಯವಿರುವ ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲು ಮತ್ತು ಯಾವುದೇ ಬೆಂಬಲ ಪುರಾವೆಗಳನ್ನು ಲಗತ್ತಿಸಲು ಮರೆಯದಿರಿ.",
-    helpTipsTitle: "ಪರಿಣಾಮಕಾರಿ ದೂರು ಬರೆಯಲು ಸಲಹೆಗಳು",
+    helpStep3Title: "ಹಂತ 3: ಸಲ್ಲಿಸಿ ಮತ್ತು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
+    helpStep3Content: "ಸಲ್ಲಿಸಿದ ನಂತರ, ನೀವು ಅನನ್ಯ ದೂರು ID ಯನ್ನು ಸ್ವೀಕರಿಸುತ್ತೀರಿ. ನಿಮ್ಮ ದೂರಿನ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಈ ID ಯನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಇರಿಸಿ. ನೋಂದಾಯಿತ ಬಳಕೆದಾರರು ತಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಿಂದ ನೇರವಾಗಿ ತಮ್ಮ ದೂರುಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಬಹುದು.",
+    helpTipsTitle: "ಪರಿಣಾಮಕಾರಿ ವರದಿಮಾಡುವಿಕೆಗಾಗಿ ಸಲಹೆಗಳು",
     helpTipsItems: [
-      "ಸ್ಪಷ್ಟ ಮತ್ತು ಸಂಕ್ಷಿಪ್ತವಾಗಿರಿ.",
-      "ನಿರ್ದಿಷ್ಟವಾಗಿರಿ ಮತ್ತು ಸಾಧ್ಯವಾದಷ್ಟು ವಿವರಗಳನ್ನು ಒದಗಿಸಿ.",
-      "ವಸ್ತುನಿಷ್ಠವಾಗಿರಿ ಮತ್ತು ಭಾವನಾತ್ಮಕ ಭಾಷೆಯನ್ನು ತಪ್ಪಿಸಿ.",
-      "ಗೌರವದಿಂದಿರಿ ಮತ್ತು ವೈಯಕ್ತಿಕ ದಾಳಿಗಳನ್ನು ತಪ್ಪಿಸಿ.",
-      "ಸಲ್ಲಿಸುವ ಮೊದಲು ನಿಮ್ಮ ದೂರನ್ನು ಪ್ರೂಫ್‌ರೀಡ್ ಮಾಡಿ."
+      "ನಿಮ್ಮ ವಿವರಣೆಯಲ್ಲಿ ನಿರ್ದಿಷ್ಟ ಮತ್ತು ವಾಸ್ತವಿಕವಾಗಿರಿ",
+      "ಎಲ್ಲಾ ಕ್ಯಾಪ್ಸ್ ಅಥವಾ ಅತಿಯಾದ ವಿರಾಮಚಿಹ್ನೆಗಳ ಬಳಕೆಯನ್ನು ತಪ್ಪಿಸಿ",
+      "ಲಭ್ಯವಿದ್ದರೆ ಸಂಬಂಧಿತ ದಾಖಲೆಗಳನ್ನು ಸೇರಿಸಿ",
+      "ನಿಮ್ಮ ದೂರನ್ನು ವೃತ್ತಿಪರ ಮತ್ತು ಉದ್ದೇಶಪೂರ್ವಕವಾಗಿರಿಸಿ"
     ]
   }
 } as const;
 
 const NewComplaint = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { language } = useLanguage();
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [sectorId, setSectorId] = useState("");
-  const [sectors, setSectors] = useState<Sector[]>([]);
+  const [sectors, setSectors] = useState<Database["public"]["Tables"]["sectors"]["Row"][]>([]);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
-  const [isLanguageDialogOpen, setIsLanguageDialogOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
+  const [languageDialog, setLanguageDialog] = useState(false);
   const [feedbackCategory, setFeedbackCategory] = useState("");
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [complimentRecipient, setComplimentRecipient] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { language } = useLanguage();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
-  }, []);
+  useEffect(() => {
+    const fetchSectors = async () => {
+      const { data, error } = await supabase
+        .from("sectors")
+        .select("*")
+        .order("name");
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load sectors",
+          variant: "destructive",
+        });
+      } else {
+        setSectors(data || []);
+      }
+    };
 
-  const { mutate: createComplaint } = useMutation({
-    mutationFn: async (complaintData: {
-      title: string;
-      description: string;
-      sector_id: string;
-      user_id: string;
-      submission_type: SubmissionType;
-      feedback_category?: string;
-      compliment_recipient?: string;
-      state?: string;
-      district?: string;
+    fetchSectors();
+  }, [toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to submit a complaint.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase.from("complaints").insert([
+        {
+          title,
+          description,
+          sector_id: sectorId,
+          user_id: user.id,
+        },
+      ]);
+
+      if (error) {
+        console.error("Error submitting complaint:", error);
+        toast({
+          title: "Error",
+          description: "Failed to submit complaint. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Complaint submitted successfully!",
+        });
+        navigate("/complaints");
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartRecording = () => {
+    setIsRecording(true);
+    // Implement your recording logic here
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
+    // Implement your stop recording logic here
+  };
+
+  const handleShowLanguageDialog = () => {
+    setLanguageDialog(true);
+  };
+
+  return (
+    <div>
+      <ComplaintsNav
+        onLanguageClick={handleShowLanguageDialog}
+        onVoiceConcernsClick={() => console.log("Voice Concerns Clicked")}
+      />
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LanguageSelectionDialog
+              open={languageDialog}
+              onOpenChange={setLanguageDialog}
+            />
+            <ComplaintForm
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              sectorId={sectorId}
+              setSectorId={setSectorId}
+              sectors={sectors}
+              loading={loading}
+              language={language}
+              submissionType={submissionType}
+              setSubmissionType={setSubmissionType}
+              isRecording={isRecording}
+              onStartRecording={handleStartRecording}
+              onStopRecording={handleStopRecording}
+              onShowLanguageDialog={handleShowLanguageDialog}
+              onSubmit={handleSubmit}
+              files={files}
+              setFiles={setFiles}
+              feedbackCategory={feedbackCategory}
+              setFeedbackCategory={setFeedbackCategory}
+              userName={userName}
+              setUserName={setUserName}
+              userEmail={userEmail}
+              setUserEmail={setUserEmail}
+              complimentRecipient={complimentRecipient}
+              setComplimentRecipient={setComplimentRecipient}
+              selectedState={selectedState}
+              setSelectedState={setSelectedState}
+              selectedDistrict={selectedDistrict}
+              setSelectedDistrict={setSelectedDistrict}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default NewComplaint;

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,8 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 type ComplaintStatus = Database["public"]["Enums"]["complaint_status"];
 
@@ -50,7 +49,6 @@ const ComplaintDetail = () => {
   const queryClient = useQueryClient();
   const [newUpdate, setNewUpdate] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | null>(null);
-  const { language } = useLanguage();
 
   const { data: complaint, isLoading } = useQuery({
     queryKey: ["complaint", id],
@@ -151,6 +149,14 @@ const ComplaintDetail = () => {
     },
   });
 
+  if (isLoading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
+
+  if (!complaint) {
+    return <div className="text-center py-8">Complaint not found</div>;
+  }
+
   const isAdmin = currentUser?.role === "admin";
   const isOwner = currentUser?.id === complaint?.user_id;
 
@@ -169,29 +175,6 @@ const ComplaintDetail = () => {
     }
   };
 
-  const getStatusTranslation = (status: ComplaintStatus | null) => {
-    switch (status) {
-      case "pending":
-        return TRANSLATIONS[language].status?.pending || "Pending";
-      case "in_progress":
-        return TRANSLATIONS[language].status?.in_progress || "In Progress";
-      case "resolved":
-        return TRANSLATIONS[language].status?.resolved || "Resolved";
-      case "rejected":
-        return TRANSLATIONS[language].status?.rejected || "Rejected";
-      default:
-        return TRANSLATIONS[language].status?.pending || "Pending";
-    }
-  };
-
-  if (isLoading) {
-    return <div className="text-center py-8">{TRANSLATIONS[language].loading}</div>;
-  }
-
-  if (!complaint) {
-    return <div className="text-center py-8">{TRANSLATIONS[language].complaintNotFound}</div>;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavHeader />
@@ -202,7 +185,7 @@ const ComplaintDetail = () => {
             className="mb-6"
             onClick={() => navigate("/complaints")}
           >
-            {TRANSLATIONS[language].backToComplaints}
+            Back to Complaints
           </Button>
 
           <Card className="mb-8">
@@ -211,13 +194,13 @@ const ComplaintDetail = () => {
                 <div>
                   <CardTitle className="text-2xl">{complaint.title}</CardTitle>
                   <div className="mt-2 text-sm text-gray-500">
-                    {TRANSLATIONS[language].sector}: {complaint.sectors.name}
+                    Sector: {complaint.sectors.name}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {TRANSLATIONS[language].by}: {complaint.profiles?.name || TRANSLATIONS[language].anonymous}
+                    By: {complaint.profiles?.name || "Anonymous"}
                   </div>
                   <div className="mt-2 text-sm text-gray-500">
-                    {TRANSLATIONS[language].submittedOn}:{" "}
+                    Submitted on:{" "}
                     {new Date(complaint.created_at).toLocaleDateString()}
                   </div>
                 </div>
@@ -227,7 +210,7 @@ const ComplaintDetail = () => {
                       complaint.status
                     )}`}
                   >
-                    {getStatusTranslation(complaint.status)}
+                    {complaint.status || "Pending"}
                   </span>
                   {(isAdmin || isOwner) && (
                     <Select
@@ -238,13 +221,13 @@ const ComplaintDetail = () => {
                       }}
                     >
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder={TRANSLATIONS[language].updateStatus} />
+                        <SelectValue placeholder="Update status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">{TRANSLATIONS[language].status?.pending}</SelectItem>
-                        <SelectItem value="in_progress">{TRANSLATIONS[language].status?.in_progress}</SelectItem>
-                        <SelectItem value="resolved">{TRANSLATIONS[language].status?.resolved}</SelectItem>
-                        <SelectItem value="rejected">{TRANSLATIONS[language].status?.rejected}</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -260,7 +243,7 @@ const ComplaintDetail = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>{TRANSLATIONS[language].updates}</CardTitle>
+              <CardTitle>Updates</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -277,7 +260,7 @@ const ComplaintDetail = () => {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-medium">
-                          {update.profiles?.name || TRANSLATIONS[language].anonymous}
+                          {update.profiles?.name || "Anonymous"}
                         </div>
                         <div className="text-sm text-gray-500">
                           {new Date(update.created_at).toLocaleDateString()}
@@ -292,7 +275,7 @@ const ComplaintDetail = () => {
 
               <div className="space-y-4">
                 <Textarea
-                  placeholder={TRANSLATIONS[language].addUpdate}
+                  placeholder="Add an update..."
                   value={newUpdate}
                   onChange={(e) => setNewUpdate(e.target.value)}
                 />
@@ -300,7 +283,7 @@ const ComplaintDetail = () => {
                   onClick={() => addUpdateMutation.mutate()}
                   disabled={!newUpdate.trim() || addUpdateMutation.isPending}
                 >
-                  {addUpdateMutation.isPending ? TRANSLATIONS[language].adding : TRANSLATIONS[language].addUpdate}
+                  {addUpdateMutation.isPending ? "Adding..." : "Add Update"}
                 </Button>
               </div>
             </CardContent>
