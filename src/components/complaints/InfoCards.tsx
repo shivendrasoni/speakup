@@ -1,14 +1,23 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Calendar, Users, ArrowRight, MegaphoneIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { LanguageCode } from "@/types/complaints";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
+
 interface InfoCardsProps {
   onVoiceConcernsClick: () => void;
+  language: LanguageCode;
 }
+
 export function InfoCards({
-  onVoiceConcernsClick
+  onVoiceConcernsClick,
+  language
 }: InfoCardsProps) {
   const navigate = useNavigate();
+  const t = TRANSLATIONS[language];
+
   return <>
       {/* Voice Your Concerns Card */}
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={onVoiceConcernsClick}>
@@ -17,19 +26,19 @@ export function InfoCards({
             <div className="p-2 bg-blue-100 rounded-lg">
               <MegaphoneIcon className="w-6 h-6 text-blue-600" />
             </div>
-            Voice Your Concerns
+            {t.recordComplaint}
           </CardTitle>
           <CardDescription>
-            Submit a complaint, feedback, or compliment
+            {t.descriptionLabel}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Share your experience and help improve public services. Your voice matters.
+              {t.helpStep1Content}
             </p>
             <Button className="w-full group">
-              Submit Now
+              {t.submitButton}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -42,19 +51,19 @@ export function InfoCards({
             <div className="p-2 bg-purple-100 rounded-lg">
               <MessageSquare className="w-6 h-6 text-purple-600" />
             </div>
-            Community Forum
+            {t.peerSupport}
           </CardTitle>
           <CardDescription>
-            Join discussions, share experiences, and connect with others
+            {t.helpTitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Engage with a community of active citizens working together for positive change.
+              {t.helpStep2Content}
             </p>
             <Button onClick={() => navigate("/community")} className="w-full group">
-              Join the Discussion
+              {t.submit}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -67,19 +76,19 @@ export function InfoCards({
             <div className="p-2 bg-blue-100 rounded-lg">
               <Calendar className="w-6 h-6 text-blue-600" />
             </div>
-            Upcoming Webinars
+            {t.successStories}
           </CardTitle>
           <CardDescription>
-            Learn from experts and stay informed
+            {t.helpTipsTitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Join our educational webinars on consumer rights, civic engagement, and more.
+              {t.helpStep3Content}
             </p>
             <Button variant="outline" className="w-full group">
-              View Schedule
+              {t.viewDashboard}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -92,19 +101,19 @@ export function InfoCards({
             <div className="p-2 bg-green-100 rounded-lg">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            NGO Partners
+            {t.resources}
           </CardTitle>
           <CardDescription>
-            Connect with organizations making a difference
+            {t.helpStep2Title}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Discover and collaborate with NGOs working towards social improvement.
+              {t.helpTipsItems[0]}
             </p>
             <Button variant="outline" className="w-full group">
-              Explore NGOs
+              {t.resources}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

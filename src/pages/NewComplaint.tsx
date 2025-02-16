@@ -156,7 +156,7 @@ export const TRANSLATIONS = {
     placeholders: {
       title: "તમારી સબમિશનનું ટૂંકું શીર્ષક",
       description: "વિગતવાર વર્ણન",
-      date: "તિરુમાં ചെയ്യി"
+      date: "તિરુમાം ചെയ്യി"
     },
     error: "Error",
     required: "Please fill in all required fields",
@@ -528,7 +528,10 @@ const NewComplaint = () => {
 
       <div className="container mx-auto px-4 -mt-20 pb-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          <InfoCards onVoiceConcernsClick={() => setShowComplaintForm(true)} />
+          <InfoCards 
+            onVoiceConcernsClick={() => setShowComplaintForm(true)} 
+            language={language}
+          />
         </div>
         
         <div className="mt-8">
