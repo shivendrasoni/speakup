@@ -1,13 +1,13 @@
 
 import { Routes, Route } from "react-router-dom";
-import { Complaints } from "@/pages/Complaints";
-import { Dashboard } from "@/pages/Dashboard";
-import { Help } from "@/pages/Help";
-import { Index } from "@/pages/Index";
-import { NotFound } from "@/pages/NotFound";
-import { NewComplaint } from "@/pages/NewComplaint";
-import { ComplaintDetail } from "@/pages/ComplaintDetail";
-import { Community } from "@/pages/Community";
+import Complaints from "@/pages/Complaints";
+import Dashboard from "@/pages/Dashboard";
+import Help from "@/pages/Help";
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import NewComplaint from "@/pages/NewComplaint";
+import ComplaintDetail from "@/pages/ComplaintDetail";
+import Community from "@/pages/Community";
 
 export function AppRoutes() {
   return (
