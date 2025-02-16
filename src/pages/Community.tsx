@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,8 +36,6 @@ import {
   Clock,
 } from "lucide-react";
 import { format } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 type PostType = 'discussion' | 'success_story' | 'resource' | 'peer_support' | 'qa_session';
 
@@ -65,8 +64,7 @@ type WebinarSession = {
 const Community = () => {
   const [selectedTab, setSelectedTab] = useState<PostType | "chatbot">("discussion");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSector, setSelectedSector] = useState<string>("all");
-  const { language } = useLanguage();
+  const [selectedSector, setSelectedSector] = useState<string>("all"); // Changed initial value
 
   const { data: posts } = useQuery({
     queryKey: ["community-posts", selectedTab, searchQuery, selectedSector],
@@ -80,7 +78,7 @@ const Community = () => {
         query = query.eq("post_type", selectedTab);
       }
 
-      if (selectedSector && selectedSector !== "all") {
+      if (selectedSector && selectedSector !== "all") { // Modified condition
         query = query.eq("sector_id", selectedSector);
       }
 
@@ -125,11 +123,12 @@ const Community = () => {
       <NavHeader />
       <main className="container mx-auto py-8 px-4">
         <div className="flex flex-col space-y-8">
+          {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder={`${TRANSLATIONS[language].description}...`}
+                placeholder="Search discussions, resources, and more..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -137,10 +136,10 @@ const Community = () => {
             </div>
             <Select value={selectedSector} onValueChange={setSelectedSector}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={TRANSLATIONS[language].sector} />
+                <SelectValue placeholder="Select Sector" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{TRANSLATIONS[language].sector}</SelectItem>
+                <SelectItem value="all">All Sectors</SelectItem>
                 {sectors?.map((sector) => (
                   <SelectItem key={sector.id} value={sector.id}>
                     {sector.name}
@@ -150,35 +149,37 @@ const Community = () => {
             </Select>
           </div>
 
+          {/* Main Content */}
           <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as PostType | "chatbot")}>
             <TabsList className="grid grid-cols-2 md:grid-cols-6 lg:w-[600px]">
               <TabsTrigger value="discussion">
                 <MessageSquare className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].title}
+                Discussions
               </TabsTrigger>
               <TabsTrigger value="success_story">
                 <Trophy className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].successStories}
+                Success Stories
               </TabsTrigger>
               <TabsTrigger value="resource">
                 <BookOpen className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].resources}
+                Resources
               </TabsTrigger>
               <TabsTrigger value="peer_support">
                 <Users className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].peerSupport}
+                Peer Support
               </TabsTrigger>
               <TabsTrigger value="qa_session">
                 <Video className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].liveQA}
+                Live Q&A
               </TabsTrigger>
               <TabsTrigger value="chatbot">
                 <Bot className="h-4 w-4 mr-2" />
-                {TRANSLATIONS[language].aiHelp}
+                AI Help
               </TabsTrigger>
             </TabsList>
 
             <div className="grid md:grid-cols-3 gap-6 mt-6">
+              {/* Main Content Area */}
               <div className="md:col-span-2">
                 <TabsContent value="discussion" className="m-0">
                   <div className="flex justify-between items-center mb-4">
@@ -372,7 +373,9 @@ const Community = () => {
                 </TabsContent>
               </div>
 
+              {/* Sidebar */}
               <div className="space-y-6">
+                {/* Upcoming Webinars */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -401,6 +404,7 @@ const Community = () => {
                   </CardContent>
                 </Card>
 
+                {/* Top Contributors */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
