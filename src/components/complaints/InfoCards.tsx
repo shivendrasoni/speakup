@@ -45,66 +45,69 @@ export function InfoCards({
         </CardContent>
       </Card>
 
+      {/* Community Support Card */}
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
               <MessageSquare className="w-6 h-6 text-purple-600" />
             </div>
-            {t.feedback}
+            {t.peerSupport}
           </CardTitle>
           <CardDescription>
-            {t.description}
+            {t.helpTitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.success}
+              {t.helpStep2Content}
             </p>
             <Button onClick={() => navigate("/community")} className="w-full group">
-              {t.submit}
+              {t.viewMore}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Success Stories Card */}
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Calendar className="w-6 h-6 text-blue-600" />
             </div>
-            {t.compliment}
+            {t.successStories}
           </CardTitle>
           <CardDescription>
-            {t.description}
+            {t.helpTipsTitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-gray-600">
-              {t.required}
+              {t.helpStep3Content}
             </p>
             <Button variant="outline" className="w-full group">
-              {t.submit}
+              {t.viewMore}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Resources Card */}
       <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Users className="w-6 h-6 text-green-600" />
             </div>
-            {t.title}
+            {t.resources}
           </CardTitle>
           <CardDescription>
-            {t.description}
+            {t.helpStep2Title}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -113,7 +116,7 @@ export function InfoCards({
               {t.required}
             </p>
             <Button variant="outline" className="w-full group">
-              {t.submit}
+              {t.viewMore}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

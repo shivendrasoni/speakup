@@ -29,6 +29,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   hindi: {
     title: "अपनी आवाज़ दर्ज करें",
@@ -45,6 +59,20 @@ export const TRANSLATIONS = {
     complaintFailed: "जमा करने में विफल",
     startRecording: "रिकॉर्डिंग शुरू हुई",
     recording: "रिकॉर्डिंग जारी है...",
+    changeLanguage: "भाषा बदलें",
+    viewDashboard: "डैशबोर्ड देखें",
+    placeholders: {
+      date: "तारीख चुनें"
+    },
+    peerSupport: "सहकर्मी सहायता",
+    helpTitle: "समुदाय से मदद लें",
+    helpStep2Content: "समान अनुभव वाले लोगों से जुड़ें",
+    successStories: "सफलता की कहानियां",
+    helpTipsTitle: "दूसरों से सीखें",
+    helpStep3Content: "सफल समाधानों के बारे में पढ़ें",
+    resources: "संसाधन",
+    helpStep2Title: "उपलब्ध सहायता",
+    viewMore: "और देखें"
   },
   bengali: {
     title: "আপনার ভয়েস জমা দিন",
@@ -63,6 +91,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   telugu: {
     title: "మీ స్వరాన్ని సమర్పించండి",
@@ -81,6 +123,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   tamil: {
     title: "உங்கள் குரலைச் சமர்ப்பிக்கவும்",
@@ -99,6 +155,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   gujarati: {
     title: "તમારો અવાજ સબમિટ કરો",
@@ -117,6 +187,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   kannada: {
     title: "ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಸಲ್ಲಿಸಿ",
@@ -135,6 +219,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   malayalam: {
     title: "നിങ്ങളുടെ ശബ്ദം സമർപ്പിക്കുക",
@@ -153,6 +251,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   marathi: {
     title: "तुमचा आवाज सबमिट करा",
@@ -171,6 +283,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   punjabi: {
     title: "ਆਪਣੀ ਆਵਾਜ਼ ਜਮ੍ਹਾਂ ਕਰੋ",
@@ -189,6 +315,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   },
   odia: {
     title: "ଆପଣଙ୍କର ସ୍ୱର ଦାଖଲ କରନ୍ତୁ",
@@ -207,6 +347,20 @@ export const TRANSLATIONS = {
     complaintFailed: "Failed to submit",
     startRecording: "Recording Started",
     recording: "Recording in progress...",
+    changeLanguage: "Change Language",
+    viewDashboard: "View Dashboard",
+    placeholders: {
+      date: "Pick a date"
+    },
+    peerSupport: "Peer Support",
+    helpTitle: "Get Help from the Community",
+    helpStep2Content: "Connect with others who have similar experiences",
+    successStories: "Success Stories",
+    helpTipsTitle: "Learn from Others",
+    helpStep3Content: "Read about successful resolutions",
+    resources: "Resources",
+    helpStep2Title: "Available Support",
+    viewMore: "View More"
   }
 } as const;
 
