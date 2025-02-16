@@ -172,7 +172,6 @@ export function ComplaintForm({
 
             <DateQuestion
               label="Date of Incident"
-              required
               value={selectedDate}
               onChange={setSelectedDate}
               questionId="date"

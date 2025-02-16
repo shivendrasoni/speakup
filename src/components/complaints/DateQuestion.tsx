@@ -45,7 +45,7 @@ export function DateQuestion({
   return (
     <div className="space-y-2">
       <Label htmlFor={questionId}>
-        {label} {required && <span className="text-red-500 ml-1">*</span>}
+        {label}
       </Label>
       <Popover>
         <PopoverTrigger asChild>
@@ -94,7 +94,7 @@ export function DateQuestion({
       <input 
         type="hidden" 
         name={questionId} 
-        value={value ? format(value, "yyyy-MM-dd") : ''} 
+        value={value ? format(value, 'yyyy-MM-dd') : ''} 
       />
     </div>
   );
