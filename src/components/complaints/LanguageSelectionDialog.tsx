@@ -4,20 +4,19 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { LanguageCode } from "@/types/complaints";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LanguageSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  language: LanguageCode;
-  onLanguageChange: (value: LanguageCode) => void;
 }
 
 export function LanguageSelectionDialog({
   open,
   onOpenChange,
-  language,
-  onLanguageChange,
 }: LanguageSelectionDialogProps) {
+  const { language, setLanguage } = useLanguage();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] overflow-y-auto">
@@ -27,7 +26,7 @@ export function LanguageSelectionDialog({
         <RadioGroup
           defaultValue={language}
           onValueChange={(value) => {
-            onLanguageChange(value as LanguageCode);
+            setLanguage(value as LanguageCode);
             onOpenChange(false);
           }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
