@@ -8,14 +8,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { DateQuestion } from "./DateQuestion";
 import type { Question } from "./types";
+import type { LanguageCode } from "@/types/complaints";
 
 interface DynamicQuestionProps {
   question: Question;
   value: any;
   onChange: (value: any) => void;
+  language: LanguageCode;
 }
 
-export function DynamicQuestion({ question, value, onChange }: DynamicQuestionProps) {
+export function DynamicQuestion({ question, value, onChange, language }: DynamicQuestionProps) {
   return (
     <div className="space-y-2">
       <Label className="flex items-center">
@@ -100,6 +102,7 @@ export function DynamicQuestion({ question, value, onChange }: DynamicQuestionPr
           value={value}
           onChange={onChange}
           questionId={question.id}
+          language={language}
         />
       )}
     </div>

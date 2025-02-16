@@ -4,8 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { SubCategorySelector } from "./SubCategorySelector";
 import { DynamicQuestion } from "./DynamicQuestion";
 import type { SectorQuestionsProps, SubCategory, Question } from "./types";
+import type { LanguageCode } from "@/types/complaints";
 
-export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestionsProps) {
+interface ExtendedSectorQuestionsProps extends SectorQuestionsProps {
+  language: LanguageCode;
+}
+
+export function SectorQuestions({ sectorId, answers, setAnswers, language }: ExtendedSectorQuestionsProps) {
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -92,6 +97,7 @@ export function SectorQuestions({ sectorId, answers, setAnswers }: SectorQuestio
           question={question}
           value={answers[question.id]}
           onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+          language={language}
         />
       ))}
     </div>
