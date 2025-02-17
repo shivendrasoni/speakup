@@ -3,6 +3,7 @@ import { Languages, ChartBar, Award, BookOpen, Users, Mic, Bot } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
 import type { LanguageCode } from "@/types/complaints";
+import { useNavigate } from "react-router-dom";
 
 interface ComplaintsNavProps {
   language: LanguageCode;
@@ -11,6 +12,8 @@ interface ComplaintsNavProps {
 }
 
 export function ComplaintsNav({ language, onLanguageClick, onVoiceConcernsClick }: ComplaintsNavProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -71,7 +74,7 @@ export function ComplaintsNav({ language, onLanguageClick, onVoiceConcernsClick 
             </Button>
             <Button
               variant="outline"
-              onClick={() => window.location.href = "/complaints"}
+              onClick={() => navigate("/dashboard")}
               className="bg-white hover:bg-gray-50 border-2 border-green-200 hover:border-green-300 text-green-700 shadow-sm flex items-center gap-2 transition-all"
             >
               <ChartBar className="w-4 h-4" />
