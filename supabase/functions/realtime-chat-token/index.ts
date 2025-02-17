@@ -17,12 +17,14 @@ async function getBhashiniToken() {
     throw new Error('Missing Bhashini credentials');
   }
 
-  const response = await fetch('https://bhashini.gov.in/apis/v1/model/getModelKey', {
+  console.log('Making request to Bhashini API...');
+  
+  const response = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v1/model/getModelKey', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': BHASHINI_API_KEY
+      'ulcaApiKey': BHASHINI_API_KEY // Changed to use correct header name
     },
     body: JSON.stringify({
       "userId": BHASHINI_USER_ID,
@@ -41,11 +43,11 @@ async function getBhashiniToken() {
       statusText: response.statusText,
       error: errorText
     });
-    throw new Error(`Failed to get Bhashini token: ${errorText}`);
+    throw new Error(`Failed to get Bhashini token: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
-  console.log("Successfully got Bhashini response:", data);
+  console.log("Successfully got Bhashini response");
   return data.token;
 }
 
@@ -69,10 +71,7 @@ serve(async (req) => {
       throw new Error('Missing required Bhashini credentials');
     }
 
-    console.log('Requesting Bhashini token with credentials...', {
-      hasApiKey: !!BHASHINI_API_KEY,
-      hasUserId: !!BHASHINI_USER_ID
-    });
+    console.log('Requesting Bhashini token with credentials...');
 
     const bhashiniToken = await getBhashiniToken();
 
