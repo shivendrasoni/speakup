@@ -10,22 +10,35 @@ import Dashboard from "@/pages/Dashboard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NewComplaint from "@/pages/NewComplaint";
 import Complaints from "@/pages/Complaints";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      retry: 1,
+    },
+  },
+});
 
 const App = () => {
   return (
-    <Router>
-      <NavHeader />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/complaints/new" element={<NewComplaint />} />
-        <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <NavHeader />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/complaints/new" element={<NewComplaint />} />
+          <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </QueryClientProvider>
   );
 };
 
