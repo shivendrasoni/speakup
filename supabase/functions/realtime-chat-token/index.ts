@@ -14,11 +14,15 @@ async function getBhashiniToken() {
     headers: {
       'Content-Type': 'application/json',
       'userID': Deno.env.get('BHASHINI_USER_ID') || '',
-      'ulcaApiKey': Deno.env.get('BHASHINI_API_KEY') || '',
+      'apiKey': Deno.env.get('BHASHINI_API_KEY') || '',  // Changed from ulcaApiKey to apiKey
     },
     body: JSON.stringify({
       "task": "asr",
       "serviceProvider": "ai4bharat",
+      "language": {
+        "sourceLanguage": "en",
+        "targetLanguage": "hi"
+      }
     })
   });
 
@@ -29,7 +33,7 @@ async function getBhashiniToken() {
   }
 
   const data = await response.json();
-  console.log("Successfully got Bhashini token");
+  console.log("Successfully got Bhashini token:", data);
   return data.token;
 }
 
@@ -46,13 +50,24 @@ serve(async (req) => {
     const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
 
     if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
-      console.error('Bhashini credentials are not set');
+      console.error('Bhashini credentials are not set:', {
+        apiKey: !!BHASHINI_API_KEY,
+        userId: !!BHASHINI_USER_ID
+      });
       throw new Error('Bhashini credentials are not configured');
     }
 
-    console.log('Requesting Bhashini token...');
+    console.log('Requesting Bhashini token with credentials:', {
+      userId: BHASHINI_USER_ID,
+      hasApiKey: !!BHASHINI_API_KEY
+    });
 
     const bhashiniToken = await getBhashiniToken();
+
+    if (!bhashiniToken) {
+      console.error('No token received from Bhashini');
+      throw new Error('Failed to get Bhashini token');
+    }
 
     const responseData = {
       token: bhashiniToken,
