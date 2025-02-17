@@ -17,6 +17,21 @@ const Login = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Check current session on mount
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      } else if (error) {
+        console.error("Session check error:", error);
+        // Clear any invalid session data
+        await supabase.auth.signOut();
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
+  useEffect(() => {
     // Check if the user just verified their email
     const verified = searchParams.get('verified');
     if (verified === 'true') {
@@ -112,6 +127,10 @@ const Login = () => {
 
     try {
       setLoading(true);
+      
+      // Clear any existing session first
+      await supabase.auth.signOut();
+      
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -132,6 +151,12 @@ const Login = () => {
           return;
         }
         throw signInError;
+      }
+
+      // Check if we got a valid session after login
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Failed to create session");
       }
 
       toast({
