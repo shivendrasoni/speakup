@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -21,43 +20,6 @@ const LANGUAGE_CODES = {
   malayalam: 'ml'
 } as const;
 
-async function getBhashiniToken() {
-  console.log("Getting Bhashini token...");
-  const BHASHINI_API_KEY = Deno.env.get('BHASHINI_API_KEY');
-  const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
-
-  if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
-    throw new Error('Missing Bhashini credentials');
-  }
-
-  const response = await fetch('https://bhashini.gov.in/apis/v1/model/getModelKey', {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': BHASHINI_API_KEY
-    },
-    body: JSON.stringify({
-      "userId": BHASHINI_USER_ID,
-      "modelId": "ai4bharat/whisper-multilingual-low",
-      "task": "asr",
-      "languages": [{
-        "sourceLanguage": "en"
-      }]
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Bhashini token error:', errorText);
-    throw new Error(`Failed to get Bhashini token: ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log("Successfully got Bhashini token");
-  return data.token;
-}
-
 async function transcribeWithBhashini(audioBase64: string, language: string) {
   try {
     console.log(`Transcribing with Bhashini for language: ${language}`);
@@ -67,28 +29,23 @@ async function transcribeWithBhashini(audioBase64: string, language: string) {
       throw new Error('BHASHINI_API_KEY not configured');
     }
 
-    const response = await fetch('https://bhashini.gov.in/apis/v1/inference/asr/transcript', {
+    const response = await fetch('https://inference.bhashini.gov.in/asr/v1/recognize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': BHASHINI_API_KEY
       },
       body: JSON.stringify({
-        "modelId": "ai4bharat/whisper-multilingual-low",
-        "task": "asr",
-        "input": {
-          "audio": [{
-            "audioContent": audioBase64
-          }],
+        "config": {
           "language": {
             "sourceLanguage": language
           }
         },
-        "config": {
-          "transcriptionFormat": {
-            "value": "transcript"
+        "audio": [
+          {
+            "audioContent": audioBase64
           }
-        }
+        ]
       })
     });
 
@@ -100,10 +57,15 @@ async function transcribeWithBhashini(audioBase64: string, language: string) {
 
     const result = await response.json();
     console.log("Successfully transcribed with Bhashini");
-    return result.output[0].source;
+    
+    if (result.audio && result.audio[0] && result.audio[0].transcript) {
+      return result.audio[0].transcript;
+    }
+    
+    throw new Error('No transcript in response');
   } catch (error) {
     console.error('Bhashini transcription error:', error);
-    throw new Error(`Bhashini transcription failed: ${error.message}`);
+    throw error;
   }
 }
 

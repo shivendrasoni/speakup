@@ -17,22 +17,27 @@ async function getBhashiniToken() {
     throw new Error('Missing Bhashini credentials');
   }
 
-  console.log('Making request to Bhashini API...');
+  console.log('Making request to Bhashini API with credentials');
   
-  const response = await fetch('https://asr.bhashini.gov.in/v1/model/getModelKey', {
+  // First get the API token
+  const response = await fetch('https://inference.bhashini.gov.in/asr/v1/recognize', {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      'Accept': '*/*',
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${BHASHINI_API_KEY}`
+      'Authorization': BHASHINI_API_KEY
     },
     body: JSON.stringify({
-      "userId": BHASHINI_USER_ID,
-      "modelId": "ai4bharat/whisper-multilingual-low",
-      "task": "asr",
-      "languages": [{
-        "sourceLanguage": "en"
-      }]
+      "config": {
+        "language": {
+          "sourceLanguage": "en"
+        }
+      },
+      "audio": [
+        {
+          "audioContent": ""
+        }
+      ]
     })
   });
 
@@ -48,7 +53,7 @@ async function getBhashiniToken() {
 
   const data = await response.json();
   console.log("Successfully got Bhashini response");
-  return data.token;
+  return data.requestId; // Use requestId as the token
 }
 
 serve(async (req) => {
@@ -64,14 +69,11 @@ serve(async (req) => {
     const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
 
     if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
-      console.error('Missing required environment variables:', {
-        hasApiKey: !!BHASHINI_API_KEY,
-        hasUserId: !!BHASHINI_USER_ID
-      });
+      console.error('Missing required environment variables');
       throw new Error('Missing required Bhashini credentials');
     }
 
-    console.log('Requesting Bhashini token with credentials...');
+    console.log('Requesting Bhashini token...');
 
     const bhashiniToken = await getBhashiniToken();
 
