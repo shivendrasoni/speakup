@@ -47,7 +47,8 @@ export const Dashboard = () => {
     queryFn: async () => {
       let query = supabase
         .from('complaints')
-        .select('status, count(*)', { count: 'exact' });
+        .select('status', { count: 'exact' })
+        .select('status');  // Select only the status field
 
       if (activeTab === "private" && session?.user?.id) {
         query = query.eq('user_id', session.user.id);
@@ -67,17 +68,17 @@ export const Dashboard = () => {
         reopened: 0
       };
 
-      // Update counts from the query results
+      // Count the statuses manually
       complaints?.forEach(complaint => {
         const status = complaint.status || 'pending';
         if (status in statusCounts) {
-          statusCounts[status as keyof typeof statusCounts] = complaint.count;
+          statusCounts[status as keyof typeof statusCounts]++;
         }
       });
 
-      return Object.entries(statusCounts).map(([name, count]) => ({
+      return Object.entries(statusCounts).map(([name, value]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1).replace('_', ' '),
-        value: count,
+        value,
         color: COLORS[name as keyof typeof COLORS]
       }));
     }
