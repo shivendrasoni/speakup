@@ -1,15 +1,16 @@
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { HomeIcon, LogOutIcon, ArrowLeftIcon } from "lucide-react";
 
 export const NavHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: session } = useQuery({
     queryKey: ["session"],
@@ -20,16 +21,29 @@ export const NavHeader = () => {
   });
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear any cached session data
+      queryClient.clear();
+      
+      // Show success message
       toast({
-        title: "Error",
-        description: "Failed to sign out",
+        title: "Signed out successfully",
+        duration: 2000,
+      });
+      
+      // Navigate to home page
+      navigate("/");
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      toast({
+        title: "Error signing out",
+        description: error.message || "Please try again",
         variant: "destructive",
       });
-      return;
     }
-    navigate("/");
   };
 
   const showBackButton = location.pathname !== "/";
