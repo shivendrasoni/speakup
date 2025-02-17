@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { MegaphoneIcon, ChevronRight, Globe2, Users2 } from "lucide-react";
+import { MegaphoneIcon, ChevronRight, Globe2, Users2, CheckCircle, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,7 +104,7 @@ const Index = () => {
             </div>
 
             {/* Features Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
               <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                   <MegaphoneIcon className="w-6 h-6 text-blue-600" />
@@ -128,6 +127,47 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Community Support</h3>
                 <p className="text-gray-600">Connect with others, share experiences, and drive positive change together.</p>
+              </div>
+            </div>
+
+            {/* Statistics Section */}
+            <div className="max-w-7xl mx-auto mt-24 mb-16">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {/* Complaints Resolved Card */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-center mb-4">
+                    <CheckCircle className="w-8 h-8 text-blue-600 opacity-75" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-blue-600 text-center mb-2">25,000+</h3>
+                  <p className="text-gray-600 text-center">Complaints Resolved</p>
+                </div>
+
+                {/* Active Users Card */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-center mb-4">
+                    <Users2 className="w-8 h-8 text-blue-600 opacity-75" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-blue-600 text-center mb-2">50,000+</h3>
+                  <p className="text-gray-600 text-center">Active Users</p>
+                </div>
+
+                {/* Resolution Rate Card */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-center mb-4">
+                    <ChevronRight className="w-8 h-8 text-blue-600 opacity-75" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-blue-600 text-center mb-2">95%</h3>
+                  <p className="text-gray-600 text-center">Resolution Rate</p>
+                </div>
+
+                {/* States Covered Card */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex items-center justify-center mb-4">
+                    <Building2 className="w-8 h-8 text-blue-600 opacity-75" />
+                  </div>
+                  <h3 className="text-4xl font-bold text-blue-600 text-center mb-2">28</h3>
+                  <p className="text-gray-600 text-center">States Covered</p>
+                </div>
               </div>
             </div>
           </div>
