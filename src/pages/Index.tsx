@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { MegaphoneIcon, ChevronRight, Globe2, Users2, CheckCircle, Building2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -23,10 +22,10 @@ const Index = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_IN') {
+        navigate('/complaints/new');
+      } else if (event === 'SIGNED_OUT') {
         navigate('/');
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
       }
     });
 
@@ -46,18 +45,8 @@ const Index = () => {
   }, [sessionError, navigate, toast]);
 
   if (session) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-        <div className="container mx-auto px-4 pt-20 pb-16">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-6 text-blue-900">Welcome Back!</h1>
-            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6">
-              <Link to="/dashboard">Go to Dashboard</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    navigate('/complaints/new');
+    return null;
   }
 
   return (
