@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -145,22 +146,23 @@ export function AIComplaintBot() {
       console.log('Getting token from realtime-chat-token function...');
       const { data, error } = await supabase.functions.invoke('realtime-chat-token', {
         body: { 
-          model: "gpt-4-0125-preview",
-          voice: "alloy",
           instructions: SYSTEM_PROMPT
         }
       });
 
-      if (error || !data?.client_secret?.value) {
+      if (error || !data?.token) {
         console.error('Token error:', error || 'No token received');
         throw new Error('Failed to get authentication token');
       }
 
-      const apiKey = data.client_secret.value;
-      console.log('OpenAI API Key received successfully');
+      const bhashiniToken = data.token;
+      const bhashiniUserId = data.client_secret.userId;
+      const bhashiniApiKey = data.client_secret.value;
+      
+      console.log('Bhashini token received successfully');
 
       console.log('Creating WebSocket connection...');
-      const ws = new WebSocket('wss://api.openai.com/v1/audio/speech');
+      const ws = new WebSocket('wss://inference.bhashini.gov.in/ws');
       wsRef.current = ws;
 
       if (!audioQueueRef.current) {
@@ -170,9 +172,12 @@ export function AIComplaintBot() {
       ws.onopen = () => {
         console.log('WebSocket connection opened');
         ws.send(JSON.stringify({
-          model: "gpt-4-0125-preview",
-          voice: "alloy",
-          input: "Hello! I'm your AI assistant. How can I help you today?"
+          type: 'init',
+          token: bhashiniToken,
+          userId: bhashiniUserId,
+          apiKey: bhashiniApiKey,
+          source_language: 'en', // Default to English
+          target_language: 'hi'  // Default to Hindi
         }));
       };
 
@@ -181,9 +186,9 @@ export function AIComplaintBot() {
           const data = JSON.parse(event.data);
           console.log('Received message:', data);
 
-          if (data.type === 'audio' && data.content) {
+          if (data.type === 'speech' && data.audio) {
             setIsSpeaking(true);
-            const audioData = atob(data.content);
+            const audioData = atob(data.audio);
             const bytes = new Uint8Array(audioData.length);
             for (let i = 0; i < audioData.length; i++) {
               bytes[i] = audioData.charCodeAt(i);
@@ -224,7 +229,9 @@ export function AIComplaintBot() {
         if (ws.readyState === WebSocket.OPEN) {
           const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
           ws.send(JSON.stringify({
-            audio: base64Audio
+            type: 'audio',
+            audio: base64Audio,
+            source_language: 'en' // Default to English
           }));
         }
       });

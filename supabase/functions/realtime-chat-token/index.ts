@@ -7,6 +7,32 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function getBhashiniToken() {
+  console.log("Getting Bhashini token...");
+  const response = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelKey', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'userID': Deno.env.get('BHASHINI_USER_ID') || '',
+      'ulcaApiKey': Deno.env.get('BHASHINI_API_KEY') || '',
+    },
+    body: JSON.stringify({
+      "task": "asr",
+      "serviceProvider": "ai4bharat",
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Bhashini token error:', errorText);
+    throw new Error(`Failed to get Bhashini auth token: ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log("Successfully got Bhashini token");
+  return data.token;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -14,42 +40,26 @@ serve(async (req) => {
   }
 
   try {
-    const { model, voice, instructions } = await req.json();
+    const { instructions } = await req.json();
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not set');
-      throw new Error('OPENAI_API_KEY is not set');
+    const BHASHINI_API_KEY = Deno.env.get('BHASHINI_API_KEY');
+    const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
+
+    if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
+      console.error('Bhashini credentials are not set');
+      throw new Error('Bhashini credentials are not configured');
     }
 
-    console.log('Requesting token from OpenAI with:', { model, voice, instructions });
+    console.log('Requesting Bhashini token...');
 
-    // Request an ephemeral token from OpenAI
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: model || "gpt-4-0125-preview",
-        voice: voice || "alloy",
-        input: "Hello! I'm your AI assistant."
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${errorText}`);
-    }
-
-    // Create a generic token response since the OpenAI API will return an audio stream
-    const clientToken = crypto.randomUUID();
+    const bhashiniToken = await getBhashiniToken();
 
     const responseData = {
-      token: clientToken,
-      client_secret: { value: OPENAI_API_KEY }, // We need to pass the actual API key for real-time communication
+      token: bhashiniToken,
+      client_secret: { 
+        value: BHASHINI_API_KEY,
+        userId: BHASHINI_USER_ID
+      },
       client_id: "default-client"
     };
 
