@@ -10,34 +10,44 @@ const corsHeaders = {
 async function getBhashiniToken() {
   console.log("Getting Bhashini token...");
   
-  // Updated API endpoint
-  const response = await fetch('https://bhashini.gov.in/apis/v1/model/getModelKey', {
+  const BHASHINI_API_KEY = Deno.env.get('BHASHINI_API_KEY');
+  if (!BHASHINI_API_KEY) {
+    throw new Error('BHASHINI_API_KEY is not set');
+  }
+
+  // Using the correct API endpoint with proper authentication
+  const response = await fetch('https://bhashini.gov.in/apis/v1/inference/asr/transcript', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': Deno.env.get('BHASHINI_API_KEY') || '',
+      'Authorization': BHASHINI_API_KEY,
     },
     body: JSON.stringify({
-      "userId": Deno.env.get('BHASHINI_USER_ID') || '',
       "modelId": "ai4bharat/whisper-multilingual-low",
       "task": "asr",
-      "languages": [{
-        "sourceLanguage": "en",
-        "targetLanguage": "hi"
-      }]
+      "userId": Deno.env.get('BHASHINI_USER_ID'),
+      "input": {
+        "language": {
+          "sourceLanguage": "en"
+        }
+      }
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Bhashini token error:', errorText);
+    console.error('Bhashini API error:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText
+    });
     throw new Error(`Failed to get Bhashini auth token: ${errorText}`);
   }
 
   const data = await response.json();
-  console.log("Successfully got Bhashini token:", data);
-  return data.token;
+  console.log("Successfully got Bhashini response:", data);
+  return data.taskId; // Using taskId as the token
 }
 
 serve(async (req) => {
@@ -53,24 +63,19 @@ serve(async (req) => {
     const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
 
     if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
-      console.error('Bhashini credentials are not set:', {
-        apiKey: !!BHASHINI_API_KEY,
-        userId: !!BHASHINI_USER_ID
+      console.error('Missing required environment variables:', {
+        hasApiKey: !!BHASHINI_API_KEY,
+        hasUserId: !!BHASHINI_USER_ID
       });
-      throw new Error('Bhashini credentials are not configured');
+      throw new Error('Missing required Bhashini credentials');
     }
 
-    console.log('Requesting Bhashini token with credentials:', {
-      userId: BHASHINI_USER_ID,
-      hasApiKey: !!BHASHINI_API_KEY
+    console.log('Requesting Bhashini token with credentials...', {
+      hasApiKey: !!BHASHINI_API_KEY,
+      hasUserId: !!BHASHINI_USER_ID
     });
 
     const bhashiniToken = await getBhashiniToken();
-
-    if (!bhashiniToken) {
-      console.error('No token received from Bhashini');
-      throw new Error('Failed to get Bhashini token');
-    }
 
     const responseData = {
       token: bhashiniToken,
@@ -89,7 +94,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in edge function:", error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
