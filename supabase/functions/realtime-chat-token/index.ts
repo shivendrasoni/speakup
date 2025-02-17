@@ -9,20 +9,23 @@ const corsHeaders = {
 
 async function getBhashiniToken() {
   console.log("Getting Bhashini token...");
-  const response = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelKey', {
+  
+  // Updated API endpoint
+  const response = await fetch('https://bhashini.gov.in/apis/v1/model/getModelKey', {
     method: 'POST',
     headers: {
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'userID': Deno.env.get('BHASHINI_USER_ID') || '',
-      'apiKey': Deno.env.get('BHASHINI_API_KEY') || '',  // Changed from ulcaApiKey to apiKey
+      'Authorization': Deno.env.get('BHASHINI_API_KEY') || '',
     },
     body: JSON.stringify({
+      "userId": Deno.env.get('BHASHINI_USER_ID') || '',
+      "modelId": "ai4bharat/whisper-multilingual-low",
       "task": "asr",
-      "serviceProvider": "ai4bharat",
-      "language": {
+      "languages": [{
         "sourceLanguage": "en",
         "targetLanguage": "hi"
-      }
+      }]
     })
   });
 
