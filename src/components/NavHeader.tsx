@@ -1,13 +1,14 @@
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { HomeIcon, LogOutIcon } from "lucide-react";
+import { HomeIcon, LogOutIcon, ArrowLeftIcon } from "lucide-react";
 
 export const NavHeader = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const { data: session } = useQuery({
@@ -31,11 +32,23 @@ export const NavHeader = () => {
     navigate("/");
   };
 
+  const showBackButton = location.pathname !== "/";
+
   return (
     <header className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
+            {showBackButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="mr-2"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </Button>
+            )}
             <Link to="/">
               <Button variant="ghost" size="icon">
                 <HomeIcon className="h-5 w-5" />
