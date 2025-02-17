@@ -19,12 +19,12 @@ async function getBhashiniToken() {
 
   console.log('Making request to Bhashini API...');
   
-  const response = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v1/model/getModelKey', {
+  const response = await fetch('https://asr.bhashini.gov.in/v1/model/getModelKey', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'ulcaApiKey': BHASHINI_API_KEY // Changed to use correct header name
+      'Authorization': `Bearer ${BHASHINI_API_KEY}`
     },
     body: JSON.stringify({
       "userId": BHASHINI_USER_ID,
