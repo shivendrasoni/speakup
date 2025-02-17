@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { NavHeader } from "@/components/NavHeader";
@@ -7,7 +8,7 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import NewComplaint from "@/pages/complaints/NewComplaint";
+import NewComplaint from "@/pages/NewComplaint";
 import Complaints from "@/pages/Complaints";
 
 const App = () => {
