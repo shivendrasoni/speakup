@@ -20,16 +20,34 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<"public" | "private">("public");
 
-  const { data: sectorStats = [], isLoading: isLoadingSectorStats } = useQuery({
-    queryKey: ["complaint-stats", activeTab],
+  // Get current user session
+  const { data: session } = useQuery({
+    queryKey: ["session"],
     queryFn: async () => {
-      const { data: complaints, error: complaintsError } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    },
+  });
+
+  const { data: sectorStats = [], isLoading: isLoadingSectorStats } = useQuery({
+    queryKey: ["complaint-stats", activeTab, session?.user?.id],
+    queryFn: async () => {
+      let query = supabase
         .from('complaints')
         .select(`
           sector_id,
           sectors (name)
-        `)
-        .eq('is_public', activeTab === 'public');
+        `);
+
+      if (activeTab === "private" && session?.user?.id) {
+        // For private tab, only show user's complaints
+        query = query.eq('user_id', session.user.id);
+      } else {
+        // For public tab, show all public complaints
+        query = query.eq('is_public', true);
+      }
+
+      const { data: complaints, error: complaintsError } = await query;
 
       if (complaintsError) throw complaintsError;
 
@@ -47,12 +65,21 @@ export const Dashboard = () => {
   });
 
   const { data: statusStats = [], isLoading: isLoadingStatusStats } = useQuery({
-    queryKey: ["status-stats", activeTab],
+    queryKey: ["status-stats", activeTab, session?.user?.id],
     queryFn: async () => {
-      const { data: complaints, error: complaintsError } = await supabase
+      let query = supabase
         .from('complaints')
-        .select('status')
-        .eq('is_public', activeTab === 'public');
+        .select('status');
+
+      if (activeTab === "private" && session?.user?.id) {
+        // For private tab, only show user's complaints
+        query = query.eq('user_id', session.user.id);
+      } else {
+        // For public tab, show all public complaints
+        query = query.eq('is_public', true);
+      }
+
+      const { data: complaints, error: complaintsError } = await query;
 
       if (complaintsError) throw complaintsError;
 
@@ -76,7 +103,9 @@ export const Dashboard = () => {
       <NavHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Complaint Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {activeTab === "public" ? "Public Complaints Dashboard" : "My Complaints Dashboard"}
+          </h1>
           <Link to="/complaints/new">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -88,19 +117,25 @@ export const Dashboard = () => {
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "public" | "private")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="public">Public Complaints</TabsTrigger>
-            <TabsTrigger value="private">Private Complaints</TabsTrigger>
+            <TabsTrigger value="private">My Complaints</TabsTrigger>
           </TabsList>
           
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Complaints by Sector</CardTitle>
+                <CardTitle>
+                  {activeTab === "public" ? "Public Complaints by Sector" : "My Complaints by Sector"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[400px] w-full">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       Loading statistics...
+                    </div>
+                  ) : sectorStats.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No complaints found for this category.
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -124,13 +159,19 @@ export const Dashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Resolution Status</CardTitle>
+                <CardTitle>
+                  {activeTab === "public" ? "Public Complaints Status" : "My Complaints Status"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[400px] w-full">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       Loading statistics...
+                    </div>
+                  ) : statusStats.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No complaints found for this category.
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
