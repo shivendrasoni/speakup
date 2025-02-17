@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -146,7 +145,7 @@ export function AIComplaintBot() {
       console.log('Getting token from realtime-chat-token function...');
       const { data, error } = await supabase.functions.invoke('realtime-chat-token', {
         body: { 
-          model: "gpt-4o-realtime-preview-2024-10-01",
+          model: "gpt-4-0125-preview",
           voice: "alloy",
           instructions: SYSTEM_PROMPT
         }
@@ -157,11 +156,11 @@ export function AIComplaintBot() {
         throw new Error('Failed to get authentication token');
       }
 
-      const token = data.client_secret.value;
-      console.log('Token received:', token);
+      const apiKey = data.client_secret.value;
+      console.log('OpenAI API Key received successfully');
 
       console.log('Creating WebSocket connection...');
-      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01');
+      const ws = new WebSocket('wss://api.openai.com/v1/audio/speech');
       wsRef.current = ws;
 
       if (!audioQueueRef.current) {
@@ -169,12 +168,11 @@ export function AIComplaintBot() {
       }
 
       ws.onopen = () => {
-        console.log('WebSocket connection opened, initializing session...');
+        console.log('WebSocket connection opened');
         ws.send(JSON.stringify({
-          type: "session.init",
-          session: {
-            token
-          }
+          model: "gpt-4-0125-preview",
+          voice: "alloy",
+          input: "Hello! I'm your AI assistant. How can I help you today?"
         }));
       };
 
@@ -183,72 +181,17 @@ export function AIComplaintBot() {
           const data = JSON.parse(event.data);
           console.log('Received message:', data);
 
-          if (data.type === 'session.created') {
-            console.log('Session created successfully');
-            setIsConnected(true);
-
-            // Configure session
-            ws.send(JSON.stringify({
-              type: "session.update",
-              session: {
-                modalities: ["text", "audio"],
-                input_audio_format: "wav",
-                output_audio_format: "wav",
-                turn_detection: {
-                  type: "server_vad",
-                  threshold: 0.5,
-                  prefix_padding_ms: 300,
-                  silence_duration_ms: 1000
-                }
-              }
-            }));
-
-            // Set up audio recorder
-            audioRecorderRef.current = new AudioRecorder((audioData) => {
-              if (ws.readyState === WebSocket.OPEN) {
-                const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
-                ws.send(JSON.stringify({
-                  type: 'input_audio_buffer.append',
-                  audio: base64Audio
-                }));
-              }
-            });
-
-            try {
-              await audioRecorderRef.current.start();
-              console.log('Audio recorder started successfully');
-
-              // Start conversation
-              ws.send(JSON.stringify({
-                type: 'conversation.item.create',
-                item: {
-                  type: 'message',
-                  role: 'user',
-                  content: [{ type: 'input_text', text: 'Hello' }]
-                }
-              }));
-              ws.send(JSON.stringify({ type: 'response.create' }));
-            } catch (error) {
-              console.error('Failed to start audio recorder:', error);
-              toast({
-                title: "Microphone Error",
-                description: "Failed to access microphone. Please ensure microphone permissions are granted.",
-                variant: "destructive"
-              });
-            }
-          }
-
-          if (data.type === 'response.audio.delta') {
+          if (data.type === 'audio' && data.content) {
             setIsSpeaking(true);
-            const binaryString = atob(data.delta);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
+            const audioData = atob(data.content);
+            const bytes = new Uint8Array(audioData.length);
+            for (let i = 0; i < audioData.length; i++) {
+              bytes[i] = audioData.charCodeAt(i);
             }
             await audioQueueRef.current?.addToQueue(bytes);
           }
 
-          if (data.type === 'response.audio.done') {
+          if (data.type === 'done') {
             setIsSpeaking(false);
           }
         } catch (error) {
@@ -273,6 +216,30 @@ export function AIComplaintBot() {
         }
         setIsConnected(false);
       };
+
+      setIsConnected(true);
+
+      // Start recording after connection is established
+      audioRecorderRef.current = new AudioRecorder((audioData) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
+          ws.send(JSON.stringify({
+            audio: base64Audio
+          }));
+        }
+      });
+
+      try {
+        await audioRecorderRef.current.start();
+        console.log('Audio recorder started successfully');
+      } catch (error) {
+        console.error('Failed to start audio recorder:', error);
+        toast({
+          title: "Microphone Error",
+          description: "Failed to access microphone. Please ensure microphone permissions are granted.",
+          variant: "destructive"
+        });
+      }
 
     } catch (error) {
       console.error('Error starting conversation:', error);
