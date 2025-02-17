@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,8 +46,7 @@ export const Dashboard = () => {
     queryFn: async () => {
       let query = supabase
         .from('complaints')
-        .select('status', { count: 'exact' })
-        .select('status');  // Select only the status field
+        .select('status');  // Single select statement
 
       if (activeTab === "private" && session?.user?.id) {
         query = query.eq('user_id', session.user.id);
