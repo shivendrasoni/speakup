@@ -20,15 +20,20 @@ async function getBhashiniToken() {
   console.log('Getting auth token from Bhashini...');
   
   // First authenticate and get the auth token
-  const authResponse = await fetch('https://bhashini.gov.in/ulca/apis/v0/model/auth', {
+  const authResponse = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelKey', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'userID': BHASHINI_USER_ID,
+      'ulcaApiKey': BHASHINI_API_KEY
     },
     body: JSON.stringify({
-      "key": BHASHINI_API_KEY,
-      "userId": BHASHINI_USER_ID
+      "modelId": "ai4bharat/whisper-multilingual",
+      "task": "asr",
+      "language": {
+        "sourceLanguage": "en"
+      }
     })
   });
 
@@ -43,44 +48,13 @@ async function getBhashiniToken() {
   }
 
   const authData = await authResponse.json();
-  const authToken = authData.token;
+  console.log("Successfully got Bhashini auth response:", authData);
 
-  console.log('Successfully authenticated with Bhashini, getting model key...');
-
-  // Now get the model key using the auth token
-  const modelResponse = await fetch('https://bhashini.gov.in/ulca/apis/v0/model/getModelKey', {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`
-    },
-    body: JSON.stringify({
-      "modelId": "ai4bharat/whisper-multilingual",
-      "task": "asr",
-      "userId": BHASHINI_USER_ID,
-      "languages": [
-        {
-          "sourceLanguage": "en"
-        }
-      ]
-    })
-  });
-
-  if (!modelResponse.ok) {
-    const errorText = await modelResponse.text();
-    console.error('Bhashini Model Key error:', {
-      status: modelResponse.status,
-      statusText: modelResponse.statusText,
-      error: errorText
-    });
-    throw new Error(`Failed to get model key: ${modelResponse.status} ${modelResponse.statusText}`);
+  if (!authData.modelKey) {
+    throw new Error('No model key received from Bhashini');
   }
 
-  const modelData = await modelResponse.json();
-  console.log("Successfully got Bhashini model key");
-  
-  return modelData.modelKey || modelData.token;
+  return authData.modelKey;
 }
 
 serve(async (req) => {
