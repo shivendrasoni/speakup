@@ -8,14 +8,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Clock, Activity, CheckCircle, RefreshCw } from "lucide-react";
 
 type ComplaintStats = {
   sector_name: string;
   count: number;
 };
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = {
+  pending: '#FDB022',     // Amber
+  in_process: '#3B82F6',  // Blue
+  closed: '#10B981',      // Green
+  reopened: '#EF4444'     // Red
+};
+
+const STATUS_ICONS = {
+  pending: Clock,
+  in_process: Activity,
+  closed: CheckCircle,
+  reopened: RefreshCw
+};
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<"public" | "private">("public");
@@ -29,6 +41,48 @@ export const Dashboard = () => {
     },
   });
 
+  // Query for status-based statistics
+  const { data: statusStats = [], isLoading: isLoadingStatusStats } = useQuery({
+    queryKey: ["status-stats", activeTab, session?.user?.id],
+    queryFn: async () => {
+      let query = supabase
+        .from('complaints')
+        .select('status, count(*)', { count: 'exact' });
+
+      if (activeTab === "private" && session?.user?.id) {
+        query = query.eq('user_id', session.user.id);
+      } else {
+        query = query.eq('is_public', true);
+      }
+
+      const { data: complaints, error: complaintsError } = await query;
+
+      if (complaintsError) throw complaintsError;
+
+      // Initialize all status categories
+      const statusCounts = {
+        pending: 0,
+        in_process: 0,
+        closed: 0,
+        reopened: 0
+      };
+
+      // Update counts from the query results
+      complaints?.forEach(complaint => {
+        const status = complaint.status || 'pending';
+        if (status in statusCounts) {
+          statusCounts[status as keyof typeof statusCounts] = complaint.count;
+        }
+      });
+
+      return Object.entries(statusCounts).map(([name, count]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1).replace('_', ' '),
+        value: count,
+        color: COLORS[name as keyof typeof COLORS]
+      }));
+    }
+  });
+
   const { data: sectorStats = [], isLoading: isLoadingSectorStats } = useQuery({
     queryKey: ["complaint-stats", activeTab, session?.user?.id],
     queryFn: async () => {
@@ -40,10 +94,8 @@ export const Dashboard = () => {
         `);
 
       if (activeTab === "private" && session?.user?.id) {
-        // For private tab, only show user's complaints
         query = query.eq('user_id', session.user.id);
       } else {
-        // For public tab, show all public complaints
         query = query.eq('is_public', true);
       }
 
@@ -64,39 +116,8 @@ export const Dashboard = () => {
     }
   });
 
-  const { data: statusStats = [], isLoading: isLoadingStatusStats } = useQuery({
-    queryKey: ["status-stats", activeTab, session?.user?.id],
-    queryFn: async () => {
-      let query = supabase
-        .from('complaints')
-        .select('status');
-
-      if (activeTab === "private" && session?.user?.id) {
-        // For private tab, only show user's complaints
-        query = query.eq('user_id', session.user.id);
-      } else {
-        // For public tab, show all public complaints
-        query = query.eq('is_public', true);
-      }
-
-      const { data: complaints, error: complaintsError } = await query;
-
-      if (complaintsError) throw complaintsError;
-
-      const statusCounts = complaints.reduce((acc: { [key: string]: number }, complaint) => {
-        const status = complaint.status || 'pending';
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, {});
-
-      return Object.entries(statusCounts).map(([name, value]) => ({
-        name: name.charAt(0).toUpperCase() + name.slice(1).replace('_', ' '),
-        value
-      }));
-    }
-  });
-
   const isLoading = isLoadingSectorStats || isLoadingStatusStats;
+  const totalComplaints = statusStats.reduce((sum, stat) => sum + stat.value, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -119,85 +140,120 @@ export const Dashboard = () => {
             <TabsTrigger value="public">Public Complaints</TabsTrigger>
             <TabsTrigger value="private">My Complaints</TabsTrigger>
           </TabsList>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {activeTab === "public" ? "Public Complaints by Sector" : "My Complaints by Sector"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] w-full">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      Loading statistics...
-                    </div>
-                  ) : sectorStats.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      No complaints found for this category.
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={sectorStats}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="sector_name" 
-                          angle={-45}
-                          textAnchor="end"
-                          height={80}
-                        />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#4f46e5" name="Number of Complaints" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {activeTab === "public" ? "Public Complaints Status" : "My Complaints Status"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] w-full">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      Loading statistics...
+          {isLoading ? (
+            <div className="flex items-center justify-center h-48">
+              Loading statistics...
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {statusStats.map((stat) => {
+                  const IconComponent = STATUS_ICONS[stat.name.toLowerCase().replace(' ', '_') as keyof typeof STATUS_ICONS];
+                  return (
+                    <Card key={stat.name} className="transition-all hover:shadow-md">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {stat.name}
+                        </CardTitle>
+                        <IconComponent 
+                          className="h-4 w-4" 
+                          style={{ color: stat.color }}
+                        />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{stat.value}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {totalComplaints > 0 
+                            ? `${((stat.value / totalComplaints) * 100).toFixed(1)}% of total`
+                            : 'No complaints yet'
+                          }
+                        </p>
+                        <div 
+                          className="mt-2 h-1 rounded-full" 
+                          style={{ 
+                            backgroundColor: stat.color,
+                            opacity: totalComplaints > 0 ? stat.value / totalComplaints : 0.2
+                          }}
+                        />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {activeTab === "public" ? "Public Complaints by Sector" : "My Complaints by Sector"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[400px] w-full">
+                      {sectorStats.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                          No complaints found for this category.
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={sectorStats}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="sector_name" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                            />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="count" fill="#4f46e5" name="Number of Complaints" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
                     </div>
-                  ) : statusStats.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      No complaints found for this category.
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {activeTab === "public" ? "Public Complaints Status" : "My Complaints Status"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[400px] w-full">
+                      {statusStats.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                          No complaints found for this category.
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={statusStats}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                              outerRadius={150}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {statusStats.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % Object.keys(COLORS).length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      )}
                     </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={statusStats}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                          outerRadius={150}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {statusStats.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
         </Tabs>
       </div>
     </div>
