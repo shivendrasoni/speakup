@@ -24,8 +24,6 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         navigate('/complaints/new');
-      } else if (event === 'SIGNED_OUT') {
-        navigate('/');
       }
     });
 
@@ -36,13 +34,12 @@ const Index = () => {
     if (sessionError) {
       console.error('Session error:', sessionError);
       toast({
-        title: "Session expired",
-        description: "Please sign in again",
+        title: "Session error",
+        description: "Please try again",
         variant: "destructive",
       });
-      navigate('/login');
     }
-  }, [sessionError, navigate, toast]);
+  }, [sessionError, toast]);
 
   if (session) {
     navigate('/complaints/new');

@@ -13,7 +13,7 @@ const Welcome = () => {
         </h1>
         <p className="text-xl text-gray-600">How can I help you?</p>
         <Button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/home")}
           className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 rounded-full"
         >
           Click to Continue
