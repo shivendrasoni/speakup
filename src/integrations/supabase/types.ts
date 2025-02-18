@@ -125,7 +125,7 @@ export type Database = {
           state_id: number | null
           status: Database["public"]["Enums"]["complaint_status"] | null
           submission_type: Database["public"]["Enums"]["submission_type"]
-          title: string
+          title: string | null
           updated_at: string
           user_email: string | null
           user_id: string | null
@@ -162,7 +162,7 @@ export type Database = {
           state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
-          title: string
+          title?: string | null
           updated_at?: string
           user_email?: string | null
           user_id?: string | null
@@ -199,7 +199,7 @@ export type Database = {
           state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
-          title?: string
+          title?: string | null
           updated_at?: string
           user_email?: string | null
           user_id?: string | null
