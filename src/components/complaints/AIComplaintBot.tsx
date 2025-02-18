@@ -155,14 +155,11 @@ export function AIComplaintBot() {
         throw new Error('Failed to get authentication token');
       }
 
-      const bhashiniToken = data.token;
-      const bhashiniUserId = data.client_secret.userId;
-      const bhashiniApiKey = data.client_secret.value;
-      
-      console.log('Bhashini token received successfully');
+      const token = data.token;
+      console.log('Token received successfully');
 
       console.log('Creating WebSocket connection...');
-      const ws = new WebSocket('wss://inference.bhashini.gov.in/ws');
+      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01');
       wsRef.current = ws;
 
       if (!audioQueueRef.current) {
@@ -172,12 +169,26 @@ export function AIComplaintBot() {
       ws.onopen = () => {
         console.log('WebSocket connection opened');
         ws.send(JSON.stringify({
-          type: 'init',
-          token: bhashiniToken,
-          userId: bhashiniUserId,
-          apiKey: bhashiniApiKey,
-          source_language: 'en', // Default to English
-          target_language: 'hi'  // Default to Hindi
+          event_id: 'event_123',
+          type: 'session.update',
+          session: {
+            modalities: ['text', 'audio'],
+            instructions: SYSTEM_PROMPT,
+            voice: 'alloy',
+            input_audio_format: 'pcm16',
+            output_audio_format: 'pcm16',
+            input_audio_transcription: {
+              model: 'whisper-1'
+            },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 1000
+            },
+            temperature: 0.8,
+            max_response_output_tokens: 'inf'
+          }
         }));
       };
 
@@ -186,9 +197,9 @@ export function AIComplaintBot() {
           const data = JSON.parse(event.data);
           console.log('Received message:', data);
 
-          if (data.type === 'speech' && data.audio) {
+          if (data.type === 'response.audio.delta') {
             setIsSpeaking(true);
-            const audioData = atob(data.audio);
+            const audioData = atob(data.delta);
             const bytes = new Uint8Array(audioData.length);
             for (let i = 0; i < audioData.length; i++) {
               bytes[i] = audioData.charCodeAt(i);
@@ -196,7 +207,7 @@ export function AIComplaintBot() {
             await audioQueueRef.current?.addToQueue(bytes);
           }
 
-          if (data.type === 'done') {
+          if (data.type === 'response.audio.done') {
             setIsSpeaking(false);
           }
         } catch (error) {
@@ -229,9 +240,8 @@ export function AIComplaintBot() {
         if (ws.readyState === WebSocket.OPEN) {
           const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
           ws.send(JSON.stringify({
-            type: 'audio',
-            audio: base64Audio,
-            source_language: 'en' // Default to English
+            type: 'input_audio_buffer.append',
+            audio: base64Audio
           }));
         }
       });

@@ -86,6 +86,13 @@ export type Database = {
             referencedRelation: "complaints"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "complaint_updates_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       complaints: {
