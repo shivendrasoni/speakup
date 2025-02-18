@@ -5,9 +5,12 @@ import { NavHeader } from "@/components/NavHeader";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Clock, Activity, CheckCircle, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Card as ComplaintCard } from "@/components/ui/card";
+import { ComplaintForm } from "@/components/complaints/ComplaintForm";
+import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 type ComplaintStats = {
   sector_name: string;
@@ -30,6 +33,23 @@ const STATUS_ICONS = {
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<"public" | "private">("public");
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [sectorId, setSectorId] = useState("");
+  const [sectors, setSectors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [complimentRecipient, setComplimentRecipient] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [submissionType, setSubmissionType] = useState<"complaint" | "feedback" | "compliment">("complaint");
+  const [isRecording, setIsRecording] = useState(false);
+  const [language, setLanguage] = useState<keyof typeof TRANSLATIONS>("english");
 
   // Get current user session
   const { data: session } = useQuery({
@@ -115,6 +135,118 @@ export const Dashboard = () => {
     }
   });
 
+  const startRecording = () => {
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const uploadedFiles = [];
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('complaint_attachments')
+          .upload(fileName, file);
+          
+        if (uploadError) throw uploadError;
+        
+        if (data) {
+          uploadedFiles.push({
+            name: file.name,
+            path: data.path,
+            type: file.type,
+            size: file.size
+          });
+        }
+      }
+
+      const formData = {
+        title,
+        description,
+        sector_id: sectorId,
+        language,
+        submission_type: submissionType,
+        is_public: true,
+        attachments: uploadedFiles,
+        state_id: selectedState ? parseInt(selectedState) : null,
+        district_id: selectedDistrict ? parseInt(selectedDistrict) : null,
+        user_id: user?.id || null,
+        date: selectedDate ? selectedDate.toISOString() : null,
+        ...(submissionType === "feedback" && {
+          feedback_category: feedbackCategory,
+          user_name: userName || null,
+          email: userEmail || null,
+        }),
+        ...(submissionType === "compliment" && {
+          compliment_recipient: complimentRecipient,
+          user_name: userName || null,
+          email: userEmail || null,
+        }),
+        ...(submissionType === "complaint" && {
+          user_name: userName,
+          email: userEmail || null,
+        }),
+      };
+
+      const { error } = await supabase
+        .from("complaints")
+        .insert(formData);
+
+      if (error) throw error;
+
+      setShowComplaintForm(false);
+      resetForm();
+    } catch (error) {
+      console.error('Submission error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setSectorId("");
+    setFiles([]);
+    setUserName("");
+    setUserEmail("");
+    setFeedbackCategory("");
+    setComplimentRecipient("");
+    setSelectedState("");
+    setSelectedDistrict("");
+    setSelectedDate(undefined);
+  };
+
+  useEffect(() => {
+    const fetchSectors = async () => {
+      const { data, error } = await supabase
+        .from("sectors")
+        .select("*")
+        .order("name");
+      
+      if (error) {
+        console.error("Failed to load sectors:", error);
+        return;
+      }
+
+      setSectors(data || []);
+    };
+
+    fetchSectors();
+  }, []);
+
   const isLoading = isLoadingSectorStats || isLoadingStatusStats;
   const totalComplaints = statusStats.reduce((sum, stat) => sum + stat.value, 0);
 
@@ -126,12 +258,10 @@ export const Dashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             {activeTab === "public" ? "Public Complaints Dashboard" : "My Complaints Dashboard"}
           </h1>
-          <Link to="/complaints/new">
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Register Complaint
-            </Button>
-          </Link>
+          <Button onClick={() => setShowComplaintForm(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Register Complaint
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "public" | "private")} className="w-full">
@@ -254,6 +384,52 @@ export const Dashboard = () => {
             </>
           )}
         </Tabs>
+
+        <Dialog open={showComplaintForm} onOpenChange={setShowComplaintForm}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <ComplaintCard className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle>{TRANSLATIONS[language].title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ComplaintForm
+                  title={title}
+                  setTitle={setTitle}
+                  description={description}
+                  setDescription={setDescription}
+                  sectorId={sectorId}
+                  setSectorId={setSectorId}
+                  sectors={sectors}
+                  loading={loading}
+                  language={language}
+                  submissionType={submissionType}
+                  setSubmissionType={setSubmissionType}
+                  isRecording={isRecording}
+                  onStartRecording={startRecording}
+                  onStopRecording={stopRecording}
+                  onShowLanguageDialog={() => {}}
+                  onSubmit={handleSubmit}
+                  files={files}
+                  setFiles={setFiles}
+                  feedbackCategory={feedbackCategory}
+                  setFeedbackCategory={setFeedbackCategory}
+                  userName={userName}
+                  setUserName={setUserName}
+                  userEmail={userEmail}
+                  setUserEmail={setUserEmail}
+                  complimentRecipient={complimentRecipient}
+                  setComplimentRecipient={setComplimentRecipient}
+                  selectedState={selectedState}
+                  setSelectedState={setSelectedState}
+                  selectedDistrict={selectedDistrict}
+                  setSelectedDistrict={setSelectedDistrict}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                />
+              </CardContent>
+            </ComplaintCard>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
