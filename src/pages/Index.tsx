@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { MegaphoneIcon, ChevronRight, Globe2, Users2, CheckCircle, Building2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,17 +14,38 @@ const Index = () => {
   const { data: session, error: sessionError } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      return session;
+      try {
+        // First try to get the current session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          // If there's an error getting the session, clear it
+          await supabase.auth.signOut();
+          throw error;
+        }
+        
+        if (!session) {
+          return null;
+        }
+        
+        return session;
+      } catch (error) {
+        console.error('Session error:', error);
+        return null;
+      }
     },
-    retry: false
+    retry: false,
+    staleTime: 0 // Don't cache the session
   });
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      if (event === 'SIGNED_IN' && session) {
         navigate('/complaints/new');
+      } else if (event === 'SIGNED_OUT') {
+        // Clear any stored session data
+        await supabase.auth.signOut();
       }
     });
 
@@ -35,13 +57,16 @@ const Index = () => {
       console.error('Session error:', sessionError);
       toast({
         title: "Session error",
-        description: "Please try again",
+        description: "Please sign in again",
         variant: "destructive",
       });
+      // Clear any invalid session
+      supabase.auth.signOut();
     }
   }, [sessionError, toast]);
 
-  if (session) {
+  // Only redirect if we have a valid session
+  if (session?.user) {
     navigate('/complaints/new');
     return null;
   }
