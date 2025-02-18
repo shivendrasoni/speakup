@@ -1,18 +1,18 @@
-
 import { Languages, ChartBar, Award, BookOpen, Users, Mic, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
 import type { LanguageCode } from "@/types/complaints";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ComplaintsNavProps {
-  language: LanguageCode;
   onLanguageClick: () => void;
   onVoiceConcernsClick: () => void;
 }
 
-export function ComplaintsNav({ language, onLanguageClick, onVoiceConcernsClick }: ComplaintsNavProps) {
+export function ComplaintsNav({ onLanguageClick, onVoiceConcernsClick }: ComplaintsNavProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">

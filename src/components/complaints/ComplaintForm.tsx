@@ -15,6 +15,8 @@ import { DescriptionField } from "./DescriptionField";
 import { SectorQuestions } from "./SectorQuestions";
 import { Progress } from "@/components/ui/progress";
 import { DateQuestion } from "./DateQuestion";
+import { useLanguage } from '@/contexts/LanguageContext';
+import { TRANSLATIONS } from '@/pages/NewComplaint';
 
 const FEEDBACK_CATEGORIES = [
   { label: "Platform Experience", value: "platform_experience" },
@@ -94,6 +96,8 @@ export function ComplaintForm({
 }: ComplaintFormProps) {
   const [formProgress, setFormProgress] = useState(0);
   const [sectorAnswers, setSectorAnswers] = useState<Record<string, any>>({});
+  const { language: contextLanguage } = useLanguage();
+  const t = TRANSLATIONS[contextLanguage].form;
 
   const calculateProgress = () => {
     let totalFields = 0;
@@ -187,7 +191,7 @@ export function ComplaintForm({
                     <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
                   </HoverCardTrigger>
                   <HoverCardContent className="w-80 p-3 text-sm">
-                    Select the department or sector related to your complaint
+                    {t.sectorHelp}
                   </HoverCardContent>
                 </HoverCard>
               </Label>
@@ -196,7 +200,7 @@ export function ComplaintForm({
                 onValueChange={setSectorId}
               >
                 <SelectTrigger className="bg-white">
-                  <SelectValue placeholder="Select a sector" />
+                  <SelectValue placeholder={t.selectSector} />
                 </SelectTrigger>
                 <SelectContent>
                   {sectors.map((sector) => (
@@ -278,7 +282,7 @@ export function ComplaintForm({
     <div className="space-y-6">
       <div className="mb-6">
         <div className="mb-2 flex justify-between items-center">
-          <span className="text-sm text-gray-600">Form Progress</span>
+          <span className="text-sm text-gray-600">{t.progress}</span>
           <span className="text-sm text-gray-600">{Math.round(formProgress)}%</span>
         </div>
         <Progress value={formProgress} className="w-full" />
@@ -292,15 +296,15 @@ export function ComplaintForm({
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="complaint" id="complaint" />
-            <Label htmlFor="complaint">Complaint</Label>
+            <Label htmlFor="complaint">{t.formTypes.complaint}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="feedback" id="feedback" />
-            <Label htmlFor="feedback">Feedback</Label>
+            <Label htmlFor="feedback">{t.formTypes.feedback}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="compliment" id="compliment" />
-            <Label htmlFor="compliment">Compliment</Label>
+            <Label htmlFor="compliment">{t.formTypes.compliment}</Label>
           </div>
         </RadioGroup>
       </div>
@@ -310,13 +314,13 @@ export function ComplaintForm({
 
         <div className="space-y-2">
           <Label htmlFor="title">
-            Title *
+            {t.title} *
             <HoverCard>
               <HoverCardTrigger asChild>
                 <Info className="h-4 w-4 text-gray-500 cursor-help inline-block ml-1" />
               </HoverCardTrigger>
               <HoverCardContent className="w-80 p-3 text-sm">
-                A brief title that describes your submission
+                {t.titleHelp}
               </HoverCardContent>
             </HoverCard>
           </Label>
@@ -324,7 +328,7 @@ export function ComplaintForm({
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Brief title of your submission"
+            placeholder={t.titlePlaceholder}
             required
             className="w-full"
           />
@@ -351,7 +355,7 @@ export function ComplaintForm({
           {loading ? (
             <div className="flex items-center gap-2">
               <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              Submitting...
+              {t.submitting}
             </div>
           ) : (
             "Submit"

@@ -1,10 +1,9 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { HomeIcon, LogOutIcon, ArrowLeftIcon } from "lucide-react";
+import { HomeIcon, LogOutIcon, ArrowLeftIcon, FileTextIcon } from "lucide-react";
 
 export const NavHeader = () => {
   const navigate = useNavigate();
@@ -63,15 +62,20 @@ export const NavHeader = () => {
                 <ArrowLeftIcon className="h-5 w-5" />
               </Button>
             )}
-            <Link to="/">
+            <Link to="/home">
               <Button variant="ghost" size="icon">
                 <HomeIcon className="h-5 w-5" />
               </Button>
             </Link>
             {session && (
-              <Link to="/complaints">
-                <Button variant="ghost">Complaints</Button>
-              </Link>
+              <>
+                <Link to="/complaints">
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <FileTextIcon className="h-5 w-5" />
+                    <span>Complaints</span>
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
           {session && (

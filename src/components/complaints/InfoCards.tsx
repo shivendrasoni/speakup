@@ -1,21 +1,17 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Calendar, Users, ArrowRight, MegaphoneIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { LanguageCode } from "@/types/complaints";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
 
 interface InfoCardsProps {
   onVoiceConcernsClick: () => void;
-  language: LanguageCode;
 }
 
-export function InfoCards({
-  onVoiceConcernsClick,
-  language
-}: InfoCardsProps) {
+export function InfoCards({ onVoiceConcernsClick }: InfoCardsProps) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const t = TRANSLATIONS[language];
 
   return <>

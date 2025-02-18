@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +35,7 @@ import {
   Clock,
 } from "lucide-react";
 import { format } from "date-fns";
+import { AIComplaintBot } from "@/components/AIComplaintBot";
 
 type PostType = 'discussion' | 'success_story' | 'resource' | 'peer_support' | 'qa_session';
 
@@ -364,10 +364,7 @@ const Community = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-8">
-                        <Bot className="h-16 w-16 mx-auto text-blue-500 mb-4" />
-                        <p>Coming soon! Our AI assistant will help you find answers quickly.</p>
-                      </div>
+                      <AIComplaintBot />
                     </CardContent>
                   </Card>
                 </TabsContent>

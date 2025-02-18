@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -64,7 +63,7 @@ const ComplaintDetail = () => {
             content,
             created_at,
             user_id,
-            profiles:user_id (*)
+            user:user_id(*)
           )
         `)
         .eq("id", id)
@@ -177,7 +176,6 @@ const ComplaintDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavHeader />
       <div className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Button

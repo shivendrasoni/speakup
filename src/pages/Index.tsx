@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { MegaphoneIcon, ChevronRight, Globe2, Users2, CheckCircle, Building2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -42,7 +41,7 @@ const Index = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' && session) {
-        navigate('/complaints/new');
+        navigate('/');
       } else if (event === 'SIGNED_OUT') {
         // Clear any stored session data
         await supabase.auth.signOut();
@@ -67,7 +66,7 @@ const Index = () => {
 
   // Only redirect if we have a valid session
   if (session?.user) {
-    navigate('/complaints/new');
+    navigate('/');
     return null;
   }
 

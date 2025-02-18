@@ -86,13 +86,6 @@ export type Database = {
             referencedRelation: "complaints"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "complaint_updates_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       complaints: {
@@ -125,7 +118,7 @@ export type Database = {
           state_id: number | null
           status: Database["public"]["Enums"]["complaint_status"] | null
           submission_type: Database["public"]["Enums"]["submission_type"]
-          title: string | null
+          title: string
           updated_at: string
           user_email: string | null
           user_id: string | null
@@ -162,7 +155,7 @@ export type Database = {
           state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
-          title?: string | null
+          title: string
           updated_at?: string
           user_email?: string | null
           user_id?: string | null
@@ -199,7 +192,7 @@ export type Database = {
           state_id?: number | null
           status?: Database["public"]["Enums"]["complaint_status"] | null
           submission_type?: Database["public"]["Enums"]["submission_type"]
-          title?: string | null
+          title?: string
           updated_at?: string
           user_email?: string | null
           user_id?: string | null

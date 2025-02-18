@@ -1,11 +1,8 @@
-
-import { NavHeader } from "@/components/NavHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Help = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavHeader />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">How to Report a Complaint</h1>
         

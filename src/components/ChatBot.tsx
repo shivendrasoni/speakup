@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,7 @@ export function ChatBot() {
     if (lowerInput.includes("complaint") || lowerInput.includes("voice") || lowerInput.includes("concern")) {
       botResponse.text = "You can submit a new complaint, feedback, or compliment through our Voice Your Concerns page. Would you like me to take you there?";
       setMessages(prev => [...prev, botResponse]);
-      setTimeout(() => navigate("/complaints/new"), 2000);
+      setTimeout(() => navigate("/"), 2000);
     } 
     else if (lowerInput.includes("dashboard") || lowerInput.includes("overview")) {
       botResponse.text = "I'll take you to the dashboard where you can view all complaints and their status.";

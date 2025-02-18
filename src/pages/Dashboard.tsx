@@ -7,6 +7,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Clock, Activity, CheckCircle, RefreshCw } from "lucide-react";
+import { useLanguage } from '@/contexts/LanguageContext';
+import { TRANSLATIONS } from '@/pages/NewComplaint';
 
 type ComplaintStats = {
   sector_name: string;
@@ -15,19 +17,21 @@ type ComplaintStats = {
 
 const COLORS = {
   pending: '#FDB022',     // Amber
-  in_process: '#3B82F6',  // Blue
+  in_progress: '#3B82F6',  // Blue
   closed: '#10B981',      // Green
   reopened: '#EF4444'     // Red
 };
 
 const STATUS_ICONS = {
   pending: Clock,
-  in_process: Activity,
+  in_progress: Activity,
   closed: CheckCircle,
   reopened: RefreshCw
 };
 
 export const Dashboard = () => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language].dashboard;
   const [activeTab, setActiveTab] = useState<"public" | "private">("public");
 
   // Get current user session
@@ -60,14 +64,20 @@ export const Dashboard = () => {
       // Initialize all status categories
       const statusCounts = {
         pending: 0,
-        in_process: 0,
+        in_progress: 0,
         closed: 0,
         reopened: 0
       };
 
       // Count the statuses manually
       complaints?.forEach(complaint => {
-        const status = complaint.status || 'pending';
+        let status = complaint.status || 'pending';
+        
+        // Convert resolved and rejected to closed
+        if (status === 'resolved' || status === 'rejected') {
+          status = 'closed';
+        }
+        
         if (status in statusCounts) {
           statusCounts[status as keyof typeof statusCounts]++;
         }
@@ -122,25 +132,25 @@ export const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            {activeTab === "public" ? "Public Complaints Dashboard" : "My Complaints Dashboard"}
+            {activeTab === "public" ? t.publicDashboard : t.privateDashboard}
           </h1>
-          <Link to="/complaints/new">
+          <Link to="/">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Register Complaint
+              {t.registerComplaint}
             </Button>
           </Link>
         </div>
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "public" | "private")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="public">Public Complaints</TabsTrigger>
-            <TabsTrigger value="private">My Complaints</TabsTrigger>
+            <TabsTrigger value="public">{t.publicComplaints}</TabsTrigger>
+            <TabsTrigger value="private">{t.myComplaints}</TabsTrigger>
           </TabsList>
 
           {isLoading ? (
             <div className="flex items-center justify-center h-48">
-              Loading statistics...
+              {t.loadingStats}
             </div>
           ) : (
             <>
@@ -183,14 +193,14 @@ export const Dashboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      {activeTab === "public" ? "Public Complaints by Sector" : "My Complaints by Sector"}
+                      {activeTab === "public" ? t.complaintsBySector : t.myComplaintsBySector}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-[400px] w-full">
                       {sectorStats.length === 0 ? (
                         <div className="flex items-center justify-center h-full text-gray-500">
-                          No complaints found for this category.
+                          {t.noComplaints}
                         </div>
                       ) : (
                         <ResponsiveContainer width="100%" height="100%">
@@ -204,7 +214,7 @@ export const Dashboard = () => {
                             />
                             <YAxis />
                             <Tooltip />
-                            <Bar dataKey="count" fill="#4f46e5" name="Number of Complaints" />
+                            <Bar dataKey="count" fill="#4f46e5" name={t.numberOfComplaints} />
                           </BarChart>
                         </ResponsiveContainer>
                       )}
@@ -215,14 +225,14 @@ export const Dashboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      {activeTab === "public" ? "Public Complaints Status" : "My Complaints Status"}
+                      {activeTab === "public" ? t.complaintStatus : t.myComplaintStatus}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-[400px] w-full">
                       {statusStats.length === 0 ? (
                         <div className="flex items-center justify-center h-full text-gray-500">
-                          No complaints found for this category.
+                          {t.noComplaints}
                         </div>
                       ) : (
                         <ResponsiveContainer width="100%" height="100%">

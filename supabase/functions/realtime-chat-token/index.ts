@@ -7,54 +7,107 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function getBhashiniToken() {
+  console.log("Getting Bhashini token...");
+  
+  const BHASHINI_API_KEY = Deno.env.get('BHASHINI_API_KEY');
+  const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
+
+  if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
+    throw new Error('Missing Bhashini credentials');
+  }
+
+  console.log('Getting auth token from Bhashini...');
+  
+  // First authenticate and get the auth token
+  const authResponse = await fetch('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelKey', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'userID': BHASHINI_USER_ID,
+      'ulcaApiKey': BHASHINI_API_KEY
+    },
+    body: JSON.stringify({
+      "modelId": "ai4bharat/whisper-multilingual",
+      "task": "asr",
+      "language": {
+        "sourceLanguage": "en"
+      }
+    })
+  });
+
+  if (!authResponse.ok) {
+    const errorText = await authResponse.text();
+    console.error('Bhashini Auth error:', {
+      status: authResponse.status,
+      statusText: authResponse.statusText,
+      error: errorText
+    });
+    throw new Error(`Failed to authenticate with Bhashini: ${authResponse.status} ${authResponse.statusText}`);
+  }
+
+  const authData = await authResponse.json();
+  console.log("Successfully got Bhashini auth response:", authData);
+
+  if (!authData.modelKey) {
+    throw new Error('No model key received from Bhashini');
+  }
+
+  return authData.modelKey;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { instructions } = await req.json()
+    const { instructions } = await req.json();
+    
+    const BHASHINI_API_KEY = Deno.env.get('BHASHINI_API_KEY');
+    const BHASHINI_USER_ID = Deno.env.get('BHASHINI_USER_ID');
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set')
+    if (!BHASHINI_API_KEY || !BHASHINI_USER_ID) {
+      console.error('Missing required environment variables');
+      throw new Error('Missing required Bhashini credentials');
     }
 
-    // Request a token from OpenAI's realtime API
-    const response = await fetch("https://api.openai.com/v1/realtime/tokens", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
+    console.log('Requesting Bhashini token...');
+
+    const bhashiniToken = await getBhashiniToken();
+
+    const responseData = {
+      token: bhashiniToken,
+      client_secret: { 
+        value: BHASHINI_API_KEY,
+        userId: BHASHINI_USER_ID
       },
-      body: JSON.stringify({
-        model: "gpt-4o-realtime-preview-2024-10-01",
-        instructions: instructions,
-        client_info: {
-          name: "complaint-assistant",
-          version: "1.0.0"
-        }
-      }),
-    })
+      client_id: "default-client"
+    };
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error("OpenAI API error:", errorData)
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`)
-    }
+    return new Response(JSON.stringify(responseData), {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
+    });
 
-    const data = await response.json()
-    console.log("Token generated:", data)
-
-    return new Response(JSON.stringify({ token: data.token }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
   } catch (error) {
-    console.error("Error:", error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error("Error in edge function:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
+      { 
+        status: 500,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+      }
+    );
   }
-})
+});

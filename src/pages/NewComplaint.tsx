@@ -7,11 +7,12 @@ import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { InfoCards } from "@/components/complaints/InfoCards";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ComplaintsNav } from "@/components/complaints/ComplaintsNav";
-import { AIComplaintBot } from "@/components/complaints/AIComplaintBot";
 import { HeroSection } from "@/components/complaints/HeroSection";
 import type { Sector, SubmissionType, LanguageCode, FeedbackCategory, ComplaintInsert } from "@/types/complaints";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useLanguage } from '@/contexts/LanguageContext';
+import { VapiWidget } from '@/components/VapiWidget';
 
 export const TRANSLATIONS = {
   english: {
@@ -43,7 +44,46 @@ export const TRANSLATIONS = {
     helpStep3Content: "Read about successful resolutions",
     resources: "Resources",
     helpStep2Title: "Available Support",
-    viewMore: "View More"
+    viewMore: "View More",
+    dashboard: {
+      publicDashboard: "Public Complaints Dashboard",
+      privateDashboard: "My Complaints Dashboard",
+      registerComplaint: "Register Complaint",
+      publicComplaints: "Public Complaints",
+      myComplaints: "My Complaints",
+      loadingStats: "Loading statistics...",
+      noComplaints: "No complaints found for this category.",
+      complaintsBySector: "Public Complaints by Sector",
+      myComplaintsBySector: "My Complaints by Sector",
+      complaintStatus: "Public Complaints Status",
+      myComplaintStatus: "My Complaints Status",
+      numberOfComplaints: "Number of Complaints",
+      ofTotal: "% of total"
+    },
+    form: {
+      progress: "Form Progress",
+      formTypes: {
+        complaint: "Complaint",
+        feedback: "Feedback",
+        compliment: "Compliment"
+      },
+      title: "Title",
+      titlePlaceholder: "Brief title of your submission",
+      titleHelp: "A brief title that describes your submission",
+      submitting: "Submitting...",
+      feedbackCategories: {
+        platform_experience: "Platform Experience",
+        response_time: "Response Time",
+        accessibility: "Accessibility",
+        other: "Other"
+      },
+      feedbackCategory: "Feedback Category",
+      selectFeedbackCategory: "Select feedback category",
+      complimentRecipient: "Who/What is this compliment for?",
+      complimentPlaceholder: "Enter the name of person, department, or service",
+      sectorHelp: "Select the department or sector related to your complaint",
+      selectSector: "Select a sector"
+    }
   },
   hindi: {
     title: "अपनी आवाज़ दर्ज करें",
@@ -74,7 +114,46 @@ export const TRANSLATIONS = {
     helpStep3Content: "सफल समाधानों के बारे में पढ़ें",
     resources: "संसाधन",
     helpStep2Title: "उपलब्ध सहायता",
-    viewMore: "और देखें"
+    viewMore: "और देखें",
+    dashboard: {
+      publicDashboard: "सार्वजनिक शिकायत डैशबोर्ड",
+      privateDashboard: "मेरी शिकायत डैशबोर्ड",
+      registerComplaint: "शिकायत दर्ज करें",
+      publicComplaints: "सार्वजनिक शिकायतें",
+      myComplaints: "मेरी शिकायतें",
+      loadingStats: "आंकड़े लोड हो रहे हैं...",
+      noComplaints: "इस श्रेणी के लिए कोई शिकायत नहीं मिली।",
+      complaintsBySector: "क्षेत्र के अनुसार सार्वजनिक शिकायतें",
+      myComplaintsBySector: "क्षेत्र के अनुसार मेरी शिकायतें",
+      complaintStatus: "सार्वजनिक शिकायत स्थिति",
+      myComplaintStatus: "मेरी शिकायत स्थिति",
+      numberOfComplaints: "शिकायतों की संख्या",
+      ofTotal: "कुल का %"
+    },
+    form: {
+      progress: "फॉर्म प्रगति",
+      formTypes: {
+        complaint: "शिकायत",
+        feedback: "प्रतिक्रिया",
+        compliment: "प्रशंसा"
+      },
+      title: "शीर्षक",
+      titlePlaceholder: "अपनी शिकायत का संक्षिप्त शीर्षक",
+      titleHelp: "एक संक्षिप्त शीर्षक जो आपकी शिकायत का वर्णन करता है",
+      submitting: "जमा किया जा रहा है...",
+      feedbackCategories: {
+        platform_experience: "प्लेटफॉर्म अनुभव",
+        response_time: "प्रतिक्रिया समय",
+        accessibility: "पहुंच",
+        other: "अन्य"
+      },
+      feedbackCategory: "प्रतिक्रिया श्रेणी",
+      selectFeedbackCategory: "प्रतिक्रिया श्रेणी चुनें",
+      complimentRecipient: "यह प्रशंसा किसके लिए है?",
+      complimentPlaceholder: "व्यक्ति, विभाग या सेवा का नाम दर्ज करें",
+      sectorHelp: "अपनी शिकायत से संबंधित विभाग या क्षेत्र चुनें",
+      selectSector: "क्षेत्र चुनें"
+    }
   },
   bengali: {
     title: "আপনার ভয়েস জমা দিন",
@@ -83,7 +162,7 @@ export const TRANSLATIONS = {
     feedback: "মতামত শেয়ার করুন",
     compliment: "প্রশংসা করুন",
     sector: "বিভাগ/সেক্টর",
-    description: "বি঵রণ",
+    description: "বিগত",
     submit: "জমা দিন",
     required: "Please fill in all required fields",
     success: "Success",
@@ -176,7 +255,7 @@ export const TRANSLATIONS = {
     feedback: "પ્રતિસાદ શેર કરો",
     compliment: "વખાણ કરો",
     sector: "વિભાગ/ક્ષેત્ર",
-    description: "વિગત",
+    description: "વેરવા",
     submit: "સબમિટ કરો",
     required: "Please fill in all required fields",
     success: "Success",
@@ -363,7 +442,7 @@ const NewComplaint = () => {
   const [sectorId, setSectorId] = useState("");
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState<LanguageCode>("english");
+  const { language } = useLanguage();
   const [submissionType, setSubmissionType] = useState<SubmissionType>("complaint");
   const [isRecording, setIsRecording] = useState(false);
   const [showLanguageDialog, setShowLanguageDialog] = useState(false);
@@ -580,12 +659,9 @@ const NewComplaint = () => {
       <LanguageSelectionDialog
         open={showLanguageDialog}
         onOpenChange={setShowLanguageDialog}
-        language={language}
-        onLanguageChange={setLanguage}
       />
 
       <ComplaintsNav
-        language={language}
         onLanguageClick={() => setShowLanguageDialog(true)}
         onVoiceConcernsClick={() => setShowComplaintForm(true)}
       />
@@ -596,12 +672,7 @@ const NewComplaint = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           <InfoCards 
             onVoiceConcernsClick={() => setShowComplaintForm(true)} 
-            language={language}
           />
-        </div>
-        
-        <div className="mt-8">
-          <AIComplaintBot />
         </div>
       </div>
 

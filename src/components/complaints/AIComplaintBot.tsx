@@ -1,10 +1,10 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bot, Mic, MicOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { VapiWidget } from "@/components/VapiWidget";
 
 const SYSTEM_PROMPT = `You are a helpful and empathetic grievance officer. Your goal is to collect all necessary details for filing a complaint. 
 
@@ -120,199 +120,20 @@ class AudioQueue {
   }
 }
 
-export function AIComplaintBot() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const { toast } = useToast();
-  const wsRef = useRef<WebSocket | null>(null);
-  const audioRecorderRef = useRef<AudioRecorder | null>(null);
-  const audioQueueRef = useRef<AudioQueue | null>(null);
-
-  const startConversation = async () => {
-    try {
-      if (isConnected) {
-        if (wsRef.current) {
-          wsRef.current.close();
-        }
-        if (audioRecorderRef.current) {
-          audioRecorderRef.current.stop();
-        }
-        wsRef.current = null;
-        audioRecorderRef.current = null;
-        setIsConnected(false);
-        return;
-      }
-
-      console.log('Getting token from realtime-chat-token function...');
-      const { data, error } = await supabase.functions.invoke('realtime-chat-token', {
-        body: { 
-          instructions: SYSTEM_PROMPT
-        }
-      });
-
-      if (error || !data?.token) {
-        console.error('Token error:', error || 'No token received');
-        throw new Error('Failed to get authentication token');
-      }
-
-      const token = data.token;
-      console.log('Token received successfully');
-
-      console.log('Creating WebSocket connection...');
-      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01');
-      wsRef.current = ws;
-
-      if (!audioQueueRef.current) {
-        audioQueueRef.current = new AudioQueue();
-      }
-
-      ws.onopen = () => {
-        console.log('WebSocket connection opened');
-        ws.send(JSON.stringify({
-          event_id: 'event_123',
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            instructions: SYSTEM_PROMPT,
-            voice: 'alloy',
-            input_audio_format: 'pcm16',
-            output_audio_format: 'pcm16',
-            input_audio_transcription: {
-              model: 'whisper-1'
-            },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 1000
-            },
-            temperature: 0.8,
-            max_response_output_tokens: 'inf'
-          }
-        }));
-      };
-
-      ws.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('Received message:', data);
-
-          if (data.type === 'response.audio.delta') {
-            setIsSpeaking(true);
-            const audioData = atob(data.delta);
-            const bytes = new Uint8Array(audioData.length);
-            for (let i = 0; i < audioData.length; i++) {
-              bytes[i] = audioData.charCodeAt(i);
-            }
-            await audioQueueRef.current?.addToQueue(bytes);
-          }
-
-          if (data.type === 'response.audio.done') {
-            setIsSpeaking(false);
-          }
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error);
-        }
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        toast({
-          title: "Connection Error",
-          description: "Failed to connect to AI assistant",
-          variant: "destructive"
-        });
-      };
-
-      ws.onclose = () => {
-        console.log('WebSocket connection closed');
-        if (audioRecorderRef.current) {
-          audioRecorderRef.current.stop();
-          audioRecorderRef.current = null;
-        }
-        setIsConnected(false);
-      };
-
-      setIsConnected(true);
-
-      // Start recording after connection is established
-      audioRecorderRef.current = new AudioRecorder((audioData) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          const base64Audio = btoa(String.fromCharCode(...new Uint8Array(audioData.buffer)));
-          ws.send(JSON.stringify({
-            type: 'input_audio_buffer.append',
-            audio: base64Audio
-          }));
-        }
-      });
-
-      try {
-        await audioRecorderRef.current.start();
-        console.log('Audio recorder started successfully');
-      } catch (error) {
-        console.error('Failed to start audio recorder:', error);
-        toast({
-          title: "Microphone Error",
-          description: "Failed to access microphone. Please ensure microphone permissions are granted.",
-          variant: "destructive"
-        });
-      }
-
-    } catch (error) {
-      console.error('Error starting conversation:', error);
-      if (audioRecorderRef.current) {
-        audioRecorderRef.current.stop();
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      audioRecorderRef.current = null;
-      wsRef.current = null;
-      setIsConnected(false);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start AI conversation",
-        variant: "destructive"
-      });
-    }
-  };
-
+export const AIComplaintBot = () => {
   return (
-    <Card className="w-full max-w-xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="w-6 h-6" />
-          Talk to AI Assistant
-        </CardTitle>
+        <CardTitle>Talk to AI Assistant</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <Button
-              size="lg"
-              className={`${isConnected ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
-              onClick={startConversation}
-            >
-              {isConnected ? (
-                <>
-                  <MicOff className="w-5 h-5 mr-2" />
-                  Stop Conversation
-                </>
-              ) : (
-                <>
-                  <Mic className="w-5 h-5 mr-2" />
-                  Start Conversation
-                </>
-              )}
-            </Button>
-          </div>
-          {isSpeaking && (
-            <div className="text-center text-sm text-gray-500">
-              AI is speaking...
-            </div>
-          )}
+        <div className="flex flex-col items-center justify-center p-4">
+          <p className="text-center mb-4">
+            Get help filing your complaint with our AI assistant
+          </p>
+          <VapiWidget />
         </div>
       </CardContent>
     </Card>
   );
-}
+};
