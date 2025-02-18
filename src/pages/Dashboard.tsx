@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NavHeader } from "@/components/NavHeader";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -46,7 +45,7 @@ export const Dashboard = () => {
     queryFn: async () => {
       let query = supabase
         .from('complaints')
-        .select('status');  // Single select statement
+        .select('status');
 
       if (activeTab === "private" && session?.user?.id) {
         query = query.eq('user_id', session.user.id);
@@ -120,7 +119,6 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
