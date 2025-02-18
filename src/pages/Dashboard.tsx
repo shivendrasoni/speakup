@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NavHeader } from "@/components/NavHeader";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Card as ComplaintCard } from "@/components/ui/card";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { TRANSLATIONS } from "@/pages/NewComplaint";
+import type { FeedbackCategory } from "@/types/complaints";
 
 type ComplaintStats = {
   sector_name: string;
@@ -40,7 +41,7 @@ export const Dashboard = () => {
   const [sectors, setSectors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [feedbackCategory, setFeedbackCategory] = useState<FeedbackCategory>("platform_experience");
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [complimentRecipient, setComplimentRecipient] = useState("");
@@ -51,7 +52,6 @@ export const Dashboard = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [language, setLanguage] = useState<keyof typeof TRANSLATIONS>("english");
 
-  // Get current user session
   const { data: session } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
@@ -60,13 +60,12 @@ export const Dashboard = () => {
     },
   });
 
-  // Query for status-based statistics
   const { data: statusStats = [], isLoading: isLoadingStatusStats } = useQuery({
     queryKey: ["status-stats", activeTab, session?.user?.id],
     queryFn: async () => {
       let query = supabase
         .from('complaints')
-        .select('status');  // Single select statement
+        .select('status');
 
       if (activeTab === "private" && session?.user?.id) {
         query = query.eq('user_id', session.user.id);
@@ -78,7 +77,6 @@ export const Dashboard = () => {
 
       if (complaintsError) throw complaintsError;
 
-      // Initialize all status categories
       const statusCounts = {
         pending: 0,
         in_process: 0,
@@ -86,7 +84,6 @@ export const Dashboard = () => {
         reopened: 0
       };
 
-      // Count the statuses manually
       complaints?.forEach(complaint => {
         const status = complaint.status || 'pending';
         if (status in statusCounts) {
@@ -185,7 +182,7 @@ export const Dashboard = () => {
         user_id: user?.id || null,
         date: selectedDate ? selectedDate.toISOString() : null,
         ...(submissionType === "feedback" && {
-          feedback_category: feedbackCategory,
+          feedback_category: feedbackCategory as FeedbackCategory,
           user_name: userName || null,
           email: userEmail || null,
         }),
