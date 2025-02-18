@@ -21,20 +21,20 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set')
     }
 
-    // Request an ephemeral token from OpenAI with updated parameters
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
+    // Request a token from OpenAI's realtime API
+    const response = await fetch("https://api.openai.com/v1/realtime/tokens", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4-1106-preview",
-        input: instructions,
-        voice: "alloy",
-        response_format: "mp3",
-        speed: 1.0,
-        project_id: "uregithogychkkcmdxtq"
+        model: "gpt-4o-realtime-preview-2024-10-01",
+        instructions: instructions,
+        client_info: {
+          name: "complaint-assistant",
+          version: "1.0.0"
+        }
       }),
     })
 
@@ -45,7 +45,7 @@ serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log("Session created:", data)
+    console.log("Token generated:", data)
 
     return new Response(JSON.stringify({ token: data.token }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
