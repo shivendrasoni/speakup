@@ -58,7 +58,7 @@ export const Dashboard = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [language, setLanguage] = useState<keyof typeof TRANSLATIONS>("english");
 
-  const { data: session, error: sessionError } = useQuery({
+  const { data: session } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -69,15 +69,19 @@ export const Dashboard = () => {
       return session;
     },
     retry: false,
-    onError: () => {
-      queryClient.clear();
-      toast({
-        title: "Session expired",
-        description: "Please log in again",
-        variant: "destructive",
-      });
-      navigate("/login");
-    },
+    meta: {
+      onSettled: (_data, error) => {
+        if (error) {
+          queryClient.clear();
+          toast({
+            title: "Session expired",
+            description: "Please log in again",
+            variant: "destructive",
+          });
+          navigate("/login");
+        }
+      }
+    }
   });
 
   const { data: statusStats = [], isLoading: isLoadingStatusStats } = useQuery({
@@ -315,7 +319,7 @@ export const Dashboard = () => {
                     files={files}
                     setFiles={setFiles}
                     feedbackCategory={feedbackCategory}
-                    setFeedbackCategory={setFeedbackCategory}
+                    setFeedbackCategory={(value: FeedbackCategory) => setFeedbackCategory(value)}
                     userName={userName}
                     setUserName={setUserName}
                     userEmail={userEmail}
