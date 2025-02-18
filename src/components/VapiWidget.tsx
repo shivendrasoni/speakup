@@ -15,7 +15,7 @@ declare global {
 
 export const VapiWidget = () => {
   useEffect(() => {
-    const assistant = "ba6896dd-b79c-4699-8c49-b9cafc3ffb0a"; // Your assistant ID
+    const assistant = "ba6896dd-b79c-4699-8c49-b9cafc3ffb0a"; // Your assistant ID this is the assistant id for the vapi assistant
     const apiKey = "342176cf-058b-4c46-b74d-53ba02cf4a12"; // Your Public key
     
     // Button configuration for styling and positioning
