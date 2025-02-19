@@ -13,6 +13,7 @@ import ComplaintDetail from "@/pages/ComplaintDetail";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { VapiWidget } from '@/components/VapiWidget';
+import NewComplaintPage from "@/pages/NewComplaintPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -31,13 +32,14 @@ const App = () => {
         <Router>
           <NavHeader />
           <Routes>
-            <Route path="/" element={<NewComplaint />} />
+            <Route path="/" element={<Index />} />
             <Route path="/home" element={<NewComplaint />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
+            <Route path="/complaints/new" element={<NewComplaintPage />} />
             <Route path="/complaints/:id" element={<ProtectedRoute><ComplaintDetail /></ProtectedRoute>} />
+            <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
           </Routes>
           <VapiWidget />
           <Toaster />
